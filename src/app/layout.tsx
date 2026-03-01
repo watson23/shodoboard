@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Nunito_Sans } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/hooks/useTheme";
 
 const nunitoSans = Nunito_Sans({
   subsets: ["latin"],
@@ -39,7 +40,7 @@ export default function RootLayout({
       <body
         className={`${nunitoSans.className} antialiased bg-gray-50 dark:bg-gray-950`}
       >
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );
