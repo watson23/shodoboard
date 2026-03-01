@@ -379,6 +379,7 @@ export default function Board() {
               discoveryPrompts={getDiscoveryPrompts(item.id)}
               outcomeName={outcome?.statement}
               onClose={() => setModal(null)}
+              onSpar={(nudgeId) => setSparringNudgeId(nudgeId)}
             />
           );
         })()}
@@ -398,6 +399,7 @@ export default function Board() {
               goalName={goal?.statement}
               itemCount={itemCount}
               onClose={() => setModal(null)}
+              onSpar={(nudgeId) => setSparringNudgeId(nudgeId)}
             />
           );
         })()}

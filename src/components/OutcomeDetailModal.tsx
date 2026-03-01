@@ -12,6 +12,7 @@ interface OutcomeDetailModalProps {
   goalName?: string;
   itemCount: number;
   onClose: () => void;
+  onSpar?: (nudgeId: string) => void;
 }
 
 export default function OutcomeDetailModal({
@@ -20,6 +21,7 @@ export default function OutcomeDetailModal({
   goalName,
   itemCount,
   onClose,
+  onSpar,
 }: OutcomeDetailModalProps) {
   const { dispatch } = useBoard();
   const [statement, setStatement] = useState(outcome.statement);
@@ -132,7 +134,12 @@ export default function OutcomeDetailModal({
               </label>
               <div className="space-y-2">
                 {activeNudges.map((nudge) => (
-                  <NudgeBadge key={nudge.id} nudge={{ ...nudge, tier: "visible" }} />
+                  <NudgeBadge
+                    key={nudge.id}
+                    nudge={{ ...nudge, tier: "visible" }}
+                    onSpar={onSpar ? () => onSpar(nudge.id) : undefined}
+                    initialExpanded
+                  />
                 ))}
               </div>
             </div>

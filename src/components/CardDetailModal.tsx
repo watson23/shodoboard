@@ -193,6 +193,7 @@ export default function CardDetailModal({
                     key={nudge.id}
                     nudge={{ ...nudge, tier: "visible" }}
                     onSpar={onSpar ? () => onSpar(nudge.id) : undefined}
+                    initialExpanded
                   />
                 ))}
               </div>

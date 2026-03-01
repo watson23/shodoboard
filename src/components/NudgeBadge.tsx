@@ -8,11 +8,12 @@ import type { Nudge } from "@/types/board";
 interface NudgeBadgeProps {
   nudge: Nudge;
   onSpar?: () => void;
+  initialExpanded?: boolean;
 }
 
-export default function NudgeBadge({ nudge, onSpar }: NudgeBadgeProps) {
+export default function NudgeBadge({ nudge, onSpar, initialExpanded = false }: NudgeBadgeProps) {
   const { dispatch } = useBoard();
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(initialExpanded);
 
   if (nudge.status !== "active") return null;
 
@@ -64,9 +65,9 @@ export default function NudgeBadge({ nudge, onSpar }: NudgeBadgeProps) {
           </button>
         )}
         <button
-          onClick={() => dispatch({ type: "DISMISS_NUDGE", nudgeId: nudge.id })}
+          onClick={() => setExpanded(false)}
           className="ml-auto p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-          title="Dismiss"
+          title="Close"
         >
           <X size={12} weight="bold" />
         </button>
