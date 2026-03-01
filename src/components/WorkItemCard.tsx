@@ -29,7 +29,7 @@ export default function WorkItemCard({
     <div
       onClick={onClick}
       className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow text-xs cursor-pointer border border-gray-100 dark:border-gray-700 group animate-slide-in overflow-hidden ${
-        hasVisibleNudge ? "border-t-2 border-t-amber-400 dark:border-t-amber-500" : ""
+        ""
       }`}
     >
       {/* Visible nudge banner */}

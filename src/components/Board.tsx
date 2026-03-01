@@ -64,9 +64,10 @@ export default function Board() {
     setActiveItem(null);
     const { active, over } = event;
     if (!over) return;
-    const column = over.id as Column;
-    if (active.id !== column) {
-      dispatch({ type: "MOVE_ITEM", itemId: active.id as string, column });
+    const overId = over.id as string;
+    const column = (overId.includes(":") ? overId.split(":")[1] : overId) as Column;
+    if (active.id !== overId) {
+      dispatch({ type: "MOVE_ITEM", itemId: active.id as string, toColumn: column, toIndex: 0 });
     }
   };
 
@@ -102,10 +103,11 @@ export default function Board() {
     <div className="grid grid-cols-6 gap-0 min-h-[60px]">
       {COLUMNS.map((col) => {
         const colItems = getItemsForOutcomeAndColumn(outcomeId, col.key);
+        const droppableId = `${outcomeId ?? "unlinked"}:${col.key}`;
         return (
           <DroppableColumn
             key={col.key}
-            id={col.key}
+            id={droppableId}
             className="border-r border-gray-100 dark:border-gray-800/50 last:border-r-0 px-2 py-2 space-y-2"
           >
             {colItems.map((item) => (
@@ -130,6 +132,7 @@ export default function Board() {
       <BoardHeader />
 
       <DndContext
+        id="board-dnd"
         sensors={sensors}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
@@ -274,7 +277,7 @@ export default function Board() {
                                   </span>
                                 )}
                                 {!outcome.measureOfSuccess && (
-                                  <span className="text-xs text-amber-500 dark:text-amber-400 ml-2">
+                                  <span className="text-xs text-gray-400 dark:text-gray-500 italic ml-2">
                                     No measure
                                   </span>
                                 )}

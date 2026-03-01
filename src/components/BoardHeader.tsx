@@ -43,13 +43,13 @@ export default function BoardHeader() {
   const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
 
   return (
-    <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 px-4 h-14 flex items-center gap-3">
+    <header className="sticky top-0 z-30 bg-indigo-600 dark:bg-indigo-700 px-4 h-14 flex items-center gap-3">
       <ShodoLogoSmall />
       <div className="flex items-baseline gap-2 min-w-0">
-        <h1 className="font-bold text-gray-900 dark:text-gray-100 text-sm whitespace-nowrap">
+        <h1 className="font-bold text-white text-sm whitespace-nowrap">
           Shodoboard
         </h1>
-        <span className="text-xs text-gray-400 dark:text-gray-500 truncate">
+        <span className="text-sm text-indigo-200 whitespace-nowrap">
           Food delivery app
         </span>
       </div>
@@ -57,7 +57,7 @@ export default function BoardHeader() {
       <div className="ml-auto flex items-center gap-2">
         <button
           onClick={cycleTheme}
-          className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          className="p-2 rounded-lg text-indigo-200 hover:text-white hover:bg-indigo-500 transition-colors"
           title={`Theme: ${theme}`}
         >
           <ThemeIcon size={18} weight="duotone" />
@@ -65,7 +65,7 @@ export default function BoardHeader() {
         <Link
           href="/intake"
           onClick={() => dispatch({ type: "RESET_BOARD" })}
-          className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="flex items-center gap-1.5 text-xs text-indigo-200 hover:text-white transition-colors px-2 py-1.5 rounded-lg hover:bg-indigo-500"
         >
           <ArrowCounterClockwise size={14} weight="bold" />
           Start over
