@@ -2,6 +2,7 @@
 
 import { useBoard } from "@/hooks/useBoard";
 import BoardHeader from "./BoardHeader";
+import WorkItemCard from "./WorkItemCard";
 import {
   CaretDown,
   CaretRight,
@@ -22,7 +23,10 @@ const COLUMNS: { key: Column; label: string; phase: string }[] = [
 
 export default function Board() {
   const { state, dispatch } = useBoard();
-  const { goals, outcomes, items } = state;
+  const { goals, outcomes, items, nudges } = state;
+
+  const getNudgesForItem = (itemId: string) =>
+    nudges.filter((n) => n.targetType === "item" && n.targetId === itemId);
 
   const getItemsForOutcomeAndColumn = (outcomeId: string | null, column: Column) =>
     items
@@ -181,27 +185,11 @@ export default function Board() {
                                       className="border-r border-gray-100 dark:border-gray-800/50 last:border-r-0 px-2 py-2 space-y-2"
                                     >
                                       {colItems.map((item) => (
-                                        <div
+                                        <WorkItemCard
                                           key={item.id}
-                                          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow px-3 py-2 text-xs cursor-pointer border border-gray-100 dark:border-gray-700"
-                                        >
-                                          <span className="text-gray-900 dark:text-gray-100 font-medium leading-snug line-clamp-2">
-                                            {item.title}
-                                          </span>
-                                          <div className="mt-1.5">
-                                            <span
-                                              className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                                                item.type === "discovery"
-                                                  ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
-                                                  : "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
-                                              }`}
-                                            >
-                                              {item.type === "discovery"
-                                                ? "Discovery"
-                                                : "Delivery"}
-                                            </span>
-                                          </div>
-                                        </div>
+                                          item={item}
+                                          nudges={getNudgesForItem(item.id)}
+                                        />
                                       ))}
                                     </div>
                                   );
