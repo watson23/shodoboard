@@ -1,54 +1,84 @@
 "use client";
 
-import type { WorkItem, Nudge } from "@/types/board";
+import type { WorkItem, Nudge, DiscoveryPrompt } from "@/types/board";
+import NudgeBadge from "./NudgeBadge";
+import DiscoveryPrompts from "./DiscoveryPrompts";
 
 interface WorkItemCardProps {
   item: WorkItem;
   nudges: Nudge[];
+  discoveryPrompts?: DiscoveryPrompt[];
   onClick?: () => void;
+  onSpar?: (nudgeId: string) => void;
 }
 
-export default function WorkItemCard({ item, nudges, onClick }: WorkItemCardProps) {
+export default function WorkItemCard({
+  item,
+  nudges,
+  discoveryPrompts = [],
+  onClick,
+  onSpar,
+}: WorkItemCardProps) {
   const activeNudges = nudges.filter((n) => n.status === "active");
-  const hasVisibleNudge = activeNudges.some((n) => n.tier === "visible");
-  const hasQuietNudge = activeNudges.some((n) => n.tier === "quiet");
+  const visibleNudge = activeNudges.find((n) => n.tier === "visible");
+  const quietNudge = activeNudges.find((n) => n.tier === "quiet");
+  const hasVisibleNudge = !!visibleNudge;
+  const hasQuietNudge = !!quietNudge && !hasVisibleNudge;
 
   return (
     <div
       onClick={onClick}
-      className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow px-3 py-2 text-xs cursor-pointer border border-gray-100 dark:border-gray-700 group animate-slide-in ${
+      className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow text-xs cursor-pointer border border-gray-100 dark:border-gray-700 group animate-slide-in overflow-hidden ${
         hasVisibleNudge ? "border-t-2 border-t-amber-400 dark:border-t-amber-500" : ""
       }`}
     >
-      {/* Quiet nudge dot */}
-      {hasQuietNudge && !hasVisibleNudge && (
-        <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-300 dark:bg-amber-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+      {/* Visible nudge banner */}
+      {visibleNudge && (
+        <NudgeBadge
+          nudge={visibleNudge}
+          onSpar={onSpar ? () => onSpar(visibleNudge.id) : undefined}
+        />
       )}
 
-      {/* Title */}
-      <span className="text-gray-900 dark:text-gray-100 font-medium leading-snug line-clamp-2 block">
-        {item.title}
-      </span>
+      {/* Quiet nudge dot */}
+      {hasQuietNudge && quietNudge && (
+        <NudgeBadge
+          nudge={quietNudge}
+          onSpar={onSpar ? () => onSpar(quietNudge.id) : undefined}
+        />
+      )}
 
-      {/* Type badge + assignee */}
-      <div className="mt-1.5 flex items-center gap-1.5">
-        <span
-          className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
-            item.type === "discovery"
-              ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
-              : "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
-          }`}
-        >
-          {item.type === "discovery" ? "Discovery" : "Delivery"}
+      <div className="px-3 py-2">
+        {/* Title */}
+        <span className="text-gray-900 dark:text-gray-100 font-medium leading-snug line-clamp-2 block">
+          {item.title}
         </span>
-        {item.assignee && (
-          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700 text-[9px] font-bold text-gray-600 dark:text-gray-300 uppercase">
-            {item.assignee
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .slice(0, 2)}
+
+        {/* Type badge + assignee */}
+        <div className="mt-1.5 flex items-center gap-1.5">
+          <span
+            className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
+              item.type === "discovery"
+                ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                : "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
+            }`}
+          >
+            {item.type === "discovery" ? "Discovery" : "Delivery"}
           </span>
+          {item.assignee && (
+            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700 text-[9px] font-bold text-gray-600 dark:text-gray-300 uppercase">
+              {item.assignee
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .slice(0, 2)}
+            </span>
+          )}
+        </div>
+
+        {/* Discovery prompts */}
+        {discoveryPrompts.length > 0 && (
+          <DiscoveryPrompts prompts={discoveryPrompts} />
         )}
       </div>
     </div>
