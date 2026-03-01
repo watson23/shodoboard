@@ -7,7 +7,7 @@ export interface ScriptStep {
 export const INTAKE_SCRIPT: ScriptStep[] = [
   {
     role: "ai",
-    text: "I see 13 items here. Let me look for patterns...\n\nI notice a few clusters: several items around checkout and payments, a couple about search and discovery, some about customer support, and a few that seem like standalone tasks.\n\nBefore I organize these — what's the business trying to achieve right now? What are the top priorities?",
+    text: "I see 13 items here. Looks like a food delivery product — I can see references to restaurants, menus, and delivery tracking.\n\nLet me look for patterns... I notice a few clusters: several items around checkout and payments, a couple about search and discovery, some about customer support, and a few standalone tasks.\n\nBefore I organize these — what's the business trying to achieve right now? What are the top priorities?",
     delay: 1200,
   },
   {
@@ -38,12 +38,12 @@ export const INTAKE_SCRIPT: ScriptStep[] = [
   {
     role: "ai",
     text: "Good — \"First-order rate above 60% within 7 days\" is a clear measure.\n\nNow, I notice you have \"User interviews for onboarding drop-off\" in here. That's discovery work — understanding the problem before building solutions. The checkout redesign and promo codes are delivery work. Having both is healthy.\n\nLet me structure the rest...",
-    delay: 1000,
+    delay: 1500,
   },
   {
     role: "ai",
     text: "Here's what I've put together:\n\nTwo business goals, four outcomes, your items mapped to them, and a few items I couldn't confidently link to an outcome — those go in \"Unlinked\" for now.\n\nOne thing I noticed: \"Order accuracy improves\" doesn't have a measure of success yet. That's something to think about.\n\nReady to see your board?",
-    delay: 1500,
+    delay: 2000,
   },
   {
     role: "user",

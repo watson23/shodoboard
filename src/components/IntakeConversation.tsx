@@ -25,8 +25,15 @@ export default function IntakeConversation() {
   const [isTyping, setIsTyping] = useState(false);
   const [nextStepIndex, setNextStepIndex] = useState(0);
   const [showTransition, setShowTransition] = useState(false);
+  const [userTyping, setUserTyping] = useState<{
+    stepIndex: number;
+    charCount: number;
+    fullText: string;
+  } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isAdvancing = useRef(false);
+  const typingInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const finalizingTyping = useRef(false);
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
@@ -37,10 +44,17 @@ export default function IntakeConversation() {
     }
   }, []);
 
-  // Auto-scroll when messages change
+  // Auto-scroll when messages change or user is typing
   useEffect(() => {
     scrollToBottom();
-  }, [visibleSteps, isTyping, scrollToBottom]);
+  }, [visibleSteps, isTyping, userTyping?.charCount, scrollToBottom]);
+
+  // Clean up typing interval on unmount
+  useEffect(() => {
+    return () => {
+      if (typingInterval.current) clearInterval(typingInterval.current);
+    };
+  }, []);
 
   // Advance to the next AI message(s) automatically
   const advanceToNextAI = useCallback(() => {
@@ -64,11 +78,7 @@ export default function IntakeConversation() {
       // If the next step is also an AI message, chain it
       if (nextIdx < INTAKE_SCRIPT.length && INTAKE_SCRIPT[nextIdx].role === "ai") {
         setTimeout(() => {
-          // We need to trigger this from the next render cycle
-          setNextStepIndex((current) => {
-            // Re-check: trigger advance for the chained AI message
-            return current;
-          });
+          setNextStepIndex((current) => current);
         }, 300);
       }
     };
@@ -91,22 +101,53 @@ export default function IntakeConversation() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Detect when user typing animation completes
+  useEffect(() => {
+    if (!userTyping || userTyping.charCount < userTyping.fullText.length) return;
+    if (finalizingTyping.current) return;
+    finalizingTyping.current = true;
+
+    if (typingInterval.current) {
+      clearInterval(typingInterval.current);
+      typingInterval.current = null;
+    }
+
+    const stepIdx = userTyping.stepIndex;
+    const isFinal = stepIdx === INTAKE_SCRIPT.length - 1;
+
+    setTimeout(() => {
+      setUserTyping(null);
+      setVisibleSteps((vs) => [...vs, stepIdx]);
+      setNextStepIndex(stepIdx + 1);
+      finalizingTyping.current = false;
+
+      if (isFinal) {
+        setTimeout(() => setShowTransition(true), 1000);
+      }
+    }, 200);
+  }, [userTyping]);
+
   const handleUserClick = () => {
     if (nextStepIndex >= INTAKE_SCRIPT.length) return;
+    if (userTyping) return;
     const step = INTAKE_SCRIPT[nextStepIndex];
     if (step.role !== "user") return;
 
-    // Check if this is the final "Let's see it!" step
-    const isFinal = nextStepIndex === INTAKE_SCRIPT.length - 1;
+    const stepIdx = nextStepIndex;
+    const fullText = step.text;
 
-    // Show the user message
-    setVisibleSteps((prev) => [...prev, nextStepIndex]);
-    const nextIdx = nextStepIndex + 1;
-    setNextStepIndex(nextIdx);
+    // Brief pause, then start typing animation
+    setTimeout(() => {
+      finalizingTyping.current = false;
+      setUserTyping({ stepIndex: stepIdx, charCount: 0, fullText });
 
-    if (isFinal) {
-      setTimeout(() => setShowTransition(true), 400);
-    }
+      typingInterval.current = setInterval(() => {
+        setUserTyping((prev) => {
+          if (!prev || prev.charCount >= prev.fullText.length) return prev;
+          return { ...prev, charCount: prev.charCount + 1 };
+        });
+      }, 25);
+    }, 500);
   };
 
   // Find the next user response to show as clickable
@@ -138,11 +179,24 @@ export default function IntakeConversation() {
             />
           );
         })}
+
+        {/* User message being typed */}
+        {userTyping && (
+          <div className="flex justify-end animate-slide-in">
+            <div className="bg-indigo-500 dark:bg-indigo-600 rounded-2xl rounded-tr-md px-4 py-2.5 max-w-[85%]">
+              <p className="text-sm text-white leading-relaxed whitespace-pre-line">
+                {userTyping.fullText.slice(0, userTyping.charCount)}
+                <span className="inline-block w-0.5 h-4 bg-white/70 ml-0.5 align-middle animate-pulse" />
+              </p>
+            </div>
+          </div>
+        )}
+
         {isTyping && <TypingIndicator />}
       </div>
 
       {/* User response button */}
-      {pendingUserStep && !isTyping && (
+      {pendingUserStep && !isTyping && !userTyping && (
         <div className="px-4 pb-6 pt-2">
           <button
             onClick={handleUserClick}
