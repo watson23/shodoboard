@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { INTAKE_SCRIPT } from "@/data/intake-script";
 import ChatMessage from "./ChatMessage";
+import BoardTransition from "./BoardTransition";
 
 function TypingIndicator() {
   return (
@@ -21,10 +21,10 @@ function TypingIndicator() {
 }
 
 export default function IntakeConversation() {
-  const router = useRouter();
   const [visibleSteps, setVisibleSteps] = useState<number[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [nextStepIndex, setNextStepIndex] = useState(0);
+  const [showTransition, setShowTransition] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isAdvancing = useRef(false);
 
@@ -105,10 +105,7 @@ export default function IntakeConversation() {
     setNextStepIndex(nextIdx);
 
     if (isFinal) {
-      // Navigate to board after a short pause
-      setTimeout(() => {
-        router.push("/board");
-      }, 600);
+      setTimeout(() => setShowTransition(true), 400);
     }
   };
 
@@ -119,6 +116,10 @@ export default function IntakeConversation() {
       : null;
 
   const isFinalStep = nextStepIndex === INTAKE_SCRIPT.length - 1;
+
+  if (showTransition) {
+    return <BoardTransition />;
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-2rem)] max-w-2xl mx-auto">
