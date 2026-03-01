@@ -80,4 +80,56 @@ export const MOCK_CONVERSATIONS: MockConversation[] = [
       },
     ],
   },
+  {
+    nudgeId: "nudge-4",
+    title: "Understanding user search behavior",
+    messages: [
+      {
+        role: "ai",
+        text: "You want to improve search relevance, but there's no discovery work attached. Do you know what users are actually searching for and where search fails them?",
+      },
+      {
+        role: "user",
+        text: "We see a lot of 'no results' pages, so we know it's broken",
+      },
+      {
+        role: "ai",
+        text: "That's a signal, but 'no results' could mean many things — typos, cuisine types you don't carry, location mismatches. Have you looked at the actual search queries?",
+      },
+      {
+        role: "user",
+        text: "Not really, we just assumed the algorithm needs tuning",
+      },
+      {
+        role: "ai",
+        text: "Analyzing the top 50 failed searches would take a few hours and could completely change your approach. You might discover users want to search by dish name but you only index restaurant names. Worth a look before jumping to 'tune the algorithm.'",
+      },
+    ],
+  },
+  {
+    nudgeId: "nudge-6",
+    title: "Learning from shipped work",
+    messages: [
+      {
+        role: "ai",
+        text: "You shipped delivery tracking and issue reporting — both aimed at reducing support tickets. Have you looked at whether support volume actually changed?",
+      },
+      {
+        role: "user",
+        text: "We haven't really checked the numbers yet",
+      },
+      {
+        role: "ai",
+        text: "That's common but risky. You're in the 'measuring' phase — this is where the learning happens. Without checking, you might ship more features that don't move the needle.",
+      },
+      {
+        role: "user",
+        text: "Good point. What should we look at?",
+      },
+      {
+        role: "ai",
+        text: "Start simple: compare support ticket volume from the month before launch to now. Break it down by category — are 'where is my order' tickets going down? If not, the tracking feature might not be solving what you thought it would.",
+      },
+    ],
+  },
 ];

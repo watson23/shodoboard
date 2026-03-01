@@ -1,9 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { Kanban, Sun, Moon, Monitor, ArrowCounterClockwise } from "@phosphor-icons/react";
+import { Sun, Moon, Monitor, ArrowCounterClockwise } from "@phosphor-icons/react";
 import { useTheme } from "@/hooks/useTheme";
 import { useBoard } from "@/hooks/useBoard";
+
+function ShodoLogoSmall() {
+  return (
+    <svg
+      viewBox="0 0 128 128"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-7 h-7 flex-shrink-0"
+    >
+      <rect width="128" height="128" rx="28" fill="#4f46e5" />
+      <rect x="16" y="16" width="96" height="96" rx="8" fill="white" opacity="0.95" />
+      <rect x="22" y="28" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.2" />
+      <rect x="22" y="48" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.35" />
+      <rect x="22" y="68" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.5" />
+      <rect x="50" y="28" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.2" />
+      <rect x="50" y="48" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.35" />
+      <rect x="50" y="68" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.5" />
+      <rect x="78" y="28" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.2" />
+      <rect x="78" y="48" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.35" />
+      <rect x="78" y="68" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.5" />
+      <circle cx="100" cy="100" r="18" fill="#4f46e5" />
+      <polyline points="90,100 97,107 110,93" fill="none" stroke="white" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 export default function BoardHeader() {
   const { theme, setTheme } = useTheme();
@@ -19,14 +44,15 @@ export default function BoardHeader() {
 
   return (
     <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 px-4 h-14 flex items-center gap-3">
-      <Kanban
-        size={24}
-        weight="duotone"
-        className="text-indigo-500 dark:text-indigo-400 flex-shrink-0"
-      />
-      <h1 className="font-bold text-gray-900 dark:text-gray-100 text-sm truncate">
-        Food Delivery App
-      </h1>
+      <ShodoLogoSmall />
+      <div className="flex items-baseline gap-2 min-w-0">
+        <h1 className="font-bold text-gray-900 dark:text-gray-100 text-sm whitespace-nowrap">
+          Shodoboard
+        </h1>
+        <span className="text-xs text-gray-400 dark:text-gray-500 truncate">
+          Food delivery app
+        </span>
+      </div>
 
       <div className="ml-auto flex items-center gap-2">
         <button

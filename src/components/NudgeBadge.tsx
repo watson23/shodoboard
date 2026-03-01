@@ -24,9 +24,11 @@ export default function NudgeBadge({ nudge, onSpar }: NudgeBadgeProps) {
             e.stopPropagation();
             setExpanded(true);
           }}
-          className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-300 dark:bg-amber-500 rounded-full ring-2 ring-white dark:ring-gray-800 hover:scale-125 transition-transform"
+          className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-indigo-400 dark:bg-indigo-500 rounded-full ring-2 ring-white dark:ring-gray-800 hover:scale-125 transition-transform flex items-center justify-center"
           title="AI nudge"
-        />
+        >
+          <ChatCircleDots size={10} weight="bold" className="text-white" />
+        </button>
       );
     }
     // visible tier — shown as banner, click to expand
@@ -36,7 +38,7 @@ export default function NudgeBadge({ nudge, onSpar }: NudgeBadgeProps) {
           e.stopPropagation();
           setExpanded(true);
         }}
-        className="w-full text-left px-3 py-1.5 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-800/50 text-xs text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors rounded-t-lg"
+        className="w-full text-left px-3 py-2 bg-indigo-50 dark:bg-indigo-950/30 border-b border-indigo-200 dark:border-indigo-800/50 text-xs text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-950/50 transition-colors rounded-t-lg font-medium"
       >
         {nudge.message}
       </button>
@@ -46,18 +48,18 @@ export default function NudgeBadge({ nudge, onSpar }: NudgeBadgeProps) {
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-lg p-3 space-y-2 animate-slide-in"
+      className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/50 rounded-lg p-3 space-y-2 animate-slide-in"
     >
-      <p className="text-xs text-amber-800 dark:text-amber-200 leading-relaxed">
+      <p className="text-xs text-indigo-800 dark:text-indigo-200 leading-relaxed">
         {nudge.message} <span className="font-medium">{nudge.question}</span>
       </p>
       <div className="flex items-center gap-2">
         {onSpar && (
           <button
             onClick={onSpar}
-            className="flex items-center gap-1 text-[10px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+            className="flex items-center gap-1 text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/40 px-2 py-1 rounded-md transition-colors"
           >
-            <ChatCircleDots size={12} weight="duotone" />
+            <ChatCircleDots size={13} weight="duotone" />
             Think about this
           </button>
         )}

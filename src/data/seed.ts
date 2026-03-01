@@ -223,6 +223,33 @@ export const SEED_DATA: BoardState = {
       question: "Are you confident in the problem?",
       status: "active",
     },
+    {
+      id: "nudge-4",
+      targetType: "item",
+      targetId: "item-5",
+      tier: "visible",
+      message: "No discovery work for search relevance.",
+      question: "Do you know what users are actually searching for?",
+      status: "active",
+    },
+    {
+      id: "nudge-5",
+      targetType: "item",
+      targetId: "item-9",
+      tier: "quiet",
+      message: "This is a technical task with no linked outcome.",
+      question: "What user behavior does this improve?",
+      status: "active",
+    },
+    {
+      id: "nudge-6",
+      targetType: "outcome",
+      targetId: "outcome-3",
+      tier: "visible",
+      message: "Two shipped items but no learning yet.",
+      question: "What have you learned from the data so far?",
+      status: "active",
+    },
   ],
   discoveryPrompts: [
     {
