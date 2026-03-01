@@ -1,36 +1,142 @@
 "use client";
 
 import Link from "next/link";
-import { Kanban } from "@phosphor-icons/react";
+import {
+  Upload,
+  Brain,
+  Kanban,
+  type IconProps,
+} from "@phosphor-icons/react";
+import type { ComponentType } from "react";
+
+function ShodoLogo({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 128 128"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      {/* Indigo rounded background — matches shodolist style */}
+      <rect width="128" height="128" rx="28" fill="#4f46e5" />
+
+      {/* White content area */}
+      <rect x="16" y="16" width="96" height="96" rx="8" fill="white" opacity="0.95" />
+
+      {/* Column 1 — cards */}
+      <rect x="22" y="28" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.2" />
+      <rect x="22" y="48" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.35" />
+      <rect x="22" y="68" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.5" />
+
+      {/* Column 2 — cards */}
+      <rect x="50" y="28" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.2" />
+      <rect x="50" y="48" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.35" />
+      <rect x="50" y="68" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.5" />
+
+      {/* Column 3 — cards */}
+      <rect x="78" y="28" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.2" />
+      <rect x="78" y="48" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.35" />
+      <rect x="78" y="68" width="24" height="16" rx="3" fill="#4f46e5" opacity="0.5" />
+
+      {/* Checkmark circle — bottom right, matching shodolist placement */}
+      <circle cx="100" cy="100" r="18" fill="#4f46e5" />
+      <polyline
+        points="90,100 97,107 110,93"
+        fill="none"
+        stroke="white"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function Feature({
+  Icon,
+  title,
+  description,
+}: {
+  Icon: ComponentType<IconProps>;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="flex flex-col items-center text-center">
+      <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center mb-3">
+        <Icon
+          size={20}
+          weight="duotone"
+          className="text-indigo-500 dark:text-indigo-400"
+        />
+      </div>
+      <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-1">
+        {title}
+      </h3>
+      <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed max-w-[220px]">
+        {description}
+      </p>
+    </div>
+  );
+}
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-8 py-16">
-      <Kanban
-        size={64}
-        weight="duotone"
-        className="text-indigo-500 dark:text-indigo-400 mb-4"
-      />
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-        Shodoboard
-      </h1>
-      <p className="text-gray-500 dark:text-gray-400 mb-8">
-        Know why you&apos;re building it
-      </p>
+    <div className="flex flex-col items-center justify-center min-h-screen px-6 py-12 gap-12">
+      {/* Hero */}
+      <div className="flex flex-col items-center text-center">
+        <ShodoLogo className="w-16 h-16 text-indigo-500 dark:text-indigo-400 mb-5" />
+        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 mb-2 tracking-tight">
+          Shodoboard
+        </h1>
+        <p className="text-base text-gray-500 dark:text-gray-400 mb-8">
+          Know why you&apos;re building it
+        </p>
 
-      <Link
-        href="/intake"
-        className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-xl px-8 py-3 transition-colors"
-      >
-        Start with your backlog
-      </Link>
+        <Link
+          href="/intake"
+          className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-xl px-8 py-3 transition-colors shadow-sm hover:shadow-md"
+        >
+          Start with your backlog
+        </Link>
 
-      <Link
-        href="/board"
-        className="mt-3 text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-      >
-        Skip to example board
-      </Link>
+        <Link
+          href="/board"
+          className="mt-3 text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+        >
+          See example board
+        </Link>
+      </div>
+
+      {/* Features */}
+      <div className="grid grid-cols-3 gap-6 max-w-2xl w-full">
+        <Feature
+          Icon={Upload}
+          title="Bring your backlog"
+          description="Paste your feature list, tasks, or ideas and turn them into a plan."
+        />
+        <Feature
+          Icon={Brain}
+          title="AI coaches you"
+          description="Guided conversation transforms features into outcomes. Nudges keep you honest."
+        />
+        <Feature
+          Icon={Kanban}
+          title="A board that works"
+          description="Familiar kanban columns with discovery and measurement built in."
+        />
+      </div>
+
+      {/* Creator bio */}
+      <footer className="text-center pt-6 border-t border-gray-200 dark:border-gray-800 w-full max-w-sm">
+        <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">
+          Built by{" "}
+          <span className="font-medium text-gray-600 dark:text-gray-300">
+            Jarkko Kailanto
+          </span>{" "}
+          — exploring how AI can help product teams stay focused on outcomes.
+        </p>
+      </footer>
     </div>
   );
 }
