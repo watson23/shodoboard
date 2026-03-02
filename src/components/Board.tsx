@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -12,6 +12,9 @@ import {
 } from "@dnd-kit/core";
 import { useBoard } from "@/hooks/useBoard";
 import { useAutoSave } from "@/hooks/useAutoSave";
+import { useBoardActions } from "@/hooks/useBoardActions";
+import { handleSparringApply } from "@/lib/sparring";
+import { createGoal, createOutcome, createItem } from "@/lib/entities";
 import BoardHeader from "./BoardHeader";
 import WorkItemCard from "./WorkItemCard";
 import DraggableCard from "./DraggableCard";
@@ -32,7 +35,7 @@ import {
   WarningCircle,
   Plus,
 } from "@phosphor-icons/react";
-import type { Column, WorkItem, BusinessGoal, Outcome, FocusItem, FocusItemStatus } from "@/types/board";
+import type { Column, WorkItem, BusinessGoal, Outcome } from "@/types/board";
 
 type ModalState =
   | { type: "card"; itemId: string }
@@ -60,53 +63,21 @@ export default function Board({ boardId }: BoardProps) {
   const [modal, setModal] = useState<ModalState>(null);
   const [sparringNudgeId, setSparringNudgeId] = useState<string | null>(null);
   const [activeItem, setActiveItem] = useState<WorkItem | null>(null);
-  const [nudgesLoading, setNudgesLoading] = useState(false);
   const [showAgenda, setShowAgenda] = useState(false);
-  const [focusLoading, setFocusLoading] = useState(false);
   const [viewMode, setViewMode] = useState<"hierarchy" | "kanban">(
     boardId ? "hierarchy" : "kanban"
   );
   const [unlinkedCollapsed, setUnlinkedCollapsed] = useState(false);
 
-  const generateId = (prefix: string) =>
-    `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-
-  const generateNudges = useCallback(async () => {
-    setNudgesLoading(true);
-    try {
-      const res = await fetch("/api/nudge", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ boardState: state }),
-      });
-      const data = await res.json();
-      if (data.nudges && data.nudges.length > 0) {
-        dispatch({ type: "SET_NUDGES", nudges: data.nudges });
-      }
-    } catch (err) {
-      console.error("Failed to generate nudges:", err);
-    }
-    setNudgesLoading(false);
-  }, [state, dispatch]);
-
-  const generateFocusItems = useCallback(async () => {
-    setFocusLoading(true);
-    try {
-      const res = await fetch("/api/focus", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ boardState: state }),
-      });
-      const data = await res.json();
-      if (data.focusItems && data.focusItems.length > 0) {
-        dispatch({ type: "SET_FOCUS_ITEMS", focusItems: data.focusItems });
-        setShowAgenda(true); // auto-open on first load
-      }
-    } catch (err) {
-      console.error("Failed to generate focus items:", err);
-    }
-    setFocusLoading(false);
-  }, [state, dispatch]);
+  const {
+    nudgesLoading,
+    focusLoading,
+    generateNudges,
+    generateFocusItems,
+    handleFocusItemClick,
+    handleStartSparringFromFocus,
+    handleFocusStatusChange,
+  } = useBoardActions();
 
   // Generate nudges and focus items on first load for non-demo boards
   useEffect(() => {
@@ -114,7 +85,9 @@ export default function Board({ boardId }: BoardProps) {
       generateNudges();
     }
     if (boardId && state.focusItems.length === 0) {
-      generateFocusItems();
+      generateFocusItems().then((loaded) => {
+        if (loaded) setShowAgenda(true);
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boardId]);
@@ -163,44 +136,6 @@ export default function Board({ boardId }: BoardProps) {
 
   const getColumnItemCount = (column: Column) =>
     items.filter((i) => i.column === column).length;
-
-  const handleFocusItemClick = useCallback((focusItem: FocusItem) => {
-    const el = document.getElementById(focusItem.targetId);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-      // Brief highlight flash
-      el.classList.add("ring-2", "ring-indigo-400", "ring-offset-2");
-      setTimeout(() => {
-        el.classList.remove("ring-2", "ring-indigo-400", "ring-offset-2");
-      }, 2000);
-    }
-  }, []);
-
-  const handleStartSparringFromFocus = useCallback((focusItem: FocusItem) => {
-    // Check if there's already a nudge targeting the same element
-    const existingNudge = nudges.find(n => n.targetId === focusItem.targetId && n.status === "active");
-    if (existingNudge) {
-      setSparringNudgeId(existingNudge.id);
-    } else {
-      // Create a synthetic nudge and add it to state
-      const syntheticNudge = {
-        id: `synth-${focusItem.id}`,
-        targetType: focusItem.targetType,
-        targetId: focusItem.targetId,
-        tier: "visible" as const,
-        message: focusItem.whyItMatters,
-        question: focusItem.suggestedAction,
-        status: "active" as const,
-      };
-      dispatch({ type: "SET_NUDGES", nudges: [...nudges, syntheticNudge] });
-      setSparringNudgeId(syntheticNudge.id);
-    }
-    setShowAgenda(false); // close agenda when opening sparring
-  }, [nudges, dispatch]);
-
-  const handleFocusStatusChange = useCallback((focusItemId: string, status: FocusItemStatus) => {
-    dispatch({ type: "UPDATE_FOCUS_ITEM", focusItemId, updates: { status } });
-  }, [dispatch]);
 
   const unlinkedItems = items.filter((i) => i.outcomeId === null);
   const unlinkedOutcomes = outcomes.filter((o) => o.goalId === null);
@@ -429,15 +364,9 @@ export default function Board({ boardId }: BoardProps) {
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            const newItem: WorkItem = {
-                                              id: generateId("item"),
-                                              outcomeId: outcome.id,
-                                              title: "Uusi työ",
-                                              description: "",
-                                              type: "delivery",
-                                              column: "opportunities",
+                                            const newItem = createItem(outcome.id, {
                                               order: items.filter(i => i.outcomeId === outcome.id).length,
-                                            };
+                                            });
                                             dispatch({ type: "ADD_ITEM", item: newItem });
                                             setModal({ type: "card", itemId: newItem.id });
                                           }}
@@ -457,15 +386,7 @@ export default function Board({ boardId }: BoardProps) {
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    const newOutcome: Outcome = {
-                                      id: generateId("outcome"),
-                                      goalId: goal.id,
-                                      statement: "Uusi tulos",
-                                      behaviorChange: "",
-                                      measureOfSuccess: "",
-                                      order: goalOutcomes.length,
-                                      collapsed: false,
-                                    };
+                                    const newOutcome = createOutcome(goal.id, { order: goalOutcomes.length });
                                     dispatch({ type: "ADD_OUTCOME", outcome: newOutcome });
                                     setModal({ type: "outcome", outcomeId: newOutcome.id });
                                   }}
@@ -485,14 +406,7 @@ export default function Board({ boardId }: BoardProps) {
                   <div className="px-4 py-2">
                     <button
                       onClick={() => {
-                        const newGoal: BusinessGoal = {
-                          id: generateId("goal"),
-                          statement: "Uusi tavoite",
-                          timeframe: "",
-                          metrics: [],
-                          order: goals.length,
-                          collapsed: false,
-                        };
+                        const newGoal = createGoal({ order: goals.length });
                         dispatch({ type: "ADD_GOAL", goal: newGoal });
                         setModal({ type: "goal", goalId: newGoal.id });
                       }}
@@ -552,15 +466,7 @@ export default function Board({ boardId }: BoardProps) {
                           <div className="px-4 py-1">
                             <button
                               onClick={() => {
-                                const newItem: WorkItem = {
-                                  id: generateId("item"),
-                                  outcomeId: null,
-                                  title: "Uusi työ",
-                                  description: "",
-                                  type: "delivery",
-                                  column: "opportunities",
-                                  order: unlinkedItems.length,
-                                };
+                                const newItem = createItem(null, { order: unlinkedItems.length });
                                 dispatch({ type: "ADD_ITEM", item: newItem });
                                 setModal({ type: "card", itemId: newItem.id });
                               }}
@@ -599,40 +505,21 @@ export default function Board({ boardId }: BoardProps) {
           onOutcomeClick={(outcomeId) => setModal({ type: "outcome", outcomeId })}
           onItemClick={(itemId) => setModal({ type: "card", itemId })}
           onAddGoal={() => {
-            const newGoal: BusinessGoal = {
-              id: generateId("goal"),
-              statement: "Uusi tavoite",
-              timeframe: "",
-              metrics: [],
-              order: goals.length,
-              collapsed: false,
-            };
+            const newGoal = createGoal({ order: goals.length });
             dispatch({ type: "ADD_GOAL", goal: newGoal });
             setModal({ type: "goal", goalId: newGoal.id });
           }}
           onAddOutcome={(goalId) => {
-            const newOutcome: Outcome = {
-              id: generateId("outcome"),
-              goalId,
-              statement: "Uusi tulos",
-              behaviorChange: "",
-              measureOfSuccess: "",
+            const newOutcome = createOutcome(goalId, {
               order: outcomes.filter(o => o.goalId === goalId).length,
-              collapsed: false,
-            };
+            });
             dispatch({ type: "ADD_OUTCOME", outcome: newOutcome });
             setModal({ type: "outcome", outcomeId: newOutcome.id });
           }}
           onAddItem={(outcomeId) => {
-            const newItem: WorkItem = {
-              id: generateId("item"),
-              outcomeId,
-              title: "Uusi työ",
-              description: "",
-              type: "delivery",
-              column: "opportunities",
+            const newItem = createItem(outcomeId, {
               order: items.filter(i => i.outcomeId === outcomeId).length,
-            };
+            });
             dispatch({ type: "ADD_ITEM", item: newItem });
             setModal({ type: "card", itemId: newItem.id });
           }}
@@ -698,7 +585,11 @@ export default function Board({ boardId }: BoardProps) {
           isLoading={focusLoading}
           onItemClick={handleFocusItemClick}
           onStatusChange={handleFocusStatusChange}
-          onStartSparring={handleStartSparringFromFocus}
+          onStartSparring={(focusItem) => {
+            const nudgeId = handleStartSparringFromFocus(focusItem);
+            setSparringNudgeId(nudgeId);
+            setShowAgenda(false);
+          }}
           onClose={() => setShowAgenda(false)}
         />
       )}
@@ -725,48 +616,7 @@ export default function Board({ boardId }: BoardProps) {
             target={target}
             onClose={() => setSparringNudgeId(null)}
             onApply={(suggestion) => {
-              if (suggestion.action === "update_outcome" && suggestion.targetId) {
-                dispatch({ type: "UPDATE_OUTCOME", outcomeId: suggestion.targetId, updates: suggestion.changes as Partial<Outcome> });
-              } else if (suggestion.action === "update_item" && suggestion.targetId) {
-                dispatch({ type: "UPDATE_ITEM", itemId: suggestion.targetId, updates: suggestion.changes as Partial<WorkItem> });
-              } else if (suggestion.action === "update_goal" && suggestion.targetId) {
-                dispatch({ type: "UPDATE_GOAL", goalId: suggestion.targetId, updates: suggestion.changes as Partial<BusinessGoal> });
-              } else if (suggestion.action === "add_item") {
-                // targetId = outcomeId to link to; fall back to nudge target's outcome
-                let outcomeId = suggestion.targetId || null;
-                if (!outcomeId && nudge.targetType === "outcome") {
-                  outcomeId = nudge.targetId;
-                } else if (!outcomeId && nudge.targetType === "item") {
-                  const sourceItem = items.find(i => i.id === nudge.targetId);
-                  outcomeId = sourceItem?.outcomeId || null;
-                }
-                const changes = suggestion.changes as Record<string, unknown>;
-                const newItem: WorkItem = {
-                  id: generateId("item"),
-                  outcomeId,
-                  title: (changes.title as string) || "Uusi työ",
-                  description: (changes.description as string) || "",
-                  type: (changes.type as "discovery" | "delivery") || "discovery",
-                  column: "opportunities",
-                  order: items.filter(i => i.outcomeId === outcomeId).length,
-                };
-                dispatch({ type: "ADD_ITEM", item: newItem });
-              } else if (suggestion.action === "split_item" && suggestion.targetId) {
-                const sourceItem = items.find(i => i.id === suggestion.targetId);
-                if (sourceItem) {
-                  const changes = suggestion.changes as Record<string, unknown>;
-                  const newItem: WorkItem = {
-                    id: generateId("item"),
-                    outcomeId: sourceItem.outcomeId,
-                    title: (changes.title as string) || "Split: " + sourceItem.title,
-                    description: (changes.description as string) || "",
-                    type: (changes.type as "discovery" | "delivery") || "discovery",
-                    column: "opportunities",
-                    order: items.filter(i => i.outcomeId === sourceItem.outcomeId).length,
-                  };
-                  dispatch({ type: "ADD_ITEM", item: newItem });
-                }
-              }
+              handleSparringApply(suggestion, nudge, items, dispatch);
               setSparringNudgeId(null);
             }}
           />
