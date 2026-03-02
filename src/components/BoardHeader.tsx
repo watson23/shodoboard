@@ -41,7 +41,12 @@ interface BoardHeaderProps {
 
 export default function BoardHeader({ saveStatus, boardId, onRefreshNudges, nudgesLoading }: BoardHeaderProps) {
   const { theme, setTheme } = useTheme();
-  const { dispatch } = useBoard();
+  const { state, dispatch } = useBoard();
+
+  const handleExport = () => {
+    const markdown = generateMarkdownExport(state);
+    downloadMarkdown(markdown, `shodoboard-export-${new Date().toISOString().slice(0, 10)}.md`);
+  };
 
   const cycleTheme = () => {
     if (theme === "light") setTheme("dark");
@@ -100,6 +105,14 @@ export default function BoardHeader({ saveStatus, boardId, onRefreshNudges, nudg
             {nudgesLoading ? "Thinking..." : "Refresh nudges"}
           </button>
         )}
+        <button
+          onClick={handleExport}
+          className="flex items-center gap-1.5 text-xs text-indigo-200 hover:text-white transition-colors px-2 py-1.5 rounded-lg hover:bg-indigo-500"
+          title="Export board as Markdown"
+        >
+          <Export size={14} weight="bold" />
+          Export
+        </button>
         <button
           onClick={cycleTheme}
           className="p-2 rounded-lg text-indigo-200 hover:text-white hover:bg-indigo-500 transition-colors"
