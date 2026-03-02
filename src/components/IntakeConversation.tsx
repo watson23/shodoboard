@@ -6,7 +6,27 @@ import BoardTransition from "./BoardTransition";
 import { createBoard } from "@/lib/firestore";
 import type { BoardState, Column } from "@/types/board";
 import type { ConversationMessage } from "@/types/intake";
-import { PaperPlaneRight, Kanban } from "@phosphor-icons/react";
+import { PaperPlaneRight } from "@phosphor-icons/react";
+
+function ShodoLogo({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <rect width="128" height="128" rx="28" fill="currentColor" opacity="0.2" />
+      <rect x="16" y="16" width="96" height="96" rx="8" fill="currentColor" opacity="0.3" />
+      <rect x="22" y="28" width="24" height="16" rx="3" fill="currentColor" opacity="0.4" />
+      <rect x="22" y="48" width="24" height="16" rx="3" fill="currentColor" opacity="0.5" />
+      <rect x="22" y="68" width="24" height="16" rx="3" fill="currentColor" opacity="0.6" />
+      <rect x="50" y="28" width="24" height="16" rx="3" fill="currentColor" opacity="0.4" />
+      <rect x="50" y="48" width="24" height="16" rx="3" fill="currentColor" opacity="0.5" />
+      <rect x="50" y="68" width="24" height="16" rx="3" fill="currentColor" opacity="0.6" />
+      <rect x="78" y="28" width="24" height="16" rx="3" fill="currentColor" opacity="0.4" />
+      <rect x="78" y="48" width="24" height="16" rx="3" fill="currentColor" opacity="0.5" />
+      <rect x="78" y="68" width="24" height="16" rx="3" fill="currentColor" opacity="0.6" />
+      <circle cx="100" cy="100" r="18" fill="currentColor" />
+      <polyline points="90,100 97,107 110,93" fill="none" stroke="white" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 // --- Types ---
 
@@ -293,7 +313,7 @@ export default function IntakeConversation({
               onClick={handleCreateBoard}
               className="flex items-center gap-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-2xl px-8 py-4 transition-colors shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30"
             >
-              <Kanban size={22} weight="duotone" />
+              <ShodoLogo className="w-5 h-5" />
               Create your board
             </button>
           </div>
@@ -303,7 +323,7 @@ export default function IntakeConversation({
         {isCreatingBoard && !showTransition && (
           <div className="flex justify-center pt-4 pb-2 animate-slide-in">
             <div className="flex items-center gap-3 text-indigo-500 dark:text-indigo-400">
-              <Kanban size={22} weight="duotone" className="animate-pulse" />
+              <ShodoLogo className="w-5 h-5 animate-pulse" />
               <span className="text-sm font-medium">
                 Creating your board...
               </span>
