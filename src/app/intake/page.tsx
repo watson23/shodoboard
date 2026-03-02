@@ -33,11 +33,16 @@ function ConsentScreen({
           </h1>
         </div>
 
-        <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-          <p>
-            Shodoboard käyttää Anthropicin Claude-tekoälyä backlogisi
-            analysointiin.
-          </p>
+        <div className="space-y-4 text-sm leading-relaxed">
+          <div className="space-y-1">
+            <p className="text-gray-600 dark:text-gray-300">
+              Shodoboard käyttää Anthropicin Claude-tekoälyä backlogisi
+              analysointiin.
+            </p>
+            <p className="text-gray-400 dark:text-gray-500 text-xs">
+              Shodoboard uses Anthropic&apos;s Claude AI to analyze your backlog.
+            </p>
+          </div>
 
           <div>
             <p className="font-medium text-gray-900 dark:text-gray-100 mb-2">
@@ -57,12 +62,26 @@ function ConsentScreen({
                 (EU-palvelin)
               </li>
             </ul>
+            <p className="font-medium text-gray-500 dark:text-gray-400 mt-3 mb-1.5 text-xs">
+              How your data is handled:
+            </p>
+            <ul className="space-y-1 list-disc list-inside text-gray-400 dark:text-gray-500 text-xs">
+              <li>Your backlog text is sent to Anthropic&apos;s Claude API for analysis</li>
+              <li>Anthropic does not use your data to train its models</li>
+              <li>Data is deleted within 30 days</li>
+              <li>Your board data is stored in Firebase (EU server)</li>
+            </ul>
           </div>
 
-          <p className="text-amber-600 dark:text-amber-400 font-medium">
-            Suositus: Älä liitä henkilötietoja, asiakkaiden nimiä tai
-            liikesalaisuuksia.
-          </p>
+          <div className="space-y-1">
+            <p className="text-amber-600 dark:text-amber-400 font-medium">
+              Suositus: Älä liitä henkilötietoja, asiakkaiden nimiä tai
+              liikesalaisuuksia.
+            </p>
+            <p className="text-amber-500/70 dark:text-amber-400/60 text-xs">
+              Recommendation: Don&apos;t include personal data, customer names, or trade secrets.
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-col gap-3">
