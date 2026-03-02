@@ -28,7 +28,7 @@ import {
   Flag,
   LinkBreak,
 } from "@phosphor-icons/react";
-import type { Column, WorkItem } from "@/types/board";
+import type { Column, WorkItem, BusinessGoal, Outcome } from "@/types/board";
 
 type ModalState =
   | { type: "card"; itemId: string }
@@ -459,12 +459,39 @@ export default function Board({ boardId }: BoardProps) {
         })()}
 
       {/* Sparring panel */}
-      {sparringNudgeId && (
-        <SparringPanel
-          nudgeId={sparringNudgeId}
-          onClose={() => setSparringNudgeId(null)}
-        />
-      )}
+      {sparringNudgeId && (() => {
+        const nudge = nudges.find((n) => n.id === sparringNudgeId);
+        if (!nudge) return null;
+
+        // Look up the target (goal, outcome, or item)
+        let target: BusinessGoal | Outcome | WorkItem | undefined;
+        if (nudge.targetType === "goal") {
+          target = goals.find((g) => g.id === nudge.targetId);
+        } else if (nudge.targetType === "outcome") {
+          target = outcomes.find((o) => o.id === nudge.targetId);
+        } else {
+          target = items.find((i) => i.id === nudge.targetId);
+        }
+        if (!target) return null;
+
+        return (
+          <SparringPanel
+            nudge={nudge}
+            target={target}
+            onClose={() => setSparringNudgeId(null)}
+            onApply={(suggestion) => {
+              if (suggestion.action === "update_outcome" && suggestion.targetId) {
+                dispatch({ type: "UPDATE_OUTCOME", outcomeId: suggestion.targetId, updates: suggestion.changes as Partial<Outcome> });
+              } else if (suggestion.action === "update_item" && suggestion.targetId) {
+                dispatch({ type: "UPDATE_ITEM", itemId: suggestion.targetId, updates: suggestion.changes as Partial<WorkItem> });
+              } else if (suggestion.action === "update_goal" && suggestion.targetId) {
+                dispatch({ type: "UPDATE_GOAL", goalId: suggestion.targetId, updates: suggestion.changes as Partial<BusinessGoal> });
+              }
+              setSparringNudgeId(null);
+            }}
+          />
+        );
+      })()}
     </div>
   );
 }
