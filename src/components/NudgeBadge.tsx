@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, ChatCircleDots } from "@phosphor-icons/react";
+import { X, ChatCircleDots, ArrowRight } from "@phosphor-icons/react";
 import { useBoard } from "@/hooks/useBoard";
 import type { Nudge } from "@/types/board";
 
@@ -54,6 +54,12 @@ export default function NudgeBadge({ nudge, onSpar, initialExpanded = false }: N
       <p className="text-xs text-indigo-800 dark:text-indigo-200 leading-relaxed">
         {nudge.message} <span className="font-medium">{nudge.question}</span>
       </p>
+      {nudge.suggestedAction && (
+        <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1.5 flex items-start gap-1.5">
+          <ArrowRight size={12} weight="bold" className="flex-shrink-0 mt-0.5" />
+          {nudge.suggestedAction}
+        </p>
+      )}
       <div className="flex items-center gap-2">
         {onSpar && (
           <button
