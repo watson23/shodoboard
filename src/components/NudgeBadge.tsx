@@ -34,15 +34,27 @@ export default function NudgeBadge({ nudge, onSpar, initialExpanded = false }: N
     }
     // visible tier — shown as banner, click to expand
     return (
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setExpanded(true);
-        }}
-        className="w-full text-left px-3 py-2 bg-indigo-50 dark:bg-indigo-950/30 border-b border-indigo-200 dark:border-indigo-800/50 text-xs text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-950/50 transition-colors rounded-t-lg font-medium"
-      >
-        {nudge.message}
-      </button>
+      <div className="w-full flex items-center gap-1 px-3 py-2 bg-indigo-50 dark:bg-indigo-950/30 border-b border-indigo-200 dark:border-indigo-800/50 text-xs text-indigo-700 dark:text-indigo-300 rounded-t-lg">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded(true);
+          }}
+          className="flex-1 text-left font-medium hover:text-indigo-800 dark:hover:text-indigo-200 transition-colors"
+        >
+          {nudge.message}
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            dispatch({ type: "DISMISS_NUDGE", nudgeId: nudge.id });
+          }}
+          className="p-0.5 text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors flex-shrink-0"
+          title="Dismiss"
+        >
+          <X size={11} weight="bold" />
+        </button>
+      </div>
     );
   }
 
@@ -71,9 +83,9 @@ export default function NudgeBadge({ nudge, onSpar, initialExpanded = false }: N
           </button>
         )}
         <button
-          onClick={() => setExpanded(false)}
+          onClick={() => dispatch({ type: "DISMISS_NUDGE", nudgeId: nudge.id })}
           className="ml-auto p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-          title="Close"
+          title="Dismiss"
         >
           <X size={12} weight="bold" />
         </button>
