@@ -22,6 +22,7 @@ import OutcomeDetailModal from "./OutcomeDetailModal";
 import GoalDetailModal from "./GoalDetailModal";
 import SparringPanel from "./SparringPanel";
 import CoachingAgenda from "./CoachingAgenda";
+import HierarchyView from "./HierarchyView";
 import {
   CaretDown,
   CaretRight,
@@ -479,9 +480,12 @@ export default function Board({ boardId }: BoardProps) {
           </DndContext>
         </>
       ) : (
-        <div className="flex-1 overflow-y-auto p-6">
-          <p className="text-gray-400 text-sm">Hierarchy view coming soon...</p>
-        </div>
+        <HierarchyView
+          state={state}
+          onGoalClick={(goalId) => setModal({ type: "goal", goalId })}
+          onOutcomeClick={(outcomeId) => setModal({ type: "outcome", outcomeId })}
+          onItemClick={(itemId) => setModal({ type: "card", itemId })}
+        />
       )}
 
       {/* Detail modals */}
