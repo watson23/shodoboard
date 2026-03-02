@@ -28,7 +28,7 @@ export default function DraggableCard({ id, children }: DraggableCardProps) {
       <div
         {...listeners}
         {...attributes}
-        className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-0 group-hover/drag:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-10"
+        className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-20 group-hover/drag:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-10"
       >
         <DotsSixVertical
           size={14}

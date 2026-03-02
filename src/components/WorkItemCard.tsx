@@ -28,9 +28,7 @@ export default function WorkItemCard({
   return (
     <div
       onClick={onClick}
-      className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow text-xs cursor-pointer border border-gray-100 dark:border-gray-700 group animate-slide-in overflow-hidden ${
-        ""
-      }`}
+      className="relative bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow text-xs cursor-pointer border border-gray-100 dark:border-gray-700 group animate-slide-in overflow-hidden"
     >
       {/* Visible nudge banner */}
       {visibleNudge && (
