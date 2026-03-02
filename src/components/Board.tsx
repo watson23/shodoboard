@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -56,6 +56,33 @@ export default function Board({ boardId }: BoardProps) {
   const [modal, setModal] = useState<ModalState>(null);
   const [sparringNudgeId, setSparringNudgeId] = useState<string | null>(null);
   const [activeItem, setActiveItem] = useState<WorkItem | null>(null);
+  const [nudgesLoading, setNudgesLoading] = useState(false);
+
+  const generateNudges = useCallback(async () => {
+    setNudgesLoading(true);
+    try {
+      const res = await fetch("/api/nudge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ boardState: state }),
+      });
+      const data = await res.json();
+      if (data.nudges && data.nudges.length > 0) {
+        dispatch({ type: "SET_NUDGES", nudges: data.nudges });
+      }
+    } catch (err) {
+      console.error("Failed to generate nudges:", err);
+    }
+    setNudgesLoading(false);
+  }, [state, dispatch]);
+
+  // Generate nudges on first load for non-demo boards
+  useEffect(() => {
+    if (boardId && state.nudges.length === 0) {
+      generateNudges();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boardId]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -135,7 +162,12 @@ export default function Board({ boardId }: BoardProps) {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
-      <BoardHeader saveStatus={saveStatus} boardId={boardId} />
+      <BoardHeader
+        saveStatus={saveStatus}
+        boardId={boardId}
+        onRefreshNudges={generateNudges}
+        nudgesLoading={nudgesLoading}
+      />
 
       <DndContext
         id="board-dnd"

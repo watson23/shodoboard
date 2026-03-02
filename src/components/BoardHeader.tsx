@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Sun, Moon, Monitor, ArrowCounterClockwise, Check } from "@phosphor-icons/react";
+import { Sun, Moon, Monitor, ArrowCounterClockwise, Check, Lightning, Export } from "@phosphor-icons/react";
 import { useTheme } from "@/hooks/useTheme";
 import { useBoard } from "@/hooks/useBoard";
+import { generateMarkdownExport, downloadMarkdown } from "@/lib/export";
 import type { SaveStatus } from "@/hooks/useAutoSave";
 
 function ShodoLogoSmall() {
@@ -34,9 +35,11 @@ function ShodoLogoSmall() {
 interface BoardHeaderProps {
   saveStatus?: SaveStatus;
   boardId?: string;
+  onRefreshNudges?: () => void;
+  nudgesLoading?: boolean;
 }
 
-export default function BoardHeader({ saveStatus, boardId }: BoardHeaderProps) {
+export default function BoardHeader({ saveStatus, boardId, onRefreshNudges, nudgesLoading }: BoardHeaderProps) {
   const { theme, setTheme } = useTheme();
   const { dispatch } = useBoard();
 
@@ -82,6 +85,21 @@ export default function BoardHeader({ saveStatus, boardId }: BoardHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
+        {boardId && onRefreshNudges && (
+          <button
+            onClick={onRefreshNudges}
+            disabled={nudgesLoading}
+            className="flex items-center gap-1.5 text-xs text-indigo-200 hover:text-white transition-colors px-2 py-1.5 rounded-lg hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Refresh AI nudges"
+          >
+            <Lightning
+              size={14}
+              weight="duotone"
+              className={nudgesLoading ? "animate-pulse" : ""}
+            />
+            {nudgesLoading ? "Thinking..." : "Refresh nudges"}
+          </button>
+        )}
         <button
           onClick={cycleTheme}
           className="p-2 rounded-lg text-indigo-200 hover:text-white hover:bg-indigo-500 transition-colors"
