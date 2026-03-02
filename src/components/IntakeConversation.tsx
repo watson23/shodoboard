@@ -49,6 +49,7 @@ interface ChatMsg {
 
 interface BoardReadyData {
   type: "board_ready";
+  productName?: string;
   goals: Array<{ statement: string; timeframe?: string; metrics?: string[] }>;
   outcomes: Array<{
     goalIndex: number;
@@ -101,6 +102,7 @@ function transformBoardData(data: BoardReadyData): BoardState {
   }));
 
   return {
+    productName: data.productName,
     goals,
     outcomes,
     items,

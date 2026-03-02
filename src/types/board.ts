@@ -70,6 +70,7 @@ export interface FocusItem {
 }
 
 export interface BoardState {
+  productName?: string;
   goals: BusinessGoal[];
   outcomes: Outcome[];
   items: WorkItem[];

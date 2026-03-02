@@ -34,6 +34,7 @@ function ShodoLogoSmall() {
 interface BoardHeaderProps {
   saveStatus?: SaveStatus;
   boardId?: string;
+  productName?: string;
   onRefreshNudges?: () => void;
   nudgesLoading?: boolean;
   onToggleAgenda?: () => void;
@@ -42,7 +43,7 @@ interface BoardHeaderProps {
   onViewModeChange?: (mode: "hierarchy" | "kanban") => void;
 }
 
-export default function BoardHeader({ saveStatus, boardId, onRefreshNudges, nudgesLoading, onToggleAgenda, agendaOpen, viewMode, onViewModeChange }: BoardHeaderProps) {
+export default function BoardHeader({ saveStatus, boardId, productName, onRefreshNudges, nudgesLoading, onToggleAgenda, agendaOpen, viewMode, onViewModeChange }: BoardHeaderProps) {
   const { theme, setTheme } = useTheme();
   const { state, dispatch } = useBoard();
 
@@ -66,9 +67,9 @@ export default function BoardHeader({ saveStatus, boardId, onRefreshNudges, nudg
         <h1 className="font-bold text-white text-sm whitespace-nowrap">
           Shodoboard
         </h1>
-        {!boardId && (
+        {productName && (
           <span className="text-sm text-indigo-200 whitespace-nowrap">
-            Food delivery app
+            {productName}
           </span>
         )}
       </div>

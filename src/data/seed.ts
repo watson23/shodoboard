@@ -15,6 +15,7 @@ export const RAW_BACKLOG = `- Build new checkout flow
 - Restaurant order confirmation step (in progress)`;
 
 export const SEED_DATA: BoardState = {
+  productName: "Food delivery app",
   goals: [
     {
       id: "goal-1",

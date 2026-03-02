@@ -10,7 +10,7 @@ import DiscoveryPrompts from "./DiscoveryPrompts";
 const COLUMN_OPTIONS: { value: Column; label: string }[] = [
   { value: "opportunities", label: "Opportunities" },
   { value: "discovering", label: "Discovering" },
-  { value: "ready", label: "Ready" },
+  { value: "ready", label: "Ready for Building" },
   { value: "building", label: "Building" },
   { value: "shipped", label: "Shipped" },
   { value: "measuring", label: "Measuring" },

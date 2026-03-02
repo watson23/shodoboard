@@ -1,6 +1,6 @@
 "use client";
 
-import { Flag, Target, LinkBreak, WarningCircle } from "@phosphor-icons/react";
+import { Flag, Target, LinkBreak, WarningCircle, Plus } from "@phosphor-icons/react";
 import type { BoardState, BusinessGoal, Outcome, WorkItem, Nudge } from "@/types/board";
 
 // --- Column status dot colors ---
@@ -45,14 +45,17 @@ function ItemRow({ item, onClick }: { item: WorkItem; onClick: () => void }) {
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       className="flex items-center gap-2 px-4 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer text-xs transition-colors"
     >
-      <span
-        className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0 ${
+      <span className="inline-flex rounded overflow-hidden text-[10px] font-medium flex-shrink-0">
+        <span className={`px-1.5 py-0.5 ${
           item.type === "discovery"
             ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
-            : "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
-        }`}
-      >
-        {item.type === "discovery" ? "Dis" : "Del"}
+            : "bg-purple-50 dark:bg-purple-900/10 text-purple-300 dark:text-purple-600"
+        }`}>Dis</span>
+        <span className={`px-1.5 py-0.5 ${
+          item.type === "delivery"
+            ? "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
+            : "bg-teal-50 dark:bg-teal-900/10 text-teal-300 dark:text-teal-600"
+        }`}>Del</span>
       </span>
       <span className="text-gray-700 dark:text-gray-300 truncate flex-1">
         {item.title}
@@ -70,11 +73,13 @@ function OutcomeCard({
   items,
   onOutcomeClick,
   onItemClick,
+  onAddItem,
 }: {
   outcome: Outcome;
   items: WorkItem[];
   onOutcomeClick: () => void;
   onItemClick: (itemId: string) => void;
+  onAddItem?: () => void;
 }) {
   const hasMeasure = !!outcome.measureOfSuccess;
   const borderColor = hasMeasure
@@ -124,6 +129,19 @@ function OutcomeCard({
           ))}
         </div>
       )}
+
+      {/* Add item button */}
+      {onAddItem && (
+        <div className="border-t border-gray-100 dark:border-gray-700 px-3 py-1.5">
+          <button
+            onClick={(e) => { e.stopPropagation(); onAddItem(); }}
+            className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors px-1.5 py-0.5 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            <Plus size={10} weight="bold" />
+            Add item
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -135,9 +153,12 @@ interface HierarchyViewProps {
   onGoalClick: (goalId: string) => void;
   onOutcomeClick: (outcomeId: string) => void;
   onItemClick: (itemId: string) => void;
+  onAddGoal?: () => void;
+  onAddOutcome?: (goalId: string) => void;
+  onAddItem?: (outcomeId: string | null) => void;
 }
 
-export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onItemClick }: HierarchyViewProps) {
+export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onItemClick, onAddGoal, onAddOutcome, onAddItem }: HierarchyViewProps) {
   const { goals, outcomes, items, nudges } = state;
 
   const getOutcomesForGoal = (goalId: string) =>
@@ -171,15 +192,42 @@ export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onIt
                         items={getItemsForOutcome(outcome.id)}
                         onOutcomeClick={() => onOutcomeClick(outcome.id)}
                         onItemClick={onItemClick}
+                        onAddItem={onAddItem ? () => onAddItem(outcome.id) : undefined}
                       />
                     </div>
                   ))}
+
+                  {/* Add outcome button */}
+                  {onAddOutcome && (
+                    <div className="hierarchy-leaf flex items-center">
+                      <button
+                        onClick={() => onAddOutcome(goal.id)}
+                        className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 transition-colors px-3 py-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 hover:border-teal-400 dark:hover:border-teal-500"
+                      >
+                        <Plus size={12} weight="bold" />
+                        Add outcome
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
           </div>
         );
       })}
+
+      {/* Add goal button */}
+      {onAddGoal && (
+        <div className="flex justify-center">
+          <button
+            onClick={onAddGoal}
+            className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors px-4 py-2.5 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 hover:border-indigo-400 dark:hover:border-indigo-500"
+          >
+            <Plus size={14} weight="bold" />
+            Add goal
+          </button>
+        </div>
+      )}
 
       {/* Unlinked items */}
       {unlinkedItems.length > 0 && (
@@ -198,20 +246,34 @@ export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onIt
                 onClick={() => onItemClick(item.id)}
                 className="bg-white dark:bg-gray-800 border border-dashed border-amber-300 dark:border-amber-700 rounded-lg px-3 py-2 text-xs cursor-pointer hover:border-amber-400 transition-colors w-40"
               >
-                <span
-                  className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mb-1 ${
+                <span className="inline-flex rounded overflow-hidden text-[10px] font-medium mb-1">
+                  <span className={`px-1.5 py-0.5 ${
                     item.type === "discovery"
                       ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
-                      : "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
-                  }`}
-                >
-                  {item.type === "discovery" ? "Discovery" : "Delivery"}
+                      : "bg-purple-50 dark:bg-purple-900/10 text-purple-300 dark:text-purple-600"
+                  }`}>Dis</span>
+                  <span className={`px-1.5 py-0.5 ${
+                    item.type === "delivery"
+                      ? "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
+                      : "bg-teal-50 dark:bg-teal-900/10 text-teal-300 dark:text-teal-600"
+                  }`}>Del</span>
                 </span>
                 <p className="text-gray-700 dark:text-gray-300 font-medium line-clamp-2">
                   {item.title}
                 </p>
               </div>
             ))}
+
+            {/* Add unlinked item */}
+            {onAddItem && (
+              <button
+                onClick={() => onAddItem(null)}
+                className="flex items-center justify-center gap-1.5 text-xs text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors px-3 py-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 hover:border-amber-400 w-40"
+              >
+                <Plus size={12} weight="bold" />
+                Add item
+              </button>
+            )}
           </div>
         </div>
       )}

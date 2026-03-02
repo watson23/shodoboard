@@ -33,6 +33,7 @@ When you are ready to present the final board structure, respond with a JSON blo
 \`\`\`json
 {
   "type": "board_ready",
+  "productName": "Short product name derived from backlog context",
   "goals": [
     {
       "statement": "...",
@@ -60,6 +61,8 @@ When you are ready to present the final board structure, respond with a JSON blo
 }
 \`\`\`
 
+Include a "productName" field with a short name for the product (e.g., "Ruokatilaussovellus", "Verkkokauppa"). Derive this from the backlog context.
+
 Rules for the JSON:
 - goalIndex in outcomes refers to the index in the goals array
 - outcomeIndex in items refers to the index in the outcomes array (use null for unlinked items)
@@ -81,6 +84,8 @@ Detect these feature factory signals:
 5. [shipped-not-learning] Outcomes where everything is shipped but nothing is being measured — you shipped and forgot
 6. [stale-discovery] Discovery items that have been sitting in "opportunities" too long — discovery theater
 7. [scope-creep] Goals with too many items — trying to boil the ocean
+
+IMPORTANT: When referring to items, outcomes, or goals in your message, question, or suggestedAction text, always use their actual title or statement (e.g., "Hakutulosten personointi"), never their ID (e.g., "item-9"). The targetId field should still use the actual ID.
 
 For each nudge, provide:
 - targetType: "goal" | "outcome" | "item"
@@ -151,6 +156,8 @@ Analyze the board for these anti-patterns (ranked by typical coaching impact):
 5. **orphan-item**: Work items not connected to any outcome. Work without purpose.
 6. **scope-creep**: Goals with more than 7 items linked (directly or through outcomes). Too much WIP signals lack of focus.
 7. **shipped-not-learning**: Items have been shipped for an outcome, but no items are in the "measuring" column. You shipped but aren't checking if it worked.
+
+IMPORTANT: When referring to items, outcomes, or goals in title, whyItMatters, or suggestedAction text, always use their actual title or statement, never their ID. The targetId field should still use the actual ID.
 
 Instructions:
 - Examine the full board state: goals, outcomes, and items with their columns and types.

@@ -30,6 +30,7 @@ import {
   Flag,
   LinkBreak,
   WarningCircle,
+  Plus,
 } from "@phosphor-icons/react";
 import type { Column, WorkItem, BusinessGoal, Outcome, FocusItem, FocusItemStatus } from "@/types/board";
 
@@ -42,7 +43,7 @@ type ModalState =
 const COLUMNS: { key: Column; label: string; phase: string; phaseColor: string }[] = [
   { key: "opportunities", label: "Opportunities", phase: "Discovery", phaseColor: "text-purple-500 dark:text-purple-400" },
   { key: "discovering", label: "Discovering", phase: "Discovery", phaseColor: "text-purple-500 dark:text-purple-400" },
-  { key: "ready", label: "Ready", phase: "Transition", phaseColor: "text-amber-500 dark:text-amber-400" },
+  { key: "ready", label: "Ready for Building", phase: "Transition", phaseColor: "text-amber-500 dark:text-amber-400" },
   { key: "building", label: "Building", phase: "Delivery", phaseColor: "text-teal-500 dark:text-teal-400" },
   { key: "shipped", label: "Shipped", phase: "Delivery", phaseColor: "text-teal-500 dark:text-teal-400" },
   { key: "measuring", label: "Measuring", phase: "Closing the loop", phaseColor: "text-emerald-500 dark:text-emerald-400" },
@@ -65,6 +66,10 @@ export default function Board({ boardId }: BoardProps) {
   const [viewMode, setViewMode] = useState<"hierarchy" | "kanban">(
     boardId ? "hierarchy" : "kanban"
   );
+  const [unlinkedCollapsed, setUnlinkedCollapsed] = useState(false);
+
+  const generateId = (prefix: string) =>
+    `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
   const generateNudges = useCallback(async () => {
     setNudgesLoading(true);
@@ -235,6 +240,7 @@ export default function Board({ boardId }: BoardProps) {
       <BoardHeader
         saveStatus={saveStatus}
         boardId={boardId}
+        productName={state.productName}
         onRefreshNudges={generateNudges}
         nudgesLoading={nudgesLoading}
         onToggleAgenda={boardId ? () => setShowAgenda(!showAgenda) : undefined}
@@ -416,19 +422,99 @@ export default function Board({ boardId }: BoardProps) {
                                   )}
 
                                   {/* Column slots for this outcome */}
-                                  {!outcome.collapsed && renderItemGrid(outcome.id)}
+                                  {!outcome.collapsed && (
+                                    <>
+                                      {renderItemGrid(outcome.id)}
+                                      <div className="px-2 py-1 bg-gray-50/80 dark:bg-gray-950/50 border-t border-gray-100 dark:border-gray-800/50">
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const newItem: WorkItem = {
+                                              id: generateId("item"),
+                                              outcomeId: outcome.id,
+                                              title: "Uusi työ",
+                                              description: "",
+                                              type: "delivery",
+                                              column: "opportunities",
+                                              order: items.filter(i => i.outcomeId === outcome.id).length,
+                                            };
+                                            dispatch({ type: "ADD_ITEM", item: newItem });
+                                            setModal({ type: "card", itemId: newItem.id });
+                                          }}
+                                          className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                                        >
+                                          <Plus size={10} weight="bold" />
+                                          Add item
+                                        </button>
+                                      </div>
+                                    </>
+                                  )}
                                 </div>
                               ))}
+
+                              {/* Add outcome button */}
+                              <div className="px-2 py-1.5 ml-8">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const newOutcome: Outcome = {
+                                      id: generateId("outcome"),
+                                      goalId: goal.id,
+                                      statement: "Uusi tulos",
+                                      behaviorChange: "",
+                                      measureOfSuccess: "",
+                                      order: goalOutcomes.length,
+                                      collapsed: false,
+                                    };
+                                    dispatch({ type: "ADD_OUTCOME", outcome: newOutcome });
+                                    setModal({ type: "outcome", outcomeId: newOutcome.id });
+                                  }}
+                                  className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 transition-colors px-2 py-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
+                                >
+                                  <Plus size={12} weight="bold" />
+                                  Add outcome
+                                </button>
+                              </div>
                             </div>
                           )}
                         </div>
                       );
                     })}
 
+                  {/* Add goal button */}
+                  <div className="px-4 py-2">
+                    <button
+                      onClick={() => {
+                        const newGoal: BusinessGoal = {
+                          id: generateId("goal"),
+                          statement: "Uusi tavoite",
+                          timeframe: "",
+                          metrics: [],
+                          order: goals.length,
+                          collapsed: false,
+                        };
+                        dispatch({ type: "ADD_GOAL", goal: newGoal });
+                        setModal({ type: "goal", goalId: newGoal.id });
+                      }}
+                      className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                    >
+                      <Plus size={14} weight="bold" />
+                      Add goal
+                    </button>
+                  </div>
+
                   {/* Unlinked section */}
                   {(unlinkedItems.length > 0 || unlinkedOutcomes.length > 0) && (
                     <div>
-                      <div className="flex items-center gap-2 px-4 py-3.5 bg-gray-100 dark:bg-gray-900 border-l-4 border-l-gray-300 dark:border-l-gray-600">
+                      <div
+                        className="flex items-center gap-2 px-4 py-3.5 bg-gray-100 dark:bg-gray-900 border-l-4 border-l-gray-300 dark:border-l-gray-600 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+                        onClick={() => setUnlinkedCollapsed(!unlinkedCollapsed)}
+                      >
+                        {unlinkedCollapsed ? (
+                          <CaretRight size={14} weight="bold" className="text-gray-400 dark:text-gray-500" />
+                        ) : (
+                          <CaretDown size={14} weight="bold" className="text-gray-400 dark:text-gray-500" />
+                        )}
                         <LinkBreak
                           size={16}
                           weight="duotone"
@@ -443,24 +529,49 @@ export default function Board({ boardId }: BoardProps) {
                         </span>
                       </div>
 
-                      {/* Unlinked outcomes */}
-                      {unlinkedOutcomes.map((outcome) => (
-                        <div key={outcome.id}>
-                          <div className="flex items-center gap-2 pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-950">
-                            <Target
-                              size={14}
-                              weight="duotone"
-                              className="text-gray-400 flex-shrink-0"
-                            />
-                            <span className="text-sm text-gray-500 dark:text-gray-400">
-                              {outcome.statement}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
+                      {!unlinkedCollapsed && (
+                        <>
+                          {/* Unlinked outcomes */}
+                          {unlinkedOutcomes.map((outcome) => (
+                            <div key={outcome.id}>
+                              <div className="flex items-center gap-2 pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-950">
+                                <Target
+                                  size={14}
+                                  weight="duotone"
+                                  className="text-gray-400 flex-shrink-0"
+                                />
+                                <span className="text-sm text-gray-500 dark:text-gray-400">
+                                  {outcome.statement}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
 
-                      {/* Unlinked items in columns */}
-                      {renderItemGrid(null)}
+                          {/* Unlinked items in columns */}
+                          {renderItemGrid(null)}
+                          <div className="px-4 py-1">
+                            <button
+                              onClick={() => {
+                                const newItem: WorkItem = {
+                                  id: generateId("item"),
+                                  outcomeId: null,
+                                  title: "Uusi työ",
+                                  description: "",
+                                  type: "delivery",
+                                  column: "opportunities",
+                                  order: unlinkedItems.length,
+                                };
+                                dispatch({ type: "ADD_ITEM", item: newItem });
+                                setModal({ type: "card", itemId: newItem.id });
+                              }}
+                              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors px-2 py-1 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800"
+                            >
+                              <Plus size={12} weight="bold" />
+                              Add item
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
@@ -487,6 +598,44 @@ export default function Board({ boardId }: BoardProps) {
           onGoalClick={(goalId) => setModal({ type: "goal", goalId })}
           onOutcomeClick={(outcomeId) => setModal({ type: "outcome", outcomeId })}
           onItemClick={(itemId) => setModal({ type: "card", itemId })}
+          onAddGoal={() => {
+            const newGoal: BusinessGoal = {
+              id: generateId("goal"),
+              statement: "Uusi tavoite",
+              timeframe: "",
+              metrics: [],
+              order: goals.length,
+              collapsed: false,
+            };
+            dispatch({ type: "ADD_GOAL", goal: newGoal });
+            setModal({ type: "goal", goalId: newGoal.id });
+          }}
+          onAddOutcome={(goalId) => {
+            const newOutcome: Outcome = {
+              id: generateId("outcome"),
+              goalId,
+              statement: "Uusi tulos",
+              behaviorChange: "",
+              measureOfSuccess: "",
+              order: outcomes.filter(o => o.goalId === goalId).length,
+              collapsed: false,
+            };
+            dispatch({ type: "ADD_OUTCOME", outcome: newOutcome });
+            setModal({ type: "outcome", outcomeId: newOutcome.id });
+          }}
+          onAddItem={(outcomeId) => {
+            const newItem: WorkItem = {
+              id: generateId("item"),
+              outcomeId,
+              title: "Uusi työ",
+              description: "",
+              type: "delivery",
+              column: "opportunities",
+              order: items.filter(i => i.outcomeId === outcomeId).length,
+            };
+            dispatch({ type: "ADD_ITEM", item: newItem });
+            setModal({ type: "card", itemId: newItem.id });
+          }}
         />
       )}
 

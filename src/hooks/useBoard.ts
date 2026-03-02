@@ -32,7 +32,10 @@ export type BoardAction =
   | { type: "SET_STATE"; state: BoardState }
   | { type: "SET_NUDGES"; nudges: Nudge[] }
   | { type: "SET_FOCUS_ITEMS"; focusItems: FocusItem[] }
-  | { type: "UPDATE_FOCUS_ITEM"; focusItemId: string; updates: Partial<FocusItem> };
+  | { type: "UPDATE_FOCUS_ITEM"; focusItemId: string; updates: Partial<FocusItem> }
+  | { type: "ADD_GOAL"; goal: BusinessGoal }
+  | { type: "ADD_OUTCOME"; outcome: Outcome }
+  | { type: "ADD_ITEM"; item: WorkItem };
 
 function boardReducer(state: BoardState, action: BoardAction): BoardState {
   switch (action.type) {
@@ -119,6 +122,15 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
       );
       return { ...state, focusItems };
     }
+
+    case "ADD_GOAL":
+      return { ...state, goals: [...state.goals, action.goal] };
+
+    case "ADD_OUTCOME":
+      return { ...state, outcomes: [...state.outcomes, action.outcome] };
+
+    case "ADD_ITEM":
+      return { ...state, items: [...state.items, action.item] };
 
     default:
       return state;
