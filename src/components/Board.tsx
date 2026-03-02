@@ -253,15 +253,15 @@ export default function Board({ boardId }: BoardProps) {
             <div className="flex-1 overflow-x-auto overflow-y-auto">
               <div className="min-w-[1380px]">
                 {/* Column headers */}
-                <div className="sticky top-0 z-20 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
+                <div className="sticky top-0 z-20 bg-white dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-700">
                   <div className="grid grid-cols-6 gap-0">
                     {COLUMNS.map((col) => (
                       <div
                         key={col.key}
-                        className="px-3 py-2.5 border-r border-gray-200 dark:border-gray-800 last:border-r-0"
+                        className="px-3 py-3 border-r border-gray-200 dark:border-gray-800 last:border-r-0"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                          <span className="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">
                             {col.label}
                           </span>
                           <span className="text-xs text-gray-400 dark:text-gray-500 tabular-nums">
@@ -289,7 +289,7 @@ export default function Board({ boardId }: BoardProps) {
                         <div key={goal.id} id={goal.id}>
                           {/* Goal header */}
                           <div
-                            className="w-full flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-850 transition-colors text-left group cursor-pointer"
+                            className="w-full flex items-center gap-2 px-4 py-3.5 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-950/60 transition-colors text-left group cursor-pointer border-l-4 border-l-indigo-500 dark:border-l-indigo-400"
                             onClick={() =>
                               setModal({ type: "goal", goalId: goal.id })
                             }
@@ -302,7 +302,7 @@ export default function Board({ boardId }: BoardProps) {
                                   goalId: goal.id,
                                 });
                               }}
-                              className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors flex-shrink-0"
+                              className="p-0.5 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 rounded transition-colors flex-shrink-0"
                             >
                               {goal.collapsed ? (
                                 <CaretRight
@@ -323,7 +323,7 @@ export default function Board({ boardId }: BoardProps) {
                               weight="duotone"
                               className="text-indigo-500 dark:text-indigo-400 flex-shrink-0"
                             />
-                            <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">
+                            <span className="font-bold text-sm text-indigo-900 dark:text-indigo-100">
                               {goal.statement}
                             </span>
                             {goal.timeframe && (
@@ -344,7 +344,7 @@ export default function Board({ boardId }: BoardProps) {
                                 <div key={outcome.id} id={outcome.id}>
                                   {/* Outcome header */}
                                   <div
-                                    className="w-full flex items-center gap-2 pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-950 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors text-left cursor-pointer"
+                                    className="w-full flex items-center gap-2 pl-10 pr-4 py-2 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-850 transition-colors text-left cursor-pointer border-l-[3px] border-l-teal-400 dark:border-l-teal-500"
                                     onClick={() =>
                                       setModal({
                                         type: "outcome",
@@ -381,7 +381,7 @@ export default function Board({ boardId }: BoardProps) {
                                       weight="duotone"
                                       className="text-teal-500 dark:text-teal-400 flex-shrink-0"
                                     />
-                                    <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                                    <span className="text-sm text-gray-800 dark:text-gray-200 font-medium">
                                       {outcome.statement}
                                     </span>
                                     {outcome.measureOfSuccess && (
@@ -426,7 +426,7 @@ export default function Board({ boardId }: BoardProps) {
                   {/* Unlinked section */}
                   {(unlinkedItems.length > 0 || unlinkedOutcomes.length > 0) && (
                     <div>
-                      <div className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-900">
+                      <div className="flex items-center gap-2 px-4 py-3.5 bg-gray-100 dark:bg-gray-900 border-l-4 border-l-gray-300 dark:border-l-gray-600">
                         <LinkBreak
                           size={16}
                           weight="duotone"
