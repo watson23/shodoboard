@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Sun, Moon, Monitor, ArrowCounterClockwise, Check, Lightning, Export } from "@phosphor-icons/react";
+import { Sun, Moon, Monitor, ArrowCounterClockwise, Check, Lightning, Export, ListChecks } from "@phosphor-icons/react";
 import { useTheme } from "@/hooks/useTheme";
 import { useBoard } from "@/hooks/useBoard";
 import { generateMarkdownExport, downloadMarkdown } from "@/lib/export";
@@ -37,9 +37,11 @@ interface BoardHeaderProps {
   boardId?: string;
   onRefreshNudges?: () => void;
   nudgesLoading?: boolean;
+  onToggleAgenda?: () => void;
+  agendaOpen?: boolean;
 }
 
-export default function BoardHeader({ saveStatus, boardId, onRefreshNudges, nudgesLoading }: BoardHeaderProps) {
+export default function BoardHeader({ saveStatus, boardId, onRefreshNudges, nudgesLoading, onToggleAgenda, agendaOpen }: BoardHeaderProps) {
   const { theme, setTheme } = useTheme();
   const { state, dispatch } = useBoard();
 
@@ -92,6 +94,20 @@ export default function BoardHeader({ saveStatus, boardId, onRefreshNudges, nudg
       </div>
 
       <div className="flex items-center gap-2">
+        {onToggleAgenda && (
+          <button
+            onClick={onToggleAgenda}
+            className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-colors ${
+              agendaOpen
+                ? "bg-indigo-600 text-white"
+                : "text-indigo-200 hover:text-white hover:bg-white/10"
+            }`}
+            title="Valmennusagenda"
+          >
+            <ListChecks size={16} weight="duotone" />
+            <span className="hidden sm:inline">Agenda</span>
+          </button>
+        )}
         {boardId && onRefreshNudges && (
           <button
             onClick={onRefreshNudges}

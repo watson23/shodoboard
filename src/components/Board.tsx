@@ -21,6 +21,7 @@ import CardDetailModal from "./CardDetailModal";
 import OutcomeDetailModal from "./OutcomeDetailModal";
 import GoalDetailModal from "./GoalDetailModal";
 import SparringPanel from "./SparringPanel";
+import CoachingAgenda from "./CoachingAgenda";
 import {
   CaretDown,
   CaretRight,
@@ -28,7 +29,7 @@ import {
   Flag,
   LinkBreak,
 } from "@phosphor-icons/react";
-import type { Column, WorkItem, BusinessGoal, Outcome } from "@/types/board";
+import type { Column, WorkItem, BusinessGoal, Outcome, FocusItem, FocusItemStatus } from "@/types/board";
 
 type ModalState =
   | { type: "card"; itemId: string }
@@ -52,11 +53,13 @@ interface BoardProps {
 export default function Board({ boardId }: BoardProps) {
   const { state, dispatch } = useBoard();
   const saveStatus = useAutoSave(boardId ?? null, state);
-  const { goals, outcomes, items, nudges, discoveryPrompts } = state;
+  const { goals, outcomes, items, nudges, discoveryPrompts, focusItems } = state;
   const [modal, setModal] = useState<ModalState>(null);
   const [sparringNudgeId, setSparringNudgeId] = useState<string | null>(null);
   const [activeItem, setActiveItem] = useState<WorkItem | null>(null);
   const [nudgesLoading, setNudgesLoading] = useState(false);
+  const [showAgenda, setShowAgenda] = useState(false);
+  const [focusLoading, setFocusLoading] = useState(false);
 
   const generateNudges = useCallback(async () => {
     setNudgesLoading(true);
@@ -76,10 +79,32 @@ export default function Board({ boardId }: BoardProps) {
     setNudgesLoading(false);
   }, [state, dispatch]);
 
-  // Generate nudges on first load for non-demo boards
+  const generateFocusItems = useCallback(async () => {
+    setFocusLoading(true);
+    try {
+      const res = await fetch("/api/focus", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ boardState: state }),
+      });
+      const data = await res.json();
+      if (data.focusItems && data.focusItems.length > 0) {
+        dispatch({ type: "SET_FOCUS_ITEMS", focusItems: data.focusItems });
+        setShowAgenda(true); // auto-open on first load
+      }
+    } catch (err) {
+      console.error("Failed to generate focus items:", err);
+    }
+    setFocusLoading(false);
+  }, [state, dispatch]);
+
+  // Generate nudges and focus items on first load for non-demo boards
   useEffect(() => {
     if (boardId && state.nudges.length === 0) {
       generateNudges();
+    }
+    if (boardId && state.focusItems.length === 0) {
+      generateFocusItems();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boardId]);
@@ -129,6 +154,44 @@ export default function Board({ boardId }: BoardProps) {
   const getColumnItemCount = (column: Column) =>
     items.filter((i) => i.column === column).length;
 
+  const handleFocusItemClick = useCallback((focusItem: FocusItem) => {
+    const el = document.getElementById(focusItem.targetId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Brief highlight flash
+      el.classList.add("ring-2", "ring-indigo-400", "ring-offset-2");
+      setTimeout(() => {
+        el.classList.remove("ring-2", "ring-indigo-400", "ring-offset-2");
+      }, 2000);
+    }
+  }, []);
+
+  const handleStartSparringFromFocus = useCallback((focusItem: FocusItem) => {
+    // Check if there's already a nudge targeting the same element
+    const existingNudge = nudges.find(n => n.targetId === focusItem.targetId && n.status === "active");
+    if (existingNudge) {
+      setSparringNudgeId(existingNudge.id);
+    } else {
+      // Create a synthetic nudge and add it to state
+      const syntheticNudge = {
+        id: `synth-${focusItem.id}`,
+        targetType: focusItem.targetType,
+        targetId: focusItem.targetId,
+        tier: "visible" as const,
+        message: focusItem.whyItMatters,
+        question: focusItem.suggestedAction,
+        status: "active" as const,
+      };
+      dispatch({ type: "SET_NUDGES", nudges: [...nudges, syntheticNudge] });
+      setSparringNudgeId(syntheticNudge.id);
+    }
+    setShowAgenda(false); // close agenda when opening sparring
+  }, [nudges, dispatch]);
+
+  const handleFocusStatusChange = useCallback((focusItemId: string, status: FocusItemStatus) => {
+    dispatch({ type: "UPDATE_FOCUS_ITEM", focusItemId, updates: { status } });
+  }, [dispatch]);
+
   const unlinkedItems = items.filter((i) => i.outcomeId === null);
   const unlinkedOutcomes = outcomes.filter((o) => o.goalId === null);
 
@@ -144,7 +207,8 @@ export default function Board({ boardId }: BoardProps) {
             className="border-r border-gray-100 dark:border-gray-800/50 last:border-r-0 px-2 py-2 space-y-2"
           >
             {colItems.map((item) => (
-              <DraggableCard key={item.id} id={item.id}>
+              <div key={item.id} id={item.id}>
+              <DraggableCard id={item.id}>
                 <WorkItemCard
                   item={item}
                   nudges={getNudgesForItem(item.id)}
@@ -153,6 +217,7 @@ export default function Board({ boardId }: BoardProps) {
                   onSpar={(nudgeId) => setSparringNudgeId(nudgeId)}
                 />
               </DraggableCard>
+              </div>
             ))}
           </DroppableColumn>
         );
@@ -167,6 +232,8 @@ export default function Board({ boardId }: BoardProps) {
         boardId={boardId}
         onRefreshNudges={generateNudges}
         nudgesLoading={nudgesLoading}
+        onToggleAgenda={boardId ? () => setShowAgenda(!showAgenda) : undefined}
+        agendaOpen={showAgenda}
       />
 
       <DndContext
@@ -211,7 +278,7 @@ export default function Board({ boardId }: BoardProps) {
                     .sort((a, b) => a.order - b.order);
 
                   return (
-                    <div key={goal.id}>
+                    <div key={goal.id} id={goal.id}>
                       {/* Goal header */}
                       <div
                         className="w-full flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-850 transition-colors text-left group cursor-pointer"
@@ -266,7 +333,7 @@ export default function Board({ boardId }: BoardProps) {
                       {!goal.collapsed && (
                         <div className="divide-y divide-gray-100 dark:divide-gray-800/50">
                           {goalOutcomes.map((outcome) => (
-                            <div key={outcome.id}>
+                            <div key={outcome.id} id={outcome.id}>
                               {/* Outcome header */}
                               <div
                                 className="w-full flex items-center gap-2 pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-950 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors text-left cursor-pointer"
@@ -457,6 +524,18 @@ export default function Board({ boardId }: BoardProps) {
             />
           );
         })()}
+
+      {/* Coaching agenda */}
+      {showAgenda && (
+        <CoachingAgenda
+          focusItems={focusItems}
+          isLoading={focusLoading}
+          onItemClick={handleFocusItemClick}
+          onStatusChange={handleFocusStatusChange}
+          onStartSparring={handleStartSparringFromFocus}
+          onClose={() => setShowAgenda(false)}
+        />
+      )}
 
       {/* Sparring panel */}
       {sparringNudgeId && (() => {
