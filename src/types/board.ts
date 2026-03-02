@@ -44,6 +44,8 @@ export interface Nudge {
   message: string;
   question: string;
   status: NudgeStatus;
+  priority?: "high" | "medium" | "low";
+  suggestedAction?: string;
 }
 
 export interface DiscoveryPrompt {
@@ -53,10 +55,25 @@ export interface DiscoveryPrompt {
   checked: boolean;
 }
 
+export type FocusItemStatus = "pending" | "in_progress" | "done";
+
+export interface FocusItem {
+  id: string;
+  priority: "high" | "medium" | "low";
+  status: FocusItemStatus;
+  title: string;
+  whyItMatters: string;
+  antiPattern: string;
+  targetType: "goal" | "outcome" | "item";
+  targetId: string;
+  suggestedAction: string;
+}
+
 export interface BoardState {
   goals: BusinessGoal[];
   outcomes: Outcome[];
   items: WorkItem[];
   nudges: Nudge[];
   discoveryPrompts: DiscoveryPrompt[];
+  focusItems: FocusItem[];
 }

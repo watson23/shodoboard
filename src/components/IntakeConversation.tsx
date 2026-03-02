@@ -86,6 +86,7 @@ function transformBoardData(data: BoardReadyData): BoardState {
     items,
     nudges: [],
     discoveryPrompts: [],
+    focusItems: [],
   };
 }
 

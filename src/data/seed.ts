@@ -251,6 +251,7 @@ export const SEED_DATA: BoardState = {
       status: "active",
     },
   ],
+  focusItems: [],
   discoveryPrompts: [
     {
       id: "dp-1",

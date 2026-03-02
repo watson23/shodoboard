@@ -21,7 +21,9 @@ export default function DynamicBoardPage({
   useEffect(() => {
     getBoard(id).then((doc) => {
       if (doc) {
-        setBoardState(doc.boardState);
+        const boardState = doc.boardState;
+        boardState.focusItems = boardState.focusItems ?? [];
+        setBoardState(boardState);
       } else {
         setNotFound(true);
       }

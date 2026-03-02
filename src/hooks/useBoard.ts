@@ -15,6 +15,7 @@ import type {
   Outcome,
   BusinessGoal,
   Nudge,
+  FocusItem,
 } from "@/types/board";
 
 export type BoardAction =
@@ -29,7 +30,9 @@ export type BoardAction =
   | { type: "UPDATE_GOAL"; goalId: string; updates: Partial<BusinessGoal> }
   | { type: "RESET_BOARD" }
   | { type: "SET_STATE"; state: BoardState }
-  | { type: "SET_NUDGES"; nudges: Nudge[] };
+  | { type: "SET_NUDGES"; nudges: Nudge[] }
+  | { type: "SET_FOCUS_ITEMS"; focusItems: FocusItem[] }
+  | { type: "UPDATE_FOCUS_ITEM"; focusItemId: string; updates: Partial<FocusItem> };
 
 function boardReducer(state: BoardState, action: BoardAction): BoardState {
   switch (action.type) {
@@ -106,6 +109,16 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
 
     case "SET_NUDGES":
       return { ...state, nudges: action.nudges };
+
+    case "SET_FOCUS_ITEMS":
+      return { ...state, focusItems: action.focusItems };
+
+    case "UPDATE_FOCUS_ITEM": {
+      const focusItems = state.focusItems.map((fi) =>
+        fi.id === action.focusItemId ? { ...fi, ...action.updates } : fi
+      );
+      return { ...state, focusItems };
+    }
 
     default:
       return state;
