@@ -63,9 +63,11 @@ export default function BoardHeader({ saveStatus, boardId, onRefreshNudges, nudg
         <h1 className="font-bold text-white text-sm whitespace-nowrap">
           Shodoboard
         </h1>
-        <span className="text-sm text-indigo-200 whitespace-nowrap">
-          Food delivery app
-        </span>
+        {!boardId && (
+          <span className="text-sm text-indigo-200 whitespace-nowrap">
+            Food delivery app
+          </span>
+        )}
       </div>
 
       {/* Save status / demo label */}

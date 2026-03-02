@@ -7,6 +7,17 @@ interface ChatMessageProps {
   text: string;
 }
 
+function renderFormattedText(text: string) {
+  // Split by **bold** markers and render with <strong> tags
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
+    }
+    return <span key={i}>{part}</span>;
+  });
+}
+
 export default function ChatMessage({ role, text }: ChatMessageProps) {
   if (role === "ai") {
     return (
@@ -20,7 +31,7 @@ export default function ChatMessage({ role, text }: ChatMessageProps) {
         </div>
         <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-tl-md px-4 py-3 max-w-[85%]">
           <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-line leading-relaxed">
-            {text}
+            {renderFormattedText(text)}
           </p>
         </div>
       </div>
