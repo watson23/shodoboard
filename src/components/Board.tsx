@@ -60,6 +60,9 @@ export default function Board({ boardId }: BoardProps) {
   const [nudgesLoading, setNudgesLoading] = useState(false);
   const [showAgenda, setShowAgenda] = useState(false);
   const [focusLoading, setFocusLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<"hierarchy" | "kanban">(
+    boardId ? "hierarchy" : "kanban"
+  );
 
   const generateNudges = useCallback(async () => {
     setNudgesLoading(true);
@@ -234,242 +237,252 @@ export default function Board({ boardId }: BoardProps) {
         nudgesLoading={nudgesLoading}
         onToggleAgenda={boardId ? () => setShowAgenda(!showAgenda) : undefined}
         agendaOpen={showAgenda}
+        viewMode={viewMode}
+        onViewModeChange={boardId ? setViewMode : undefined}
       />
 
-      <DndContext
-        id="board-dnd"
-        sensors={sensors}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="flex-1 overflow-x-auto overflow-y-auto">
-          <div className="min-w-[1380px]">
-            {/* Column headers */}
-            <div className="sticky top-0 z-20 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
-              <div className="grid grid-cols-6 gap-0">
-                {COLUMNS.map((col) => (
-                  <div
-                    key={col.key}
-                    className="px-3 py-2.5 border-r border-gray-200 dark:border-gray-800 last:border-r-0"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                        {col.label}
-                      </span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500 tabular-nums">
-                        {getColumnItemCount(col.key)}
-                      </span>
-                    </div>
-                    <span className="text-[10px] text-gray-400 dark:text-gray-600">
-                      {col.phase}
-                    </span>
+      {viewMode === "kanban" ? (
+        <>
+          <DndContext
+            id="board-dnd"
+            sensors={sensors}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="flex-1 overflow-x-auto overflow-y-auto">
+              <div className="min-w-[1380px]">
+                {/* Column headers */}
+                <div className="sticky top-0 z-20 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
+                  <div className="grid grid-cols-6 gap-0">
+                    {COLUMNS.map((col) => (
+                      <div
+                        key={col.key}
+                        className="px-3 py-2.5 border-r border-gray-200 dark:border-gray-800 last:border-r-0"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                            {col.label}
+                          </span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500 tabular-nums">
+                            {getColumnItemCount(col.key)}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-gray-400 dark:text-gray-600">
+                          {col.phase}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+
+                {/* Goal sections */}
+                <div className="divide-y divide-gray-200 dark:divide-gray-800">
+                  {goals
+                    .sort((a, b) => a.order - b.order)
+                    .map((goal) => {
+                      const goalOutcomes = outcomes
+                        .filter((o) => o.goalId === goal.id)
+                        .sort((a, b) => a.order - b.order);
+
+                      return (
+                        <div key={goal.id} id={goal.id}>
+                          {/* Goal header */}
+                          <div
+                            className="w-full flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-850 transition-colors text-left group cursor-pointer"
+                            onClick={() =>
+                              setModal({ type: "goal", goalId: goal.id })
+                            }
+                          >
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                dispatch({
+                                  type: "TOGGLE_GOAL_COLLAPSE",
+                                  goalId: goal.id,
+                                });
+                              }}
+                              className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors flex-shrink-0"
+                            >
+                              {goal.collapsed ? (
+                                <CaretRight
+                                  size={14}
+                                  weight="bold"
+                                  className="text-gray-400"
+                                />
+                              ) : (
+                                <CaretDown
+                                  size={14}
+                                  weight="bold"
+                                  className="text-gray-400"
+                                />
+                              )}
+                            </button>
+                            <Flag
+                              size={16}
+                              weight="duotone"
+                              className="text-indigo-500 dark:text-indigo-400 flex-shrink-0"
+                            />
+                            <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">
+                              {goal.statement}
+                            </span>
+                            {goal.timeframe && (
+                              <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">
+                                {goal.timeframe}
+                              </span>
+                            )}
+                            <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
+                              {goalOutcomes.length} outcome
+                              {goalOutcomes.length !== 1 ? "s" : ""}
+                            </span>
+                          </div>
+
+                          {/* Outcomes within this goal */}
+                          {!goal.collapsed && (
+                            <div className="divide-y divide-gray-100 dark:divide-gray-800/50">
+                              {goalOutcomes.map((outcome) => (
+                                <div key={outcome.id} id={outcome.id}>
+                                  {/* Outcome header */}
+                                  <div
+                                    className="w-full flex items-center gap-2 pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-950 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors text-left cursor-pointer"
+                                    onClick={() =>
+                                      setModal({
+                                        type: "outcome",
+                                        outcomeId: outcome.id,
+                                      })
+                                    }
+                                  >
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        dispatch({
+                                          type: "TOGGLE_OUTCOME_COLLAPSE",
+                                          outcomeId: outcome.id,
+                                        });
+                                      }}
+                                      className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors flex-shrink-0"
+                                    >
+                                      {outcome.collapsed ? (
+                                        <CaretRight
+                                          size={12}
+                                          weight="bold"
+                                          className="text-gray-400"
+                                        />
+                                      ) : (
+                                        <CaretDown
+                                          size={12}
+                                          weight="bold"
+                                          className="text-gray-400"
+                                        />
+                                      )}
+                                    </button>
+                                    <Target
+                                      size={14}
+                                      weight="duotone"
+                                      className="text-teal-500 dark:text-teal-400 flex-shrink-0"
+                                    />
+                                    <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                                      {outcome.statement}
+                                    </span>
+                                    {outcome.measureOfSuccess && (
+                                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-2 truncate max-w-xs">
+                                        {outcome.measureOfSuccess}
+                                      </span>
+                                    )}
+                                    {!outcome.measureOfSuccess && (
+                                      <span className="text-xs text-gray-400 dark:text-gray-500 italic ml-2">
+                                        No measure
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Outcome-level nudges */}
+                                  {getNudgesForOutcome(outcome.id).length > 0 && (
+                                    <div className="pl-14 pr-4 pb-2">
+                                      {getNudgesForOutcome(outcome.id).map(
+                                        (nudge) => (
+                                          <NudgeBadge
+                                            key={nudge.id}
+                                            nudge={nudge}
+                                            onSpar={() =>
+                                              setSparringNudgeId(nudge.id)
+                                            }
+                                          />
+                                        )
+                                      )}
+                                    </div>
+                                  )}
+
+                                  {/* Column slots for this outcome */}
+                                  {!outcome.collapsed && renderItemGrid(outcome.id)}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                  {/* Unlinked section */}
+                  {(unlinkedItems.length > 0 || unlinkedOutcomes.length > 0) && (
+                    <div>
+                      <div className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-900">
+                        <LinkBreak
+                          size={16}
+                          weight="duotone"
+                          className="text-gray-400 dark:text-gray-500 flex-shrink-0"
+                        />
+                        <span className="font-semibold text-sm text-gray-500 dark:text-gray-400">
+                          Unlinked
+                        </span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
+                          {unlinkedItems.length} item
+                          {unlinkedItems.length !== 1 ? "s" : ""}
+                        </span>
+                      </div>
+
+                      {/* Unlinked outcomes */}
+                      {unlinkedOutcomes.map((outcome) => (
+                        <div key={outcome.id}>
+                          <div className="flex items-center gap-2 pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-950">
+                            <Target
+                              size={14}
+                              weight="duotone"
+                              className="text-gray-400 flex-shrink-0"
+                            />
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                              {outcome.statement}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Unlinked items in columns */}
+                      {renderItemGrid(null)}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Goal sections */}
-            <div className="divide-y divide-gray-200 dark:divide-gray-800">
-              {goals
-                .sort((a, b) => a.order - b.order)
-                .map((goal) => {
-                  const goalOutcomes = outcomes
-                    .filter((o) => o.goalId === goal.id)
-                    .sort((a, b) => a.order - b.order);
-
-                  return (
-                    <div key={goal.id} id={goal.id}>
-                      {/* Goal header */}
-                      <div
-                        className="w-full flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-850 transition-colors text-left group cursor-pointer"
-                        onClick={() =>
-                          setModal({ type: "goal", goalId: goal.id })
-                        }
-                      >
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            dispatch({
-                              type: "TOGGLE_GOAL_COLLAPSE",
-                              goalId: goal.id,
-                            });
-                          }}
-                          className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors flex-shrink-0"
-                        >
-                          {goal.collapsed ? (
-                            <CaretRight
-                              size={14}
-                              weight="bold"
-                              className="text-gray-400"
-                            />
-                          ) : (
-                            <CaretDown
-                              size={14}
-                              weight="bold"
-                              className="text-gray-400"
-                            />
-                          )}
-                        </button>
-                        <Flag
-                          size={16}
-                          weight="duotone"
-                          className="text-indigo-500 dark:text-indigo-400 flex-shrink-0"
-                        />
-                        <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">
-                          {goal.statement}
-                        </span>
-                        {goal.timeframe && (
-                          <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">
-                            {goal.timeframe}
-                          </span>
-                        )}
-                        <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
-                          {goalOutcomes.length} outcome
-                          {goalOutcomes.length !== 1 ? "s" : ""}
-                        </span>
-                      </div>
-
-                      {/* Outcomes within this goal */}
-                      {!goal.collapsed && (
-                        <div className="divide-y divide-gray-100 dark:divide-gray-800/50">
-                          {goalOutcomes.map((outcome) => (
-                            <div key={outcome.id} id={outcome.id}>
-                              {/* Outcome header */}
-                              <div
-                                className="w-full flex items-center gap-2 pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-950 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors text-left cursor-pointer"
-                                onClick={() =>
-                                  setModal({
-                                    type: "outcome",
-                                    outcomeId: outcome.id,
-                                  })
-                                }
-                              >
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    dispatch({
-                                      type: "TOGGLE_OUTCOME_COLLAPSE",
-                                      outcomeId: outcome.id,
-                                    });
-                                  }}
-                                  className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors flex-shrink-0"
-                                >
-                                  {outcome.collapsed ? (
-                                    <CaretRight
-                                      size={12}
-                                      weight="bold"
-                                      className="text-gray-400"
-                                    />
-                                  ) : (
-                                    <CaretDown
-                                      size={12}
-                                      weight="bold"
-                                      className="text-gray-400"
-                                    />
-                                  )}
-                                </button>
-                                <Target
-                                  size={14}
-                                  weight="duotone"
-                                  className="text-teal-500 dark:text-teal-400 flex-shrink-0"
-                                />
-                                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                                  {outcome.statement}
-                                </span>
-                                {outcome.measureOfSuccess && (
-                                  <span className="text-xs text-gray-400 dark:text-gray-500 ml-2 truncate max-w-xs">
-                                    {outcome.measureOfSuccess}
-                                  </span>
-                                )}
-                                {!outcome.measureOfSuccess && (
-                                  <span className="text-xs text-gray-400 dark:text-gray-500 italic ml-2">
-                                    No measure
-                                  </span>
-                                )}
-                              </div>
-
-                              {/* Outcome-level nudges */}
-                              {getNudgesForOutcome(outcome.id).length > 0 && (
-                                <div className="pl-14 pr-4 pb-2">
-                                  {getNudgesForOutcome(outcome.id).map(
-                                    (nudge) => (
-                                      <NudgeBadge
-                                        key={nudge.id}
-                                        nudge={nudge}
-                                        onSpar={() =>
-                                          setSparringNudgeId(nudge.id)
-                                        }
-                                      />
-                                    )
-                                  )}
-                                </div>
-                              )}
-
-                              {/* Column slots for this outcome */}
-                              {!outcome.collapsed && renderItemGrid(outcome.id)}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-
-              {/* Unlinked section */}
-              {(unlinkedItems.length > 0 || unlinkedOutcomes.length > 0) && (
-                <div>
-                  <div className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-900">
-                    <LinkBreak
-                      size={16}
-                      weight="duotone"
-                      className="text-gray-400 dark:text-gray-500 flex-shrink-0"
-                    />
-                    <span className="font-semibold text-sm text-gray-500 dark:text-gray-400">
-                      Unlinked
-                    </span>
-                    <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
-                      {unlinkedItems.length} item
-                      {unlinkedItems.length !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-
-                  {/* Unlinked outcomes */}
-                  {unlinkedOutcomes.map((outcome) => (
-                    <div key={outcome.id}>
-                      <div className="flex items-center gap-2 pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-950">
-                        <Target
-                          size={14}
-                          weight="duotone"
-                          className="text-gray-400 flex-shrink-0"
-                        />
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                          {outcome.statement}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Unlinked items in columns */}
-                  {renderItemGrid(null)}
+            {/* Drag overlay */}
+            <DragOverlay>
+              {activeItem && (
+                <div className="rotate-2 opacity-90">
+                  <WorkItemCard
+                    item={activeItem}
+                    nudges={getNudgesForItem(activeItem.id)}
+                    discoveryPrompts={getDiscoveryPrompts(activeItem.id)}
+                  />
                 </div>
               )}
-            </div>
-          </div>
+            </DragOverlay>
+          </DndContext>
+        </>
+      ) : (
+        <div className="flex-1 overflow-y-auto p-6">
+          <p className="text-gray-400 text-sm">Hierarchy view coming soon...</p>
         </div>
-
-        {/* Drag overlay */}
-        <DragOverlay>
-          {activeItem && (
-            <div className="rotate-2 opacity-90">
-              <WorkItemCard
-                item={activeItem}
-                nudges={getNudgesForItem(activeItem.id)}
-                discoveryPrompts={getDiscoveryPrompts(activeItem.id)}
-              />
-            </div>
-          )}
-        </DragOverlay>
-      </DndContext>
+      )}
 
       {/* Detail modals */}
       {modal?.type === "card" &&
