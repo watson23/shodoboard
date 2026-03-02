@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { Sun, Moon, Monitor, ArrowCounterClockwise, Check, Lightning, Export, ListChecks, TreeStructure, Kanban } from "@phosphor-icons/react";
+import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban } from "@phosphor-icons/react";
 import { useTheme } from "@/hooks/useTheme";
 import { useBoard } from "@/hooks/useBoard";
 import { generateMarkdownExport, downloadMarkdown } from "@/lib/export";
@@ -167,14 +166,6 @@ export default function BoardHeader({ saveStatus, boardId, onRefreshNudges, nudg
         >
           <ThemeIcon size={18} weight="duotone" />
         </button>
-        <Link
-          href="/intake"
-          onClick={() => dispatch({ type: "RESET_BOARD" })}
-          className="flex items-center gap-1.5 text-xs text-indigo-200 hover:text-white transition-colors px-2 py-1.5 rounded-lg hover:bg-indigo-500"
-        >
-          <ArrowCounterClockwise size={14} weight="bold" />
-          Start over
-        </Link>
       </div>
     </header>
   );
