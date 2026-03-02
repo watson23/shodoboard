@@ -47,10 +47,10 @@ export default function NudgeBadge({ nudge, onSpar, initialExpanded = false }: N
         <button
           onClick={(e) => {
             e.stopPropagation();
-            dispatch({ type: "DISMISS_NUDGE", nudgeId: nudge.id });
+            setExpanded(false);
           }}
           className="p-0.5 text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors flex-shrink-0"
-          title="Dismiss"
+          title="Close"
         >
           <X size={11} weight="bold" />
         </button>
@@ -84,10 +84,10 @@ export default function NudgeBadge({ nudge, onSpar, initialExpanded = false }: N
         )}
         <button
           onClick={() => dispatch({ type: "DISMISS_NUDGE", nudgeId: nudge.id })}
-          className="ml-auto p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-          title="Dismiss"
+          className="ml-auto flex items-center gap-1 text-[10px] text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors px-1.5 py-0.5 rounded hover:bg-red-50 dark:hover:bg-red-950/20"
         >
-          <X size={12} weight="bold" />
+          <X size={10} weight="bold" />
+          Dismiss
         </button>
       </div>
     </div>

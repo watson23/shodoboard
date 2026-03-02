@@ -3,7 +3,7 @@
 import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban } from "@phosphor-icons/react";
 import { useTheme } from "@/hooks/useTheme";
 import { useBoard } from "@/hooks/useBoard";
-import { generateMarkdownExport, downloadMarkdown } from "@/lib/export";
+import { openPrintableExport } from "@/lib/export";
 import type { SaveStatus } from "@/hooks/useAutoSave";
 
 function ShodoLogoSmall() {
@@ -48,8 +48,7 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
   const { state, dispatch } = useBoard();
 
   const handleExport = () => {
-    const markdown = generateMarkdownExport(state);
-    downloadMarkdown(markdown, `shodoboard-export-${new Date().toISOString().slice(0, 10)}.md`);
+    openPrintableExport(state);
   };
 
   const cycleTheme = () => {
@@ -155,7 +154,7 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
         <button
           onClick={handleExport}
           className="flex items-center gap-1.5 text-xs text-indigo-200 hover:text-white transition-colors px-2 py-1.5 rounded-lg hover:bg-indigo-500"
-          title="Export board as Markdown"
+          title="Export board as PDF"
         >
           <Export size={14} weight="bold" />
           Export

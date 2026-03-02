@@ -265,12 +265,146 @@ export function generateMarkdownExport(state: BoardState): string {
   return lines.join("\n");
 }
 
-export function downloadMarkdown(content: string, filename: string) {
-  const blob = new Blob([content], { type: "text/markdown" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+export function openPrintableExport(state: BoardState) {
+  const analysis = computeBoardAnalysis(state);
+  const productName = state.productName || "Board Export";
+  const date = new Date().toLocaleDateString("fi-FI");
+  const sortedGoals = [...state.goals].sort((a, b) => a.order - b.order);
+  const sortedFocusItems = [...state.focusItems].sort((a, b) => {
+    const p = { high: 0, medium: 1, low: 2 };
+    return p[a.priority] - p[b.priority];
+  });
+  const unlinkedItems = state.items.filter((i) => i.outcomeId === null);
+
+  const discoveryRatio =
+    analysis.totalItems > 0 ? Math.round((analysis.discoveryCount / analysis.totalItems) * 100) : 0;
+
+  // Build findings
+  const findings: string[] = [];
+  if (discoveryRatio < 20 && analysis.totalItems > 0) {
+    findings.push(`<li><strong>Output-painotteinen backlog:</strong> Discovery-itemejä on vain ${discoveryRatio} % — viittaa feature factory -malliin.</li>`);
+  }
+  if (analysis.outcomesWithoutMeasure > 0) {
+    findings.push(`<li><strong>Mittaamattomia outcomeja:</strong> ${analysis.outcomesWithoutMeasure} outcomelta puuttuu onnistumismittari.</li>`);
+  }
+  if (analysis.unlinkedCount > 0) {
+    findings.push(`<li><strong>Orpoja itemejiä:</strong> ${analysis.unlinkedCount} itemiä ei ole yhdistetty outcomeen.</li>`);
+  }
+
+  // Build board overview
+  let boardOverview = "";
+  for (const goal of sortedGoals) {
+    boardOverview += `<h3 style="color:#3730a3;margin:24px 0 8px 0;font-size:16px;">${goal.statement}</h3>`;
+    if (goal.timeframe) boardOverview += `<p style="color:#6b7280;font-size:13px;margin:0 0 12px 0;">Aikajänne: ${goal.timeframe}</p>`;
+
+    const goalOutcomes = state.outcomes.filter((o) => o.goalId === goal.id).sort((a, b) => a.order - b.order);
+    for (const outcome of goalOutcomes) {
+      const measureText = outcome.measureOfSuccess?.trim()
+        ? outcome.measureOfSuccess
+        : '<span style="color:#d97706;">⚠️ Mittari puuttuu</span>';
+      boardOverview += `<div style="margin:0 0 16px 16px;padding:12px 16px;border-left:3px solid #6366f1;background:#f8fafc;border-radius:0 8px 8px 0;">`;
+      boardOverview += `<p style="font-weight:600;margin:0 0 4px 0;font-size:14px;">${outcome.statement}</p>`;
+      boardOverview += `<p style="font-size:12px;color:#6b7280;margin:0 0 8px 0;">Mittari: ${measureText}</p>`;
+
+      const outcomeItems = state.items.filter((i) => i.outcomeId === outcome.id).sort((a, b) => a.order - b.order);
+      if (outcomeItems.length > 0) {
+        boardOverview += `<ul style="margin:0;padding:0 0 0 16px;font-size:13px;">`;
+        for (const item of outcomeItems) {
+          const typeColor = item.type === "discovery" ? "#7c3aed" : "#0d9488";
+          const typeLabel = item.type === "discovery" ? "Dis" : "Del";
+          const col = item.column.charAt(0).toUpperCase() + item.column.slice(1);
+          boardOverview += `<li style="margin:2px 0;"><span style="color:${typeColor};font-weight:600;font-size:11px;">[${typeLabel}]</span> ${item.title} <span style="color:#9ca3af;font-size:11px;">(${col})</span></li>`;
+        }
+        boardOverview += `</ul>`;
+      }
+      boardOverview += `</div>`;
+    }
+  }
+
+  // Unlinked items
+  let unlinkedSection = "";
+  if (unlinkedItems.length > 0) {
+    unlinkedSection = `<h3 style="color:#d97706;margin:24px 0 8px 0;font-size:16px;">⚠️ Orpot itemit (ei outcome-yhteyttä)</h3><ul style="font-size:13px;">`;
+    for (const item of unlinkedItems) {
+      const typeColor = item.type === "discovery" ? "#7c3aed" : "#0d9488";
+      const typeLabel = item.type === "discovery" ? "Dis" : "Del";
+      unlinkedSection += `<li><span style="color:${typeColor};font-weight:600;font-size:11px;">[${typeLabel}]</span> ${item.title}</li>`;
+    }
+    unlinkedSection += `</ul>`;
+  }
+
+  // Focus items
+  let focusSection = "";
+  if (sortedFocusItems.length > 0) {
+    focusSection = `<h2 style="color:#1e1b4b;border-bottom:2px solid #e5e7eb;padding-bottom:8px;margin-top:32px;">Suositellut painopisteet</h2><ul style="font-size:14px;">`;
+    for (const fi of sortedFocusItems) {
+      const badge = fi.priority === "high" ? "🔴 Korkea" : fi.priority === "medium" ? "🟡 Keskitaso" : "🟢 Matala";
+      focusSection += `<li style="margin:8px 0;"><strong>${badge}</strong> — ${fi.title}<br/><span style="color:#6b7280;font-size:12px;">${fi.suggestedAction}</span></li>`;
+    }
+    focusSection += `</ul>`;
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="utf-8" />
+<title>Shodoboard — ${productName}</title>
+<style>
+  @media print {
+    body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .no-print { display: none !important; }
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 24px; color: #1f2937; line-height: 1.6; }
+  h1 { color: #312e81; margin: 0; font-size: 28px; }
+  h2 { color: #1e1b4b; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; margin-top: 32px; font-size: 20px; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+  th, td { border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; }
+  th { background: #f3f4f6; font-weight: 600; }
+  .header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 3px solid #4f46e5; }
+  .header-logo { width: 48px; height: 48px; background: #4f46e5; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px; }
+  .print-btn { background: #4f46e5; color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+  .print-btn:hover { background: #3730a3; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-logo">S</div>
+  <div>
+    <h1>Shodoboard</h1>
+    <p style="margin:4px 0 0 0;color:#6b7280;font-size:14px;">${productName} — ${date}</p>
+  </div>
+  <div style="margin-left:auto;" class="no-print">
+    <button class="print-btn" onclick="window.print()">💾 Save as PDF</button>
+  </div>
+</div>
+
+<h2>Yhteenveto</h2>
+<table>
+  <tr><th>Mittari</th><th>Arvo</th></tr>
+  <tr><td>Tavoitteita</td><td>${analysis.totalGoals}</td></tr>
+  <tr><td>Outcomeja</td><td>${analysis.totalOutcomes}</td></tr>
+  <tr><td>Työ-itemejiä</td><td>${analysis.totalItems}</td></tr>
+  <tr><td>Discovery-osuus</td><td>${discoveryRatio} %</td></tr>
+  <tr><td>Mittaamattomat outcomet</td><td>${analysis.outcomesWithoutMeasure}</td></tr>
+  <tr><td>Orpoja itemejiä</td><td>${analysis.unlinkedCount}</td></tr>
+</table>
+
+${findings.length > 0 ? `<h2>Keskeiset havainnot</h2><ul>${findings.join("")}</ul>` : ""}
+
+${focusSection}
+
+<h2>Taulun yleiskatsaus</h2>
+${boardOverview}
+${unlinkedSection}
+
+<hr style="margin:32px 0;border:none;border-top:2px solid #e5e7eb;" />
+<p style="text-align:center;color:#9ca3af;font-size:12px;">Luotu Shodoboardilla</p>
+</body>
+</html>`;
+
+  const win = window.open("", "_blank");
+  if (win) {
+    win.document.write(html);
+    win.document.close();
+  }
 }

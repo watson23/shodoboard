@@ -644,13 +644,11 @@ export default function Board({ boardId }: BoardProps) {
         (() => {
           const item = items.find((i) => i.id === modal.itemId);
           if (!item) return null;
-          const outcome = outcomes.find((o) => o.id === item.outcomeId);
           return (
             <CardDetailModal
               item={item}
               nudges={getNudgesForItem(item.id)}
               discoveryPrompts={getDiscoveryPrompts(item.id)}
-              outcomeName={outcome?.statement}
               onClose={() => setModal(null)}
               onSpar={(nudgeId) => setSparringNudgeId(nudgeId)}
             />
@@ -733,6 +731,41 @@ export default function Board({ boardId }: BoardProps) {
                 dispatch({ type: "UPDATE_ITEM", itemId: suggestion.targetId, updates: suggestion.changes as Partial<WorkItem> });
               } else if (suggestion.action === "update_goal" && suggestion.targetId) {
                 dispatch({ type: "UPDATE_GOAL", goalId: suggestion.targetId, updates: suggestion.changes as Partial<BusinessGoal> });
+              } else if (suggestion.action === "add_item") {
+                // targetId = outcomeId to link to; fall back to nudge target's outcome
+                let outcomeId = suggestion.targetId || null;
+                if (!outcomeId && nudge.targetType === "outcome") {
+                  outcomeId = nudge.targetId;
+                } else if (!outcomeId && nudge.targetType === "item") {
+                  const sourceItem = items.find(i => i.id === nudge.targetId);
+                  outcomeId = sourceItem?.outcomeId || null;
+                }
+                const changes = suggestion.changes as Record<string, unknown>;
+                const newItem: WorkItem = {
+                  id: generateId("item"),
+                  outcomeId,
+                  title: (changes.title as string) || "Uusi työ",
+                  description: (changes.description as string) || "",
+                  type: (changes.type as "discovery" | "delivery") || "discovery",
+                  column: "opportunities",
+                  order: items.filter(i => i.outcomeId === outcomeId).length,
+                };
+                dispatch({ type: "ADD_ITEM", item: newItem });
+              } else if (suggestion.action === "split_item" && suggestion.targetId) {
+                const sourceItem = items.find(i => i.id === suggestion.targetId);
+                if (sourceItem) {
+                  const changes = suggestion.changes as Record<string, unknown>;
+                  const newItem: WorkItem = {
+                    id: generateId("item"),
+                    outcomeId: sourceItem.outcomeId,
+                    title: (changes.title as string) || "Split: " + sourceItem.title,
+                    description: (changes.description as string) || "",
+                    type: (changes.type as "discovery" | "delivery") || "discovery",
+                    column: "opportunities",
+                    order: items.filter(i => i.outcomeId === sourceItem.outcomeId).length,
+                  };
+                  dispatch({ type: "ADD_ITEM", item: newItem });
+                }
               }
               setSparringNudgeId(null);
             }}

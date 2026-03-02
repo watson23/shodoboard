@@ -20,7 +20,6 @@ interface CardDetailModalProps {
   item: WorkItem;
   nudges: Nudge[];
   discoveryPrompts: DiscoveryPrompt[];
-  outcomeName?: string;
   onClose: () => void;
   onSpar?: (nudgeId: string) => void;
 }
@@ -29,16 +28,16 @@ export default function CardDetailModal({
   item,
   nudges,
   discoveryPrompts,
-  outcomeName,
   onClose,
   onSpar,
 }: CardDetailModalProps) {
-  const { dispatch } = useBoard();
+  const { dispatch, state: boardState } = useBoard();
   const [title, setTitle] = useState(item.title);
   const [description, setDescription] = useState(item.description);
   const [assignee, setAssignee] = useState(item.assignee || "");
   const [column, setColumn] = useState<Column>(item.column);
   const [type, setType] = useState(item.type);
+  const [outcomeId, setOutcomeId] = useState<string | null>(item.outcomeId);
 
   const save = () => {
     dispatch({
@@ -47,6 +46,22 @@ export default function CardDetailModal({
       updates: { title, description, assignee: assignee || undefined, column, type },
     });
   };
+
+  const outcomeOptions = (() => {
+    const options: { value: string | null; label: string; group?: string }[] = [
+      { value: null, label: "— Unlinked —" },
+    ];
+    const sortedGoals = [...boardState.goals].sort((a, b) => a.order - b.order);
+    for (const goal of sortedGoals) {
+      const goalOutcomes = boardState.outcomes
+        .filter((o) => o.goalId === goal.id)
+        .sort((a, b) => a.order - b.order);
+      for (const o of goalOutcomes) {
+        options.push({ value: o.id, label: o.statement, group: goal.statement });
+      }
+    }
+    return options;
+  })();
 
   const activeNudges = nudges.filter((n) => n.status === "active");
 
@@ -83,16 +98,26 @@ export default function CardDetailModal({
           </div>
 
           {/* Parent outcome */}
-          {outcomeName && (
-            <div>
-              <label className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide font-medium">
-                Outcome
-              </label>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">
-                {outcomeName}
-              </p>
-            </div>
-          )}
+          <div>
+            <label className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide font-medium block mb-1.5">
+              Outcome
+            </label>
+            <select
+              value={outcomeId ?? ""}
+              onChange={(e) => {
+                const val = e.target.value === "" ? null : e.target.value;
+                setOutcomeId(val);
+                dispatch({ type: "UPDATE_ITEM", itemId: item.id, updates: { outcomeId: val } });
+              }}
+              className="w-full bg-gray-100 dark:bg-gray-800 border-none rounded-lg text-xs text-gray-700 dark:text-gray-300 py-1.5 px-2 outline-none focus:ring-2 focus:ring-indigo-500/40"
+            >
+              {outcomeOptions.map((opt) => (
+                <option key={opt.value ?? "unlinked"} value={opt.value ?? ""}>
+                  {opt.group ? `${opt.group} → ` : ""}{opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {/* Type toggle + Column */}
           <div className="flex gap-3">

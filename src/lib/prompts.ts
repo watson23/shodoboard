@@ -133,11 +133,15 @@ When you want to suggest a concrete board change, include a JSON block:
 \`\`\`json
 {
   "type": "suggestion",
-  "action": "update_outcome|update_item|add_item|split_item",
+  "action": "update_outcome|update_item|add_item|split_item|update_goal",
   "targetId": "...",
   "changes": { ... }
 }
 \`\`\`
+
+For add_item: targetId should be the outcomeId to link the new item to. changes should include { "title": "...", "type": "discovery|delivery", "description": "..." }.
+For split_item: targetId should be the existing item ID. changes should include { "title": "..." } for the new split-off item.
+For updates: targetId is the entity being updated, changes are the fields to modify.
 
 Keep conversations to 3-4 exchanges maximum. After that, push to action.`;
 
