@@ -34,7 +34,7 @@ export default function NudgeBadge({ nudge, onSpar, initialExpanded = false }: N
     }
     // visible tier — shown as banner, click to expand
     return (
-      <div className="w-full flex items-center gap-1 px-3 py-2 bg-indigo-50 dark:bg-indigo-950/30 border-b border-indigo-200 dark:border-indigo-800/50 text-xs text-indigo-700 dark:text-indigo-300 rounded-t-lg">
+      <div className="w-full flex items-center gap-1 px-3 py-1.5 bg-indigo-50/60 dark:bg-indigo-950/20 border-b border-indigo-100 dark:border-indigo-800/30 text-[11px] text-indigo-600 dark:text-indigo-400 rounded-t-lg">
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -61,9 +61,9 @@ export default function NudgeBadge({ nudge, onSpar, initialExpanded = false }: N
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/50 rounded-lg p-3 space-y-2 animate-slide-in"
+      className="bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-800/30 rounded-lg p-2.5 space-y-1.5 animate-slide-in"
     >
-      <p className="text-xs text-indigo-800 dark:text-indigo-200 leading-relaxed">
+      <p className="text-[11px] text-indigo-700 dark:text-indigo-300 leading-relaxed">
         {nudge.message} <span className="font-medium">{nudge.question}</span>
       </p>
       {nudge.suggestedAction && (
