@@ -11,6 +11,7 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { useBoard } from "@/hooks/useBoard";
+import { useAutoSave } from "@/hooks/useAutoSave";
 import BoardHeader from "./BoardHeader";
 import WorkItemCard from "./WorkItemCard";
 import DraggableCard from "./DraggableCard";
@@ -44,8 +45,13 @@ const COLUMNS: { key: Column; label: string; phase: string }[] = [
   { key: "measuring", label: "Measuring", phase: "Closing the loop" },
 ];
 
-export default function Board() {
+interface BoardProps {
+  boardId?: string;
+}
+
+export default function Board({ boardId }: BoardProps) {
   const { state, dispatch } = useBoard();
+  const saveStatus = useAutoSave(boardId ?? null, state);
   const { goals, outcomes, items, nudges, discoveryPrompts } = state;
   const [modal, setModal] = useState<ModalState>(null);
   const [sparringNudgeId, setSparringNudgeId] = useState<string | null>(null);
@@ -129,7 +135,7 @@ export default function Board() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
-      <BoardHeader />
+      <BoardHeader saveStatus={saveStatus} boardId={boardId} />
 
       <DndContext
         id="board-dnd"

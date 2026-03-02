@@ -14,9 +14,10 @@ import type {
   WorkItem,
   Outcome,
   BusinessGoal,
+  Nudge,
 } from "@/types/board";
 
-type BoardAction =
+export type BoardAction =
   | { type: "MOVE_ITEM"; itemId: string; toColumn: Column; toIndex: number }
   | { type: "TOGGLE_GOAL_COLLAPSE"; goalId: string }
   | { type: "TOGGLE_OUTCOME_COLLAPSE"; outcomeId: string }
@@ -26,7 +27,9 @@ type BoardAction =
   | { type: "UPDATE_ITEM"; itemId: string; updates: Partial<WorkItem> }
   | { type: "UPDATE_OUTCOME"; outcomeId: string; updates: Partial<Outcome> }
   | { type: "UPDATE_GOAL"; goalId: string; updates: Partial<BusinessGoal> }
-  | { type: "RESET_BOARD" };
+  | { type: "RESET_BOARD" }
+  | { type: "SET_STATE"; state: BoardState }
+  | { type: "SET_NUDGES"; nudges: Nudge[] };
 
 function boardReducer(state: BoardState, action: BoardAction): BoardState {
   switch (action.type) {
@@ -98,6 +101,12 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
     case "RESET_BOARD":
       return SEED_DATA;
 
+    case "SET_STATE":
+      return action.state;
+
+    case "SET_NUDGES":
+      return { ...state, nudges: action.nudges };
+
     default:
       return state;
   }
@@ -113,8 +122,14 @@ const BoardCtx = createContext<BoardContextValue>({
   dispatch: () => {},
 });
 
-export function BoardProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(boardReducer, SEED_DATA);
+export function BoardProvider({
+  children,
+  initialState,
+}: {
+  children: ReactNode;
+  initialState?: BoardState;
+}) {
+  const [state, dispatch] = useReducer(boardReducer, initialState ?? SEED_DATA);
 
   return createElement(
     BoardCtx.Provider,

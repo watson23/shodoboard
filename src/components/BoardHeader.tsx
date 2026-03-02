@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Sun, Moon, Monitor, ArrowCounterClockwise } from "@phosphor-icons/react";
+import { Sun, Moon, Monitor, ArrowCounterClockwise, Check } from "@phosphor-icons/react";
 import { useTheme } from "@/hooks/useTheme";
 import { useBoard } from "@/hooks/useBoard";
+import type { SaveStatus } from "@/hooks/useAutoSave";
 
 function ShodoLogoSmall() {
   return (
@@ -30,7 +31,12 @@ function ShodoLogoSmall() {
   );
 }
 
-export default function BoardHeader() {
+interface BoardHeaderProps {
+  saveStatus?: SaveStatus;
+  boardId?: string;
+}
+
+export default function BoardHeader({ saveStatus, boardId }: BoardHeaderProps) {
   const { theme, setTheme } = useTheme();
   const { dispatch } = useBoard();
 
@@ -54,7 +60,28 @@ export default function BoardHeader() {
         </span>
       </div>
 
-      <div className="ml-auto flex items-center gap-2">
+      {/* Save status / demo label */}
+      <div className="ml-auto flex items-center gap-3">
+        {!boardId && (
+          <span className="text-xs text-indigo-200/70 bg-indigo-500/30 px-2 py-0.5 rounded">
+            Demo
+          </span>
+        )}
+        {boardId && saveStatus === "saving" && (
+          <span className="text-xs text-indigo-200">Saving...</span>
+        )}
+        {boardId && saveStatus === "saved" && (
+          <span className="text-xs text-indigo-200 flex items-center gap-1">
+            <Check size={12} weight="bold" />
+            Saved
+          </span>
+        )}
+        {boardId && saveStatus === "error" && (
+          <span className="text-xs text-red-300">Save error</span>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2">
         <button
           onClick={cycleTheme}
           className="p-2 rounded-lg text-indigo-200 hover:text-white hover:bg-indigo-500 transition-colors"
