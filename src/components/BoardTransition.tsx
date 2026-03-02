@@ -4,18 +4,22 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Kanban } from "@phosphor-icons/react";
 
-export default function BoardTransition() {
+interface BoardTransitionProps {
+  redirectTo?: string;
+}
+
+export default function BoardTransition({ redirectTo = "/board" }: BoardTransitionProps) {
   const router = useRouter();
   const [phase, setPhase] = useState<"building" | "ready">("building");
 
   useEffect(() => {
     const timer1 = setTimeout(() => setPhase("ready"), 1200);
-    const timer2 = setTimeout(() => router.push("/board"), 1800);
+    const timer2 = setTimeout(() => router.push(redirectTo), 1800);
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
-  }, [router]);
+  }, [router, redirectTo]);
 
   return (
     <div className="fixed inset-0 bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center z-50">

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import ChatMessage from "./ChatMessage";
 import BoardTransition from "./BoardTransition";
 import { createBoard } from "@/lib/firestore";
@@ -114,14 +113,13 @@ export default function IntakeConversation({
   backlog,
   goals,
 }: IntakeConversationProps) {
-  const router = useRouter();
-
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [userInput, setUserInput] = useState("");
   const [boardData, setBoardData] = useState<BoardReadyData | null>(null);
   const [isCreatingBoard, setIsCreatingBoard] = useState(false);
   const [showTransition, setShowTransition] = useState(false);
+  const [createdBoardId, setCreatedBoardId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -229,12 +227,8 @@ export default function IntakeConversation({
       const conversationHistory = toConversationMessages(messages);
       const boardId = await createBoard(boardState, conversationHistory);
 
+      setCreatedBoardId(boardId);
       setShowTransition(true);
-
-      // Brief delay for transition animation, then redirect
-      setTimeout(() => {
-        router.push(`/board/${boardId}`);
-      }, 2000);
     } catch (err) {
       console.error("Failed to create board:", err);
       setError("Failed to create the board. Please try again.");
@@ -242,9 +236,9 @@ export default function IntakeConversation({
     }
   };
 
-  // Show transition animation
-  if (showTransition) {
-    return <BoardTransition />;
+  // Show transition animation — BoardTransition handles the redirect
+  if (showTransition && createdBoardId) {
+    return <BoardTransition redirectTo={`/board/${createdBoardId}`} />;
   }
 
   return (
