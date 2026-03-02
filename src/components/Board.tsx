@@ -29,6 +29,7 @@ import {
   Target,
   Flag,
   LinkBreak,
+  WarningCircle,
 } from "@phosphor-icons/react";
 import type { Column, WorkItem, BusinessGoal, Outcome, FocusItem, FocusItemStatus } from "@/types/board";
 
@@ -38,13 +39,13 @@ type ModalState =
   | { type: "goal"; goalId: string }
   | null;
 
-const COLUMNS: { key: Column; label: string; phase: string }[] = [
-  { key: "opportunities", label: "Opportunities", phase: "Discovery" },
-  { key: "discovering", label: "Discovering", phase: "Discovery" },
-  { key: "ready", label: "Ready", phase: "Transition" },
-  { key: "building", label: "Building", phase: "Delivery" },
-  { key: "shipped", label: "Shipped", phase: "Delivery" },
-  { key: "measuring", label: "Measuring", phase: "Closing the loop" },
+const COLUMNS: { key: Column; label: string; phase: string; phaseColor: string }[] = [
+  { key: "opportunities", label: "Opportunities", phase: "Discovery", phaseColor: "text-purple-500 dark:text-purple-400" },
+  { key: "discovering", label: "Discovering", phase: "Discovery", phaseColor: "text-purple-500 dark:text-purple-400" },
+  { key: "ready", label: "Ready", phase: "Transition", phaseColor: "text-amber-500 dark:text-amber-400" },
+  { key: "building", label: "Building", phase: "Delivery", phaseColor: "text-teal-500 dark:text-teal-400" },
+  { key: "shipped", label: "Shipped", phase: "Delivery", phaseColor: "text-teal-500 dark:text-teal-400" },
+  { key: "measuring", label: "Measuring", phase: "Closing the loop", phaseColor: "text-emerald-500 dark:text-emerald-400" },
 ];
 
 interface BoardProps {
@@ -200,7 +201,7 @@ export default function Board({ boardId }: BoardProps) {
   const unlinkedOutcomes = outcomes.filter((o) => o.goalId === null);
 
   const renderItemGrid = (outcomeId: string | null) => (
-    <div className="grid grid-cols-6 gap-0 min-h-[60px]">
+    <div className="grid grid-cols-6 gap-0 min-h-[36px] bg-gray-50/80 dark:bg-gray-950/50">
       {COLUMNS.map((col) => {
         const colItems = getItemsForOutcomeAndColumn(outcomeId, col.key);
         const droppableId = `${outcomeId ?? "unlinked"}:${col.key}`;
@@ -208,7 +209,7 @@ export default function Board({ boardId }: BoardProps) {
           <DroppableColumn
             key={col.key}
             id={droppableId}
-            className="border-r border-gray-100 dark:border-gray-800/50 last:border-r-0 px-2 py-2 space-y-2"
+            className="border-r border-gray-200/70 dark:border-gray-700/50 last:border-r-0 px-2 py-2 space-y-2"
           >
             {colItems.map((item) => (
               <div key={item.id} id={item.id}>
@@ -268,7 +269,7 @@ export default function Board({ boardId }: BoardProps) {
                             {getColumnItemCount(col.key)}
                           </span>
                         </div>
-                        <span className="text-[10px] text-gray-400 dark:text-gray-600">
+                        <span className={`text-[10px] font-medium ${col.phaseColor}`}>
                           {col.phase}
                         </span>
                       </div>
@@ -308,13 +309,13 @@ export default function Board({ boardId }: BoardProps) {
                                 <CaretRight
                                   size={14}
                                   weight="bold"
-                                  className="text-gray-400"
+                                  className="text-indigo-400 dark:text-indigo-300"
                                 />
                               ) : (
                                 <CaretDown
                                   size={14}
                                   weight="bold"
-                                  className="text-gray-400"
+                                  className="text-indigo-400 dark:text-indigo-300"
                                 />
                               )}
                             </button>
@@ -341,7 +342,7 @@ export default function Board({ boardId }: BoardProps) {
                           {!goal.collapsed && (
                             <div className="divide-y divide-gray-100 dark:divide-gray-800/50">
                               {goalOutcomes.map((outcome) => (
-                                <div key={outcome.id} id={outcome.id}>
+                                <div key={outcome.id} id={outcome.id} className="mx-2 mb-2 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-900">
                                   {/* Outcome header */}
                                   <div
                                     className="w-full flex items-center gap-2 pl-10 pr-4 py-2 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-850 transition-colors text-left cursor-pointer border-l-[3px] border-l-teal-400 dark:border-l-teal-500"
@@ -366,13 +367,13 @@ export default function Board({ boardId }: BoardProps) {
                                         <CaretRight
                                           size={12}
                                           weight="bold"
-                                          className="text-gray-400"
+                                          className="text-teal-400 dark:text-teal-300"
                                         />
                                       ) : (
                                         <CaretDown
                                           size={12}
                                           weight="bold"
-                                          className="text-gray-400"
+                                          className="text-teal-400 dark:text-teal-300"
                                         />
                                       )}
                                     </button>
@@ -390,8 +391,9 @@ export default function Board({ boardId }: BoardProps) {
                                       </span>
                                     )}
                                     {!outcome.measureOfSuccess && (
-                                      <span className="text-xs text-gray-400 dark:text-gray-500 italic ml-2">
-                                        No measure
+                                      <span className="text-xs text-amber-600 dark:text-amber-400 font-medium ml-2 flex items-center gap-1">
+                                        <WarningCircle size={12} weight="fill" />
+                                        Mittari puuttuu!
                                       </span>
                                     )}
                                   </div>
