@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Sun, Moon, Monitor, ArrowCounterClockwise, Check, Lightning, Export, ListChecks } from "@phosphor-icons/react";
+import { Sun, Moon, Monitor, ArrowCounterClockwise, Check, Lightning, Export, ListChecks, TreeStructure, Kanban } from "@phosphor-icons/react";
 import { useTheme } from "@/hooks/useTheme";
 import { useBoard } from "@/hooks/useBoard";
 import { generateMarkdownExport, downloadMarkdown } from "@/lib/export";
@@ -39,9 +39,11 @@ interface BoardHeaderProps {
   nudgesLoading?: boolean;
   onToggleAgenda?: () => void;
   agendaOpen?: boolean;
+  viewMode?: "hierarchy" | "kanban";
+  onViewModeChange?: (mode: "hierarchy" | "kanban") => void;
 }
 
-export default function BoardHeader({ saveStatus, boardId, onRefreshNudges, nudgesLoading, onToggleAgenda, agendaOpen }: BoardHeaderProps) {
+export default function BoardHeader({ saveStatus, boardId, onRefreshNudges, nudgesLoading, onToggleAgenda, agendaOpen, viewMode, onViewModeChange }: BoardHeaderProps) {
   const { theme, setTheme } = useTheme();
   const { state, dispatch } = useBoard();
 
@@ -71,6 +73,33 @@ export default function BoardHeader({ saveStatus, boardId, onRefreshNudges, nudg
           </span>
         )}
       </div>
+
+      {onViewModeChange && (
+        <div className="flex items-center bg-indigo-500/30 rounded-lg p-0.5">
+          <button
+            onClick={() => onViewModeChange("hierarchy")}
+            className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md transition-colors ${
+              viewMode === "hierarchy"
+                ? "bg-white/20 text-white font-semibold"
+                : "text-indigo-200 hover:text-white"
+            }`}
+          >
+            <TreeStructure size={14} weight="duotone" />
+            Hierarkia
+          </button>
+          <button
+            onClick={() => onViewModeChange("kanban")}
+            className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md transition-colors ${
+              viewMode === "kanban"
+                ? "bg-white/20 text-white font-semibold"
+                : "text-indigo-200 hover:text-white"
+            }`}
+          >
+            <Kanban size={14} weight="duotone" />
+            Board
+          </button>
+        </div>
+      )}
 
       {/* Save status / demo label */}
       <div className="ml-auto flex items-center gap-3">
