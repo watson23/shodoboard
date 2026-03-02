@@ -85,7 +85,7 @@ export default function BoardHeader({ saveStatus, boardId, onRefreshNudges, nudg
             }`}
           >
             <TreeStructure size={14} weight="duotone" />
-            Hierarkia
+            Tree View
           </button>
           <button
             onClick={() => onViewModeChange("kanban")}
