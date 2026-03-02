@@ -1,9 +1,97 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { INTAKE_SCRIPT } from "@/data/intake-script";
+import { useRouter } from "next/navigation";
 import ChatMessage from "./ChatMessage";
 import BoardTransition from "./BoardTransition";
+import { createBoard } from "@/lib/firestore";
+import type { BoardState, Column } from "@/types/board";
+import type { ConversationMessage } from "@/types/intake";
+import { PaperPlaneRight, Kanban } from "@phosphor-icons/react";
+
+// --- Types ---
+
+interface IntakeConversationProps {
+  backlog: string;
+  goals: string;
+}
+
+interface ChatMsg {
+  role: "ai" | "user";
+  text: string;
+}
+
+interface BoardReadyData {
+  type: "board_ready";
+  goals: Array<{ statement: string; timeframe?: string; metrics?: string[] }>;
+  outcomes: Array<{
+    goalIndex: number;
+    statement: string;
+    behaviorChange?: string;
+    measureOfSuccess?: string;
+  }>;
+  items: Array<{
+    outcomeIndex: number | null;
+    title: string;
+    description?: string;
+    type: string;
+    column?: string;
+  }>;
+}
+
+// --- Helpers ---
+
+function transformBoardData(data: BoardReadyData): BoardState {
+  const goals = data.goals.map((g, i) => ({
+    id: `goal-${i + 1}`,
+    statement: g.statement,
+    timeframe: g.timeframe || "",
+    metrics: g.metrics || [],
+    order: i,
+    collapsed: false,
+  }));
+
+  const outcomes = data.outcomes.map((o, i) => ({
+    id: `outcome-${i + 1}`,
+    goalId: o.goalIndex != null ? `goal-${o.goalIndex + 1}` : null,
+    statement: o.statement,
+    behaviorChange: o.behaviorChange || "",
+    measureOfSuccess: o.measureOfSuccess || "",
+    order: i,
+    collapsed: false,
+  }));
+
+  const items = data.items.map((item, i) => ({
+    id: `item-${i + 1}`,
+    outcomeId:
+      item.outcomeIndex != null ? `outcome-${item.outcomeIndex + 1}` : null,
+    title: item.title,
+    description: item.description || "",
+    type: (item.type === "discovery" ? "discovery" : "delivery") as
+      | "discovery"
+      | "delivery",
+    column: (item.column || "opportunities") as Column,
+    order: i,
+  }));
+
+  return {
+    goals,
+    outcomes,
+    items,
+    nudges: [],
+    discoveryPrompts: [],
+  };
+}
+
+function toConversationMessages(msgs: ChatMsg[]): ConversationMessage[] {
+  return msgs.map((m, i) => ({
+    id: `msg-${i + 1}`,
+    role: m.role,
+    text: m.text,
+  }));
+}
+
+// --- Sub-components ---
 
 function TypingIndicator() {
   return (
@@ -20,21 +108,27 @@ function TypingIndicator() {
   );
 }
 
-export default function IntakeConversation() {
-  const [visibleSteps, setVisibleSteps] = useState<number[]>([]);
-  const [isTyping, setIsTyping] = useState(false);
-  const [nextStepIndex, setNextStepIndex] = useState(0);
-  const [showTransition, setShowTransition] = useState(false);
-  const [userTyping, setUserTyping] = useState<{
-    stepIndex: number;
-    charCount: number;
-    fullText: string;
-  } | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const isAdvancing = useRef(false);
-  const typingInterval = useRef<ReturnType<typeof setInterval> | null>(null);
-  const finalizingTyping = useRef(false);
+// --- Main Component ---
 
+export default function IntakeConversation({
+  backlog,
+  goals,
+}: IntakeConversationProps) {
+  const router = useRouter();
+
+  const [messages, setMessages] = useState<ChatMsg[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userInput, setUserInput] = useState("");
+  const [boardData, setBoardData] = useState<BoardReadyData | null>(null);
+  const [isCreatingBoard, setIsCreatingBoard] = useState(false);
+  const [showTransition, setShowTransition] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const hasMounted = useRef(false);
+
+  // Auto-scroll to bottom when messages change
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({
@@ -44,120 +138,111 @@ export default function IntakeConversation() {
     }
   }, []);
 
-  // Auto-scroll when messages change or user is typing
   useEffect(() => {
     scrollToBottom();
-  }, [visibleSteps, isTyping, userTyping?.charCount, scrollToBottom]);
+  }, [messages, isLoading, scrollToBottom]);
 
-  // Clean up typing interval on unmount
+  // Focus input after AI responds
   useEffect(() => {
-    return () => {
-      if (typingInterval.current) clearInterval(typingInterval.current);
-    };
-  }, []);
-
-  // Advance to the next AI message(s) automatically
-  const advanceToNextAI = useCallback(() => {
-    if (isAdvancing.current) return;
-    if (nextStepIndex >= INTAKE_SCRIPT.length) return;
-
-    const step = INTAKE_SCRIPT[nextStepIndex];
-    if (step.role !== "ai") return;
-
-    isAdvancing.current = true;
-    setIsTyping(true);
-
-    const showMessage = () => {
-      setIsTyping(false);
-      setVisibleSteps((prev) => [...prev, nextStepIndex]);
-
-      const nextIdx = nextStepIndex + 1;
-      setNextStepIndex(nextIdx);
-      isAdvancing.current = false;
-
-      // If the next step is also an AI message, chain it
-      if (nextIdx < INTAKE_SCRIPT.length && INTAKE_SCRIPT[nextIdx].role === "ai") {
-        setTimeout(() => {
-          setNextStepIndex((current) => current);
-        }, 300);
-      }
-    };
-
-    setTimeout(showMessage, step.delay || 800);
-  }, [nextStepIndex]);
-
-  // Trigger AI advance when nextStepIndex changes and points to an AI message
-  useEffect(() => {
-    if (nextStepIndex < INTAKE_SCRIPT.length && INTAKE_SCRIPT[nextStepIndex].role === "ai" && !isAdvancing.current) {
-      advanceToNextAI();
+    if (!isLoading && !boardData && inputRef.current) {
+      inputRef.current.focus();
     }
-  }, [nextStepIndex, advanceToNextAI]);
+  }, [isLoading, boardData]);
 
-  // Start the conversation with the first AI message
-  useEffect(() => {
-    if (nextStepIndex === 0 && visibleSteps.length === 0) {
-      advanceToNextAI();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Call the intake API
+  const callIntakeApi = useCallback(
+    async (conversationMessages: ChatMsg[]) => {
+      setIsLoading(true);
+      setError(null);
 
-  // Detect when user typing animation completes
-  useEffect(() => {
-    if (!userTyping || userTyping.charCount < userTyping.fullText.length) return;
-    if (finalizingTyping.current) return;
-    finalizingTyping.current = true;
-
-    if (typingInterval.current) {
-      clearInterval(typingInterval.current);
-      typingInterval.current = null;
-    }
-
-    const stepIdx = userTyping.stepIndex;
-    const isFinal = stepIdx === INTAKE_SCRIPT.length - 1;
-
-    setTimeout(() => {
-      setUserTyping(null);
-      setVisibleSteps((vs) => [...vs, stepIdx]);
-      setNextStepIndex(stepIdx + 1);
-      finalizingTyping.current = false;
-
-      if (isFinal) {
-        setTimeout(() => setShowTransition(true), 1000);
-      }
-    }, 200);
-  }, [userTyping]);
-
-  const handleUserClick = () => {
-    if (nextStepIndex >= INTAKE_SCRIPT.length) return;
-    if (userTyping) return;
-    const step = INTAKE_SCRIPT[nextStepIndex];
-    if (step.role !== "user") return;
-
-    const stepIdx = nextStepIndex;
-    const fullText = step.text;
-
-    // Brief pause, then start typing animation
-    setTimeout(() => {
-      finalizingTyping.current = false;
-      setUserTyping({ stepIndex: stepIdx, charCount: 0, fullText });
-
-      typingInterval.current = setInterval(() => {
-        setUserTyping((prev) => {
-          if (!prev || prev.charCount >= prev.fullText.length) return prev;
-          return { ...prev, charCount: prev.charCount + 1 };
+      try {
+        const res = await fetch("/api/intake", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: conversationMessages,
+            backlog,
+            goals,
+          }),
         });
-      }, 25);
-    }, 500);
+
+        if (!res.ok) {
+          throw new Error(`API error: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        // Add AI response to messages
+        const aiMessage: ChatMsg = { role: "ai", text: data.text };
+        setMessages((prev) => [...prev, aiMessage]);
+
+        // Check if board data was returned
+        if (data.boardData) {
+          setBoardData(data.boardData);
+        }
+      } catch (err) {
+        console.error("Intake API call failed:", err);
+        setError(
+          "Something went wrong talking to the AI. Please try again."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [backlog, goals]
+  );
+
+  // On mount: send initial request with empty messages
+  useEffect(() => {
+    if (hasMounted.current) return;
+    hasMounted.current = true;
+    callIntakeApi([]);
+  }, [callIntakeApi]);
+
+  // Handle user message submission
+  const handleSend = () => {
+    const text = userInput.trim();
+    if (!text || isLoading || boardData) return;
+
+    const userMessage: ChatMsg = { role: "user", text };
+    const updatedMessages = [...messages, userMessage];
+
+    setMessages(updatedMessages);
+    setUserInput("");
+    callIntakeApi(updatedMessages);
   };
 
-  // Find the next user response to show as clickable
-  const pendingUserStep =
-    nextStepIndex < INTAKE_SCRIPT.length && INTAKE_SCRIPT[nextStepIndex].role === "user"
-      ? INTAKE_SCRIPT[nextStepIndex]
-      : null;
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
 
-  const isFinalStep = nextStepIndex === INTAKE_SCRIPT.length - 1;
+  // Handle board creation
+  const handleCreateBoard = async () => {
+    if (!boardData || isCreatingBoard) return;
+    setIsCreatingBoard(true);
 
+    try {
+      const boardState = transformBoardData(boardData);
+      const conversationHistory = toConversationMessages(messages);
+      const boardId = await createBoard(boardState, conversationHistory);
+
+      setShowTransition(true);
+
+      // Brief delay for transition animation, then redirect
+      setTimeout(() => {
+        router.push(`/board/${boardId}`);
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to create board:", err);
+      setError("Failed to create the board. Please try again.");
+      setIsCreatingBoard(false);
+    }
+  };
+
+  // Show transition animation
   if (showTransition) {
     return <BoardTransition />;
   }
@@ -169,48 +254,89 @@ export default function IntakeConversation() {
         ref={scrollRef}
         className="flex-1 overflow-y-auto space-y-4 px-4 py-6"
       >
-        {visibleSteps.map((stepIndex) => {
-          const step = INTAKE_SCRIPT[stepIndex];
-          return (
-            <ChatMessage
-              key={stepIndex}
-              role={step.role}
-              text={step.text}
-            />
-          );
-        })}
+        {messages.map((msg, i) => (
+          <ChatMessage key={i} role={msg.role} text={msg.text} />
+        ))}
 
-        {/* User message being typed */}
-        {userTyping && (
-          <div className="flex justify-end animate-slide-in">
-            <div className="bg-indigo-500 dark:bg-indigo-600 rounded-2xl rounded-tr-md px-4 py-2.5 max-w-[85%]">
-              <p className="text-sm text-white leading-relaxed whitespace-pre-line">
-                {userTyping.fullText.slice(0, userTyping.charCount)}
-                <span className="inline-block w-0.5 h-4 bg-white/70 ml-0.5 align-middle animate-pulse" />
+        {/* Typing indicator while waiting for AI */}
+        {isLoading && <TypingIndicator />}
+
+        {/* Error message */}
+        {error && (
+          <div className="flex gap-3 animate-slide-in">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center" />
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl rounded-tl-md px-4 py-3 max-w-[85%]">
+              <p className="text-sm text-red-700 dark:text-red-300 leading-relaxed">
+                {error}
               </p>
+              <button
+                onClick={() => {
+                  setError(null);
+                  callIntakeApi(messages);
+                }}
+                className="text-xs text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 underline mt-1"
+              >
+                Retry
+              </button>
             </div>
           </div>
         )}
 
-        {isTyping && <TypingIndicator />}
+        {/* Create board button - shown when boardData is received */}
+        {boardData && !isCreatingBoard && (
+          <div className="flex justify-center pt-4 pb-2 animate-slide-in">
+            <button
+              onClick={handleCreateBoard}
+              className="flex items-center gap-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-2xl px-8 py-4 transition-colors shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30"
+            >
+              <Kanban size={22} weight="duotone" />
+              Create your board
+            </button>
+          </div>
+        )}
+
+        {/* Creating board spinner */}
+        {isCreatingBoard && !showTransition && (
+          <div className="flex justify-center pt-4 pb-2 animate-slide-in">
+            <div className="flex items-center gap-3 text-indigo-500 dark:text-indigo-400">
+              <Kanban size={22} weight="duotone" className="animate-pulse" />
+              <span className="text-sm font-medium">
+                Creating your board...
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* User response button */}
-      {pendingUserStep && !isTyping && !userTyping && (
-        <div className="px-4 pb-6 pt-2">
+      {/* Input area */}
+      <div className="px-4 pb-6 pt-2">
+        <div className="flex gap-2">
+          <input
+            ref={inputRef}
+            type="text"
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isLoading || !!boardData}
+            placeholder={
+              boardData
+                ? "Conversation complete"
+                : isLoading
+                  ? "Waiting for AI..."
+                  : "Type your response..."
+            }
+            className="flex-1 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          />
           <button
-            onClick={handleUserClick}
-            className="w-full text-left bg-indigo-50 dark:bg-indigo-950/30 border-2 border-dashed border-indigo-300 dark:border-indigo-700 rounded-2xl px-4 py-3 hover:bg-indigo-100 dark:hover:bg-indigo-950/50 hover:border-indigo-400 dark:hover:border-indigo-600 transition-colors group"
+            onClick={handleSend}
+            disabled={isLoading || !!boardData || !userInput.trim()}
+            className="flex-shrink-0 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl px-4 py-3 transition-colors"
+            aria-label="Send message"
           >
-            <p className="text-sm text-indigo-700 dark:text-indigo-300 leading-relaxed">
-              {pendingUserStep.text}
-            </p>
-            <p className="text-xs text-indigo-400 dark:text-indigo-500 mt-1.5 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors">
-              {isFinalStep ? "Click to see your board" : "Click to respond"}
-            </p>
+            <PaperPlaneRight size={18} weight="bold" />
           </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }

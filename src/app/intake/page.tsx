@@ -170,12 +170,7 @@ export default function IntakePage() {
 
   // After consent, show conversation or backlog input
   if (started) {
-    // TODO: IntakeConversation will accept backlog and goals props in Task 6
-    return (
-      <IntakeConversation
-        {...({ backlog, goals: goalsInput } as Record<string, unknown>)}
-      />
-    );
+    return <IntakeConversation backlog={backlog} goals={goalsInput} />;
   }
 
   // Consent declined — show info and allow proceeding without AI
