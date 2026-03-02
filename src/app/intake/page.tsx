@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { RAW_BACKLOG } from "@/data/seed";
 import IntakeConversation from "@/components/IntakeConversation";
 import {
   Notebook,
   ArrowRight,
   ShieldCheck,
+  Camera,
+  X,
 } from "@phosphor-icons/react";
 
 type ConsentState = null | boolean;
@@ -84,19 +85,59 @@ function ConsentScreen({
   );
 }
 
+interface ImageData {
+  base64: string;
+  mediaType: string;
+  name: string;
+}
+
 function BacklogInput({
   backlog,
   setBacklog,
   goalsInput,
   setGoalsInput,
+  images,
+  setImages,
   onStart,
 }: {
   backlog: string;
   setBacklog: (v: string) => void;
   goalsInput: string;
   setGoalsInput: (v: string) => void;
+  images: ImageData[];
+  setImages: (v: ImageData[]) => void;
   onStart: () => void;
 }) {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Extract base64 data and media type from data URL
+        const match = result.match(/^data:(image\/[^;]+);base64,(.+)$/);
+        if (match) {
+          setImages([...images, {
+            base64: match[2],
+            mediaType: match[1],
+            name: file.name,
+          }]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    // Reset input so same file can be selected again
+    e.target.value = "";
+  };
+
+  const removeImage = (index: number) => {
+    setImages(images.filter((_, i) => i !== index));
+  };
+
+  const hasContent = backlog.trim() || images.length > 0;
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-xl space-y-6">
@@ -110,8 +151,7 @@ function BacklogInput({
             What are you working on?
           </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm">
-            Paste your backlog, feature list, or current tasks — however
-            messy.
+            Paste your backlog, upload a photo of your task board, or both.
           </p>
         </div>
 
@@ -122,6 +162,45 @@ function BacklogInput({
           className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm leading-relaxed px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 resize-none"
           placeholder="Paste your feature list, tasks, or ideas here..."
         />
+
+        {/* Image upload */}
+        <div className="space-y-3">
+          <label className="flex items-center gap-2 cursor-pointer text-sm text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors w-fit">
+            <Camera size={20} weight="duotone" />
+            <span>Add photo or screenshot (Miro, post-its, whiteboard...)</span>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+          </label>
+
+          {/* Image previews */}
+          {images.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {images.map((img, i) => (
+                <div
+                  key={i}
+                  className="relative group rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+                >
+                  <img
+                    src={`data:${img.mediaType};base64,${img.base64}`}
+                    alt={img.name}
+                    className="h-20 w-20 object-cover"
+                  />
+                  <button
+                    onClick={() => removeImage(i)}
+                    className="absolute top-0.5 right-0.5 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -141,7 +220,7 @@ function BacklogInput({
 
         <button
           onClick={onStart}
-          disabled={!backlog.trim()}
+          disabled={!hasContent}
           className="w-full flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl px-6 py-3 transition-colors"
         >
           Let&apos;s go
@@ -155,8 +234,9 @@ function BacklogInput({
 export default function IntakePage() {
   const [consent, setConsent] = useState<ConsentState>(null);
   const [started, setStarted] = useState(false);
-  const [backlog, setBacklog] = useState(RAW_BACKLOG);
+  const [backlog, setBacklog] = useState("");
   const [goalsInput, setGoalsInput] = useState("");
+  const [images, setImages] = useState<ImageData[]>([]);
 
   // Show consent screen first
   if (consent === null) {
@@ -170,7 +250,7 @@ export default function IntakePage() {
 
   // After consent, show conversation or backlog input
   if (started) {
-    return <IntakeConversation backlog={backlog} goals={goalsInput} />;
+    return <IntakeConversation backlog={backlog} goals={goalsInput} images={images} />;
   }
 
   // Consent declined — show info and allow proceeding without AI
@@ -229,6 +309,8 @@ export default function IntakePage() {
       setBacklog={setBacklog}
       goalsInput={goalsInput}
       setGoalsInput={setGoalsInput}
+      images={images}
+      setImages={setImages}
       onStart={() => setStarted(true)}
     />
   );

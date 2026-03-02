@@ -7,18 +7,48 @@ const anthropic = new Anthropic({
 });
 
 export async function POST(req: NextRequest) {
-  const { messages, backlog, goals } = await req.json();
+  const { messages, backlog, goals, images } = await req.json();
 
   // Build conversation for Claude
-  const claudeMessages: { role: "user" | "assistant"; content: string }[] = [];
+  const claudeMessages: Anthropic.MessageParam[] = [];
 
   if (!messages || messages.length === 0) {
-    // First request: include backlog context
-    let userContent = `Here is my team's backlog:\n\n${backlog}`;
-    if (goals && goals.trim()) {
-      userContent += `\n\nOur current business goals/OKRs:\n\n${goals}`;
+    // First request: include backlog context, optionally with images
+    const content: Anthropic.ContentBlockParam[] = [];
+
+    // Add images first if present
+    if (images && images.length > 0) {
+      for (const img of images) {
+        content.push({
+          type: "image",
+          source: {
+            type: "base64",
+            media_type: img.mediaType as "image/jpeg" | "image/png" | "image/gif" | "image/webp",
+            data: img.base64,
+          },
+        });
+      }
     }
-    claudeMessages.push({ role: "user", content: userContent });
+
+    // Build text content
+    let textContent = "";
+    if (backlog && backlog.trim()) {
+      textContent += `Here is my team's backlog:\n\n${backlog}`;
+    }
+    if (images && images.length > 0) {
+      textContent += textContent
+        ? "\n\nI also attached photos/screenshots of our task board. Please read all visible items from the images and include them in your analysis."
+        : "I attached photos/screenshots of our task board. Please read all visible items from the images and analyze them.";
+    }
+    if (goals && goals.trim()) {
+      textContent += `\n\nOur current business goals/OKRs:\n\n${goals}`;
+    }
+    if (!textContent) {
+      textContent = "Please analyze my backlog.";
+    }
+
+    content.push({ type: "text", text: textContent });
+    claudeMessages.push({ role: "user", content });
   } else {
     // Subsequent requests: reconstruct conversation
     for (const msg of messages) {

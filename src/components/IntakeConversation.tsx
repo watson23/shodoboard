@@ -10,9 +10,16 @@ import { PaperPlaneRight, Kanban } from "@phosphor-icons/react";
 
 // --- Types ---
 
+interface ImageData {
+  base64: string;
+  mediaType: string;
+  name: string;
+}
+
 interface IntakeConversationProps {
   backlog: string;
   goals: string;
+  images?: ImageData[];
 }
 
 interface ChatMsg {
@@ -112,6 +119,7 @@ function TypingIndicator() {
 export default function IntakeConversation({
   backlog,
   goals,
+  images,
 }: IntakeConversationProps) {
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -161,6 +169,7 @@ export default function IntakeConversation({
             messages: conversationMessages,
             backlog,
             goals,
+            images: conversationMessages.length === 0 ? images : undefined,
           }),
         });
 
