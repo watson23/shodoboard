@@ -9,6 +9,7 @@ export function useBoardActions() {
   const { nudges } = state;
   const [nudgesLoading, setNudgesLoading] = useState(false);
   const [focusLoading, setFocusLoading] = useState(false);
+  const [boardStrengths, setBoardStrengths] = useState<string[]>([]);
 
   const generateNudges = useCallback(async () => {
     setNudgesLoading(true);
@@ -37,6 +38,9 @@ export function useBoardActions() {
         body: JSON.stringify({ boardState: state }),
       });
       const data = await res.json();
+      if (data.boardStrengths) {
+        setBoardStrengths(data.boardStrengths);
+      }
       if (data.focusItems && data.focusItems.length > 0) {
         dispatch({ type: "SET_FOCUS_ITEMS", focusItems: data.focusItems });
         setFocusLoading(false);
@@ -86,6 +90,7 @@ export function useBoardActions() {
   return {
     nudgesLoading,
     focusLoading,
+    boardStrengths,
     generateNudges,
     generateFocusItems,
     handleFocusItemClick,

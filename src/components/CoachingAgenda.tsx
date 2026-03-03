@@ -9,11 +9,13 @@ import {
   SpinnerGap,
   Target,
   ListChecks,
+  Star,
 } from "@phosphor-icons/react";
 import type { FocusItem, FocusItemStatus } from "@/types/board";
 
 interface CoachingAgendaProps {
   focusItems: FocusItem[];
+  boardStrengths?: string[];
   isLoading: boolean;
   onItemClick: (focusItem: FocusItem) => void;
   onStatusChange: (focusItemId: string, status: FocusItemStatus) => void;
@@ -200,6 +202,7 @@ function FocusItemCard({
 
 export default function CoachingAgenda({
   focusItems,
+  boardStrengths = [],
   isLoading,
   onItemClick,
   onStatusChange,
@@ -274,6 +277,26 @@ export default function CoachingAgenda({
               <p className="text-xs text-gray-400 dark:text-gray-500 max-w-[240px]">
                 Lis&auml;&auml; tavoitteita ja tuloksia taulullesi, niin valmennus tunnistaa t&auml;rkeimm&auml;t kehityskohteet.
               </p>
+            </div>
+          )}
+
+          {/* Board strengths */}
+          {!isLoading && boardStrengths.length > 0 && (
+            <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
+              <div className="flex items-center gap-2 mb-2.5">
+                <Star size={14} weight="fill" className="text-amber-500 dark:text-amber-400" />
+                <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                  Vahvuudet
+                </span>
+              </div>
+              <ul className="space-y-1.5">
+                {boardStrengths.map((strength, i) => (
+                  <li key={i} className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <span className="text-emerald-500 dark:text-emerald-400 mt-0.5 flex-shrink-0">✓</span>
+                    {strength}
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 

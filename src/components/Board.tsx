@@ -108,6 +108,7 @@ export default function Board({ boardId }: BoardProps) {
   const {
     nudgesLoading,
     focusLoading,
+    boardStrengths,
     generateNudges,
     generateFocusItems,
     handleFocusItemClick,
@@ -655,6 +656,7 @@ export default function Board({ boardId }: BoardProps) {
       {showAgenda && (
         <CoachingAgenda
           focusItems={focusItems}
+          boardStrengths={boardStrengths}
           isLoading={focusLoading}
           onItemClick={handleFocusItemClick}
           onStatusChange={handleFocusStatusChange}

@@ -51,15 +51,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ focusItems: [], parseError: true });
     }
 
-    const parsed = result.parsed as { focusItems: Array<{
-      priority: "high" | "medium" | "low";
-      title: string;
-      whyItMatters: string;
-      antiPattern: string;
-      targetType: "goal" | "outcome" | "item";
-      targetId: string;
-      suggestedAction: string;
-    }> };
+    const parsed = result.parsed as {
+      boardStrengths?: string[];
+      focusItems: Array<{
+        priority: "high" | "medium" | "low";
+        title: string;
+        whyItMatters: string;
+        antiPattern: string;
+        targetType: "goal" | "outcome" | "item";
+        targetId: string;
+        suggestedAction: string;
+      }>;
+    };
 
     const focusItems: FocusItem[] = parsed.focusItems.map((f, i) => ({
       id: `focus-${Date.now()}-${i}`,
@@ -73,7 +76,7 @@ export async function POST(req: NextRequest) {
       suggestedAction: f.suggestedAction,
     }));
 
-    return NextResponse.json({ focusItems });
+    return NextResponse.json({ focusItems, boardStrengths: parsed.boardStrengths || [] });
   } catch (error) {
     console.error("Focus API error:", error);
     return NextResponse.json({ focusItems: [] }, { status: 500 });
