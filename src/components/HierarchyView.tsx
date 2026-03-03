@@ -36,7 +36,7 @@ function GoalCard({ goal, onClick, nudgeCount }: { goal: BusinessGoal; onClick: 
           Mittarit: {goal.metrics.join(", ")}
         </p>
       )}
-      {nudgeCount && nudgeCount > 0 && (
+      {(nudgeCount ?? 0) > 0 && (
         <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-orange-200/60 dark:bg-orange-900/30 text-orange-100 dark:text-orange-400">
           <Lightbulb size={11} weight="fill" />
           {nudgeCount} AI
