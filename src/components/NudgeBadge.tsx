@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, ChatCircleDots, ArrowRight, Lightbulb } from "@phosphor-icons/react";
+import { X, ChatCircleDots, ArrowRight, Lightbulb, CaretUp } from "@phosphor-icons/react";
 import { useBoard } from "@/hooks/useBoard";
 import type { Nudge } from "@/types/board";
 
@@ -67,7 +67,14 @@ export default function NudgeBadge({ nudge, onSpar, initialExpanded = false }: N
     >
       <div className="flex items-start gap-1.5 text-[11px] text-orange-700 dark:text-orange-300 leading-relaxed">
         <Lightbulb size={12} weight="fill" className="flex-shrink-0 mt-0.5 text-orange-400 dark:text-orange-500" />
-        <p>{nudge.message} <span className="font-medium">{nudge.question}</span></p>
+        <p className="flex-1">{nudge.message} <span className="font-medium">{nudge.question}</span></p>
+        <button
+          onClick={() => setExpanded(false)}
+          className="p-0.5 text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 transition-colors flex-shrink-0"
+          title="Pienennä"
+        >
+          <CaretUp size={12} weight="bold" />
+        </button>
       </div>
       {nudge.suggestedAction && (
         <p className="text-xs text-orange-600 dark:text-orange-400 mt-1.5 flex items-start gap-1.5">

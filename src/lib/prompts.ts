@@ -170,7 +170,7 @@ For each nudge, provide:
 - antiPattern: the pattern ID (e.g. "unmeasured-outcome", "output-not-outcome", "other")
 - message: A headline-style observation, max 60 characters. Like a sticky note: "Tulos on output, ei käyttäytymismuutos" or "Mittari puuttuu". No full sentences — just the core point.
 - question: A short coaching question, max 100 characters. (1 short sentence)
-- suggestedAction: A concrete next step, max 80 characters. Imperative form, 1 short sentence.
+- suggestedAction: A gentle suggestion, max 80 characters. Frame as a possibility, not a command. Use "Harkitse...", "Kokeile lisätä...", "Entä jos..." — never direct orders like "Lisää X" or "Tee Y". If you give an example, soften it: "vaikkapa..." or "esimerkiksi...".
 
 Respond with a JSON array:
 \`\`\`json
