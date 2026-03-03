@@ -1,7 +1,7 @@
 "use client";
 
 import { Flag, Target, LinkBreak, WarningCircle, Plus } from "@phosphor-icons/react";
-import type { BoardState, BusinessGoal, Outcome, WorkItem } from "@/types/board";
+import type { BoardState, BusinessGoal, Outcome, WorkItem, Nudge } from "@/types/board";
 import TypeBadge from "./TypeBadge";
 
 // --- Column status dot colors ---
@@ -39,7 +39,7 @@ function GoalCard({ goal, onClick }: { goal: BusinessGoal; onClick: () => void }
   );
 }
 
-function ItemRow({ item, onClick }: { item: WorkItem; onClick: () => void }) {
+function ItemRow({ item, onClick, hasNudge }: { item: WorkItem; onClick: () => void; hasNudge?: boolean }) {
   return (
     <div
       id={item.id}
@@ -54,6 +54,9 @@ function ItemRow({ item, onClick }: { item: WorkItem; onClick: () => void }) {
         className={`w-2 h-2 rounded-full flex-shrink-0 ${COLUMN_COLORS[item.column] || "bg-gray-300"}`}
         title={item.column}
       />
+      {hasNudge && (
+        <span className="w-2 h-2 rounded-full bg-orange-400 dark:bg-orange-500 flex-shrink-0" title="AI nudge" />
+      )}
     </div>
   );
 }
@@ -64,12 +67,16 @@ function OutcomeCard({
   onOutcomeClick,
   onItemClick,
   onAddItem,
+  nudgeCount = 0,
+  getActiveNudgeCount,
 }: {
   outcome: Outcome;
   items: WorkItem[];
   onOutcomeClick: () => void;
   onItemClick: (itemId: string) => void;
   onAddItem?: () => void;
+  nudgeCount?: number;
+  getActiveNudgeCount?: (targetId: string) => number;
 }) {
   const hasMeasure = !!outcome.measureOfSuccess;
   const borderColor = hasMeasure
@@ -107,6 +114,12 @@ function OutcomeCard({
                 Mittari puuttuu!
               </p>
             )}
+            {nudgeCount > 0 && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-orange-600 dark:text-orange-400 mt-1">
+                <span className="w-2 h-2 rounded-full bg-orange-400 dark:bg-orange-500" />
+                {nudgeCount} nudge{nudgeCount !== 1 ? "s" : ""}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -115,7 +128,7 @@ function OutcomeCard({
       {items.length > 0 && (
         <div className="border-t border-gray-100 dark:border-gray-700">
           {items.map((item) => (
-            <ItemRow key={item.id} item={item} onClick={() => onItemClick(item.id)} />
+            <ItemRow key={item.id} item={item} onClick={() => onItemClick(item.id)} hasNudge={getActiveNudgeCount ? getActiveNudgeCount(item.id) > 0 : false} />
           ))}
         </div>
       )}
@@ -149,7 +162,10 @@ interface HierarchyViewProps {
 }
 
 export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onItemClick, onAddGoal, onAddOutcome, onAddItem }: HierarchyViewProps) {
-  const { goals, outcomes, items } = state;
+  const { goals, outcomes, items, nudges } = state;
+
+  const getActiveNudgeCount = (targetId: string) =>
+    (nudges || []).filter((n) => n.targetId === targetId && n.status === "active").length;
 
   const getOutcomesForGoal = (goalId: string) =>
     outcomes.filter((o) => o.goalId === goalId).sort((a, b) => a.order - b.order);
@@ -183,6 +199,8 @@ export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onIt
                         onOutcomeClick={() => onOutcomeClick(outcome.id)}
                         onItemClick={onItemClick}
                         onAddItem={onAddItem ? () => onAddItem(outcome.id) : undefined}
+                        nudgeCount={getActiveNudgeCount(outcome.id)}
+                        getActiveNudgeCount={getActiveNudgeCount}
                       />
                     </div>
                   ))}
