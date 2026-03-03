@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, ChatCircleDots, ArrowRight } from "@phosphor-icons/react";
+import { X, ChatCircleDots, ArrowRight, Lightbulb } from "@phosphor-icons/react";
 import { useBoard } from "@/hooks/useBoard";
 import type { Nudge } from "@/types/board";
 
@@ -25,16 +25,18 @@ export default function NudgeBadge({ nudge, onSpar, initialExpanded = false }: N
             e.stopPropagation();
             setExpanded(true);
           }}
-          className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-orange-400 dark:bg-orange-500 rounded-full ring-2 ring-white dark:ring-gray-800 hover:scale-125 transition-transform flex items-center justify-center"
-          title="AI nudge"
+          className="absolute -top-2 -right-2 inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-400 dark:bg-orange-500 rounded-full ring-2 ring-white dark:ring-gray-800 hover:scale-110 transition-transform text-[8px] font-bold text-white"
+          title="AI-generated coaching nudge"
         >
-          <ChatCircleDots size={10} weight="bold" className="text-white" />
+          <Lightbulb size={9} weight="fill" />
+          AI
         </button>
       );
     }
     // visible tier — shown as banner, click to expand
     return (
-      <div className="w-full flex items-center gap-1 px-3 py-1.5 bg-orange-50/60 dark:bg-orange-950/20 border-b border-orange-200 dark:border-orange-800/30 text-[11px] text-orange-600 dark:text-orange-400 rounded-t-lg">
+      <div className="w-full flex items-center gap-1.5 px-3 py-1.5 bg-orange-50/60 dark:bg-orange-950/20 border-b border-orange-200 dark:border-orange-800/30 text-[11px] text-orange-600 dark:text-orange-400 rounded-t-lg">
+        <Lightbulb size={12} weight="fill" className="flex-shrink-0 text-orange-400 dark:text-orange-500" />
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -63,9 +65,10 @@ export default function NudgeBadge({ nudge, onSpar, initialExpanded = false }: N
       onClick={(e) => e.stopPropagation()}
       className="bg-orange-50/60 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800/30 rounded-lg p-2.5 space-y-1.5 animate-slide-in"
     >
-      <p className="text-[11px] text-orange-700 dark:text-orange-300 leading-relaxed">
-        {nudge.message} <span className="font-medium">{nudge.question}</span>
-      </p>
+      <div className="flex items-start gap-1.5 text-[11px] text-orange-700 dark:text-orange-300 leading-relaxed">
+        <Lightbulb size={12} weight="fill" className="flex-shrink-0 mt-0.5 text-orange-400 dark:text-orange-500" />
+        <p>{nudge.message} <span className="font-medium">{nudge.question}</span></p>
+      </div>
       {nudge.suggestedAction && (
         <p className="text-xs text-orange-600 dark:text-orange-400 mt-1.5 flex items-start gap-1.5">
           <ArrowRight size={12} weight="bold" className="flex-shrink-0 mt-0.5" />
