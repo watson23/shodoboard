@@ -67,8 +67,16 @@ Include a "productName" field with a short name for the product (e.g., "Ruokatil
 Rules for the JSON:
 - goalIndex in outcomes refers to the index in the goals array
 - outcomeIndex in items refers to the index in the outcomes array (use null for unlinked items)
-- column should default to "opportunities" unless the user indicated the item is in progress or done
-- Most items should start in "opportunities" — discovery items that are clearly about validating can go to "discovering"
+- COLUMN MAPPING — Pay close attention to the status/phase/stage of each item in the source data:
+  - Not started, idea, backlog, planned → "opportunities"
+  - Research in progress, interviewing, validating, testing hypothesis → "discovering"
+  - Prioritized, specced, ready for dev, refined → "ready"
+  - In progress, in development, implementing, coding → "building"
+  - Done, shipped, released, launched, deployed, live → "shipped"
+  - Measuring, A/B test running, monitoring impact → "measuring"
+  - If no status is indicated, default to "opportunities"
+  - Discovery items that are clearly about validating can also go to "discovering"
+  - Do NOT put everything in "opportunities" — if the source data has status information, use it
 - Only output the JSON block when you have the user's confirmation to finalize`;
 }
 
