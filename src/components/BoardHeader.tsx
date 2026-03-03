@@ -1,6 +1,7 @@
 "use client";
 
-import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban } from "@phosphor-icons/react";
+import { useState } from "react";
+import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link } from "@phosphor-icons/react";
 import { useTheme } from "@/hooks/useTheme";
 import { useBoard } from "@/hooks/useBoard";
 import { openPrintableExport } from "@/lib/export";
@@ -46,6 +47,25 @@ interface BoardHeaderProps {
 export default function BoardHeader({ saveStatus, boardId, productName, onRefreshNudges, nudgesLoading, onToggleAgenda, agendaOpen, viewMode, onViewModeChange }: BoardHeaderProps) {
   const { theme, setTheme } = useTheme();
   const { state, dispatch } = useBoard();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback: select+copy
+      const input = document.createElement("input");
+      input.value = window.location.href;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const handleExport = () => {
     openPrintableExport(state);
@@ -120,6 +140,17 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
           <span className="text-xs text-red-300">Save error</span>
         )}
       </div>
+
+      {boardId && (
+        <button
+          onClick={handleCopyLink}
+          className="flex items-center gap-1.5 text-xs text-indigo-200 hover:text-white transition-colors px-2 py-1.5 rounded-lg hover:bg-indigo-500"
+          title="Copy board link"
+        >
+          <Link size={14} weight="bold" />
+          {copied ? "Copied!" : "Copy link"}
+        </button>
+      )}
 
       <div className="flex items-center gap-2">
         {onToggleAgenda && (

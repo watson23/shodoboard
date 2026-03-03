@@ -25,6 +25,7 @@ import OutcomeDetailModal from "./OutcomeDetailModal";
 import GoalDetailModal from "./GoalDetailModal";
 import SparringPanel from "./SparringPanel";
 import CoachingAgenda from "./CoachingAgenda";
+import BookmarkToast from "./BookmarkToast";
 import HierarchyView from "./HierarchyView";
 import {
   CaretDown,
@@ -622,6 +623,8 @@ export default function Board({ boardId }: BoardProps) {
           />
         );
       })()}
+
+      {boardId && <BookmarkToast boardId={boardId} />}
     </div>
   );
 }
