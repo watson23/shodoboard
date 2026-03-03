@@ -17,7 +17,7 @@ const COLUMN_PILLS: Record<string, { label: string; bg: string; text: string }> 
 
 // --- Sub-components ---
 
-function GoalCard({ goal, onClick }: { goal: BusinessGoal; onClick: () => void }) {
+function GoalCard({ goal, onClick, nudgeCount }: { goal: BusinessGoal; onClick: () => void; nudgeCount?: number }) {
   return (
     <div
       id={goal.id}
@@ -35,6 +35,12 @@ function GoalCard({ goal, onClick }: { goal: BusinessGoal; onClick: () => void }
         <p className="text-indigo-300 text-xs mt-1.5">
           Mittarit: {goal.metrics.join(", ")}
         </p>
+      )}
+      {nudgeCount && nudgeCount > 0 && (
+        <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-orange-200/60 dark:bg-orange-900/30 text-orange-100 dark:text-orange-400">
+          <Lightbulb size={11} weight="fill" />
+          {nudgeCount} AI
+        </span>
       )}
     </div>
   );
@@ -225,7 +231,7 @@ export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onIt
             )}
 
             {/* Goal card */}
-            <GoalCard goal={goal} onClick={() => onGoalClick(goal.id)} />
+            <GoalCard goal={goal} onClick={() => onGoalClick(goal.id)} nudgeCount={getActiveNudgeCount(goal.id)} />
 
             {/* Outcomes */}
             {goalOutcomes.length > 0 && (

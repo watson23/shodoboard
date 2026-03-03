@@ -3,20 +3,25 @@
 import { useState } from "react";
 import { Flag } from "@phosphor-icons/react";
 import { useBoard } from "@/hooks/useBoard";
-import type { BusinessGoal } from "@/types/board";
+import type { BusinessGoal, Nudge } from "@/types/board";
+import NudgeBadge from "./NudgeBadge";
 import SlidePanel from "./SlidePanel";
 import DeleteSection from "./DeleteSection";
 
 interface GoalDetailModalProps {
   goal: BusinessGoal;
+  nudges: Nudge[];
   outcomeCount: number;
   onClose: () => void;
+  onSpar?: (nudgeId: string) => void;
 }
 
 export default function GoalDetailModal({
   goal,
+  nudges,
   outcomeCount,
   onClose,
+  onSpar,
 }: GoalDetailModalProps) {
   const { dispatch } = useBoard();
   const [statement, setStatement] = useState(goal.statement);
@@ -34,6 +39,8 @@ export default function GoalDetailModal({
       },
     });
   };
+
+  const activeNudges = nudges.filter((n) => n.status === "active");
 
   return (
     <SlidePanel
@@ -93,6 +100,25 @@ export default function GoalDetailModal({
           {outcomeCount} outcome{outcomeCount !== 1 ? "s" : ""}
         </p>
       </div>
+
+      {/* Nudges */}
+      {activeNudges.length > 0 && (
+        <div>
+          <label className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide font-medium block mb-1.5">
+            AI Nudges
+          </label>
+          <div className="space-y-2">
+            {activeNudges.map((nudge) => (
+              <NudgeBadge
+                key={nudge.id}
+                nudge={{ ...nudge, tier: "visible" }}
+                onSpar={onSpar ? () => onSpar(nudge.id) : undefined}
+                initialExpanded
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Delete */}
       <DeleteSection

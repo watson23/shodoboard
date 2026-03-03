@@ -33,6 +33,7 @@ import {
   CaretRight,
   Target,
   Flag,
+  Lightbulb,
   LinkBreak,
   WarningCircle,
   Plus,
@@ -161,6 +162,14 @@ export default function Board({ boardId }: BoardProps) {
       (n) =>
         n.targetType === "outcome" &&
         n.targetId === outcomeId &&
+        n.status === "active"
+    );
+
+  const getNudgesForGoal = (goalId: string) =>
+    nudges.filter(
+      (n) =>
+        n.targetType === "goal" &&
+        n.targetId === goalId &&
         n.status === "active"
     );
 
@@ -332,6 +341,12 @@ export default function Board({ boardId }: BoardProps) {
                               {goalOutcomes.length} outcome
                               {goalOutcomes.length !== 1 ? "s" : ""}
                             </span>
+                            {getNudgesForGoal(goal.id).length > 0 && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+                                <Lightbulb size={11} weight="fill" />
+                                {getNudgesForGoal(goal.id).length} AI
+                              </span>
+                            )}
                           </div>
 
                           {/* Outcomes within this goal */}
@@ -628,8 +643,10 @@ export default function Board({ boardId }: BoardProps) {
           return (
             <GoalDetailModal
               goal={goal}
+              nudges={getNudgesForGoal(goal.id)}
               outcomeCount={outcomeCount}
               onClose={() => setModal(null)}
+              onSpar={(nudgeId) => setSparringNudgeId(nudgeId)}
             />
           );
         })()}
