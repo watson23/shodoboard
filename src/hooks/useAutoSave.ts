@@ -10,6 +10,10 @@ export function useAutoSave(boardId: string | null, state: BoardState) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const isFirstRender = useRef(true);
+  const latestState = useRef(state);
+
+  // Always keep ref in sync with latest state
+  latestState.current = state;
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -23,7 +27,7 @@ export function useAutoSave(boardId: string | null, state: BoardState) {
     setSaveStatus("saving");
     timeoutRef.current = setTimeout(async () => {
       try {
-        await updateBoardState(boardId, state);
+        await updateBoardState(boardId, latestState.current);
         setSaveStatus("saved");
       } catch (err) {
         console.error("Auto-save failed:", err);
