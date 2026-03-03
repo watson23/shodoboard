@@ -128,16 +128,16 @@ export function analyzeBoardSignals(state: BoardState): BoardSignal[] {
       });
     }
 
-    // scope-creep
-    if (goalItems.length > 7) {
+    // scope-creep — only flag very large goals, as neutral observation
+    if (goalItems.length > 10) {
       signals.push({
         id: `scope-creep:${goal.id}`,
         antiPattern: "scope-creep",
-        severity: "medium",
+        severity: "low",
         targetType: "goal",
         targetId: goal.id,
         evidence: { itemCount: goalItems.length, statement: goal.statement },
-        humanReadable: `Goal "${goal.statement}": ${goalItems.length} items (>7 suggests scope creep).`,
+        humanReadable: `Goal "${goal.statement}" has ${goalItems.length} work items linked to it.`,
       });
     }
 

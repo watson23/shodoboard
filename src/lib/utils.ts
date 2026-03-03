@@ -68,13 +68,25 @@ export function extractTextFromResponse(response: Anthropic.Message): string {
  * Returns the parsed object and the text with the JSON block removed, or null if no valid JSON block found.
  */
 export function extractJsonBlock(text: string): { parsed: unknown; displayText: string } | null {
-  const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
-  if (!jsonMatch) return null;
-  try {
-    const parsed = JSON.parse(jsonMatch[1]);
-    const displayText = text.replace(/```json\n[\s\S]*?\n```/, "").trim();
-    return { parsed, displayText };
-  } catch {
-    return null;
+  // Try markdown-fenced JSON first (```json ... ```)
+  const fencedMatch = text.match(/```(?:json|JSON)?\s*\n?([\s\S]*?)\n?\s*```/);
+  if (fencedMatch) {
+    try {
+      const parsed = JSON.parse(fencedMatch[1].trim());
+      const displayText = text.replace(/```(?:json|JSON)?\s*\n?[\s\S]*?\n?\s*```/, "").trim();
+      return { parsed, displayText };
+    } catch { /* fall through to raw JSON attempt */ }
   }
+
+  // Fallback: try to find raw JSON (array or object) in the text
+  const rawMatch = text.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
+  if (rawMatch) {
+    try {
+      const parsed = JSON.parse(rawMatch[1].trim());
+      const displayText = text.replace(rawMatch[0], "").trim();
+      return { parsed, displayText };
+    } catch { /* give up */ }
+  }
+
+  return null;
 }
