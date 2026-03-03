@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link } from "@phosphor-icons/react";
+import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link, ChatCircleDots } from "@phosphor-icons/react";
 import { useTheme } from "@/hooks/useTheme";
 import { useBoard } from "@/hooks/useBoard";
 import { openPrintableExport } from "@/lib/export";
@@ -42,9 +42,10 @@ interface BoardHeaderProps {
   agendaOpen?: boolean;
   viewMode?: "hierarchy" | "kanban";
   onViewModeChange?: (mode: "hierarchy" | "kanban") => void;
+  onBoardSpar?: () => void;
 }
 
-export default function BoardHeader({ saveStatus, boardId, productName, onRefreshNudges, nudgesLoading, onToggleAgenda, agendaOpen, viewMode, onViewModeChange }: BoardHeaderProps) {
+export default function BoardHeader({ saveStatus, boardId, productName, onRefreshNudges, nudgesLoading, onToggleAgenda, agendaOpen, viewMode, onViewModeChange, onBoardSpar }: BoardHeaderProps) {
   const { theme, setTheme } = useTheme();
   const { state, dispatch } = useBoard();
   const [copied, setCopied] = useState(false);
@@ -165,6 +166,16 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
           >
             <ListChecks size={16} weight="duotone" />
             <span className="hidden sm:inline">Agenda</span>
+          </button>
+        )}
+        {onBoardSpar && (
+          <button
+            onClick={onBoardSpar}
+            className="flex items-center gap-1.5 text-xs text-indigo-200 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10"
+            title="Sparraa taulua AI-valmentajan kanssa"
+          >
+            <ChatCircleDots size={16} weight="duotone" />
+            <span className="hidden sm:inline">Sparraa</span>
           </button>
         )}
         {boardId && onRefreshNudges && (

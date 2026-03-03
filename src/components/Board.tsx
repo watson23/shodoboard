@@ -25,6 +25,7 @@ import CardDetailModal from "./CardDetailModal";
 import OutcomeDetailModal from "./OutcomeDetailModal";
 import GoalDetailModal from "./GoalDetailModal";
 import SparringPanel from "./SparringPanel";
+import BoardSparringModal from "./BoardSparringModal";
 import CoachingAgenda from "./CoachingAgenda";
 import BookmarkToast from "./BookmarkToast";
 import HierarchyView from "./HierarchyView";
@@ -100,6 +101,7 @@ export default function Board({ boardId }: BoardProps) {
   );
   const [activeItem, setActiveItem] = useState<WorkItem | null>(null);
   const [showAgenda, setShowAgenda] = useState(false);
+  const [showBoardSpar, setShowBoardSpar] = useState(false);
   const [viewMode, setViewMode] = useState<"hierarchy" | "kanban">(
     boardId ? "hierarchy" : "kanban"
   );
@@ -244,6 +246,14 @@ export default function Board({ boardId }: BoardProps) {
                   details: { from: viewMode, to: mode },
                 });
                 setViewMode(mode);
+              }
+            : undefined
+        }
+        onBoardSpar={
+          boardId
+            ? () => {
+                logEvent("open_board_spar");
+                setShowBoardSpar(true);
               }
             : undefined
         }
@@ -707,6 +717,11 @@ export default function Board({ boardId }: BoardProps) {
           />
         );
       })()}
+
+      {/* Board-level sparring modal */}
+      {showBoardSpar && (
+        <BoardSparringModal onClose={() => setShowBoardSpar(false)} />
+      )}
 
       {boardId && <BookmarkToast boardId={boardId} />}
     </div>
