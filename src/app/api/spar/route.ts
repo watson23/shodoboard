@@ -11,14 +11,12 @@ export async function POST(req: NextRequest) {
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const { messages, nudgeContext } = await req.json();
 
-  const contextMessage = `I'm looking at this coaching nudge on my board:
+  const contextMessage = `[System context — the PM clicked "Think about this" on one of YOUR coaching nudges. They haven't said anything yet. Start by digging into the issue — don't praise them for noticing it, since you generated the nudge.]
 
-Nudge: "${nudgeContext.nudge.message} ${nudgeContext.nudge.question}"
+Your nudge: "${nudgeContext.nudge.message} ${nudgeContext.nudge.question}"
 
-About this ${nudgeContext.nudge.targetType}:
-${JSON.stringify(nudgeContext.target, null, 2)}
-
-Help me think through this.`;
+The ${nudgeContext.nudge.targetType} it's about:
+${JSON.stringify(nudgeContext.target, null, 2)}`;
 
   const claudeMessages: { role: "user" | "assistant"; content: string }[] = [];
   claudeMessages.push({ role: "user", content: contextMessage });
