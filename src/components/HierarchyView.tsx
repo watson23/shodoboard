@@ -5,14 +5,14 @@ import type { BoardState, BusinessGoal, Outcome, WorkItem, Nudge, FocusItem } fr
 import TypeBadge from "./TypeBadge";
 import TreeConnectors from "./TreeConnectors";
 
-// --- Column status dot colors ---
-const COLUMN_COLORS: Record<string, string> = {
-  opportunities: "bg-gray-300 dark:bg-gray-600",
-  discovering: "bg-purple-400",
-  ready: "bg-yellow-400",
-  building: "bg-blue-400",
-  shipped: "bg-green-400",
-  measuring: "bg-emerald-500",
+// --- Column status pill config ---
+const COLUMN_PILLS: Record<string, { label: string; bg: string; text: string }> = {
+  opportunities: { label: "Opp", bg: "bg-gray-100 dark:bg-gray-700", text: "text-gray-500 dark:text-gray-400" },
+  discovering: { label: "Disc.", bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-600 dark:text-purple-400" },
+  ready: { label: "Ready", bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-600 dark:text-amber-400" },
+  building: { label: "Build", bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-600 dark:text-blue-400" },
+  shipped: { label: "Ship", bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-600 dark:text-green-400" },
+  measuring: { label: "Meas.", bg: "bg-emerald-100 dark:bg-emerald-900/30", text: "text-emerald-600 dark:text-emerald-400" },
 };
 
 // --- Sub-components ---
@@ -51,12 +51,18 @@ function ItemRow({ item, onClick, hasNudge, focusAction }: { item: WorkItem; onC
       <span className="text-gray-700 dark:text-gray-300 truncate flex-1">
         {item.title}
       </span>
-      <span
-        className={`w-2 h-2 rounded-full flex-shrink-0 ${COLUMN_COLORS[item.column] || "bg-gray-300"}`}
-        title={item.column}
-      />
+      {(() => {
+        const pill = COLUMN_PILLS[item.column];
+        return pill ? (
+          <span className={`px-1.5 rounded-full text-[9px] font-semibold flex-shrink-0 leading-tight ${pill.bg} ${pill.text}`}>
+            {pill.label}
+          </span>
+        ) : null;
+      })()}
       {hasNudge && (
-        <span className="w-2 h-2 rounded-full bg-orange-400 dark:bg-orange-500 flex-shrink-0" title="AI nudge" />
+        <span className="px-1.5 rounded-full text-[9px] font-semibold flex-shrink-0 leading-tight bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+          Idea
+        </span>
       )}
       {focusAction && (
         <span className="text-[9px] text-orange-600 dark:text-orange-400 truncate max-w-[120px]" title={focusAction}>
@@ -130,9 +136,10 @@ function OutcomeCard({
               </p>
             )}
             {nudgeCount > 0 && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-orange-600 dark:text-orange-400 mt-1">
-                <span className="w-2 h-2 rounded-full bg-orange-400 dark:bg-orange-500" />
-                {nudgeCount} nudge{nudgeCount !== 1 ? "s" : ""}
+              <span className="inline-flex items-center gap-1.5 mt-1">
+                <span className="px-1.5 rounded-full text-[9px] font-semibold leading-tight bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+                  {nudgeCount} {nudgeCount === 1 ? "Idea" : "Ideas"}
+                </span>
               </span>
             )}
             {focusItem && (
