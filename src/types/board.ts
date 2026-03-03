@@ -54,6 +54,7 @@ export interface Nudge {
   status: NudgeStatus;
   priority?: "high" | "medium" | "low";
   suggestedAction?: string;
+  antiPattern?: string;
 }
 
 export interface DiscoveryPrompt {
