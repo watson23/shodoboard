@@ -219,7 +219,7 @@ export default function IntakeConversation({
         setIsLoading(false);
       }
     },
-    [backlog, goals]
+    [backlog, goals, images]
   );
 
   // On mount: send initial request with empty messages

@@ -1,4 +1,5 @@
 import type { BoardState, FocusItem } from "@/types/board";
+import { escapeHtml } from "./utils";
 
 interface BoardAnalysis {
   totalItems: number;
@@ -294,16 +295,16 @@ export function openPrintableExport(state: BoardState) {
   // Build board overview
   let boardOverview = "";
   for (const goal of sortedGoals) {
-    boardOverview += `<h3 style="color:#3730a3;margin:24px 0 8px 0;font-size:16px;">${goal.statement}</h3>`;
-    if (goal.timeframe) boardOverview += `<p style="color:#6b7280;font-size:13px;margin:0 0 12px 0;">Aikajänne: ${goal.timeframe}</p>`;
+    boardOverview += `<h3 style="color:#3730a3;margin:24px 0 8px 0;font-size:16px;">${escapeHtml(goal.statement)}</h3>`;
+    if (goal.timeframe) boardOverview += `<p style="color:#6b7280;font-size:13px;margin:0 0 12px 0;">Aikajänne: ${escapeHtml(goal.timeframe)}</p>`;
 
     const goalOutcomes = state.outcomes.filter((o) => o.goalId === goal.id).sort((a, b) => a.order - b.order);
     for (const outcome of goalOutcomes) {
       const measureText = outcome.measureOfSuccess?.trim()
-        ? outcome.measureOfSuccess
+        ? escapeHtml(outcome.measureOfSuccess)
         : '<span style="color:#d97706;">⚠️ Mittari puuttuu</span>';
       boardOverview += `<div style="margin:0 0 16px 16px;padding:12px 16px;border-left:3px solid #6366f1;background:#f8fafc;border-radius:0 8px 8px 0;">`;
-      boardOverview += `<p style="font-weight:600;margin:0 0 4px 0;font-size:14px;">${outcome.statement}</p>`;
+      boardOverview += `<p style="font-weight:600;margin:0 0 4px 0;font-size:14px;">${escapeHtml(outcome.statement)}</p>`;
       boardOverview += `<p style="font-size:12px;color:#6b7280;margin:0 0 8px 0;">Mittari: ${measureText}</p>`;
 
       const outcomeItems = state.items.filter((i) => i.outcomeId === outcome.id).sort((a, b) => a.order - b.order);
@@ -313,7 +314,7 @@ export function openPrintableExport(state: BoardState) {
           const typeColor = item.type === "discovery" ? "#7c3aed" : "#0d9488";
           const typeLabel = item.type === "discovery" ? "Dis" : "Del";
           const col = item.column.charAt(0).toUpperCase() + item.column.slice(1);
-          boardOverview += `<li style="margin:2px 0;"><span style="color:${typeColor};font-weight:600;font-size:11px;">[${typeLabel}]</span> ${item.title} <span style="color:#9ca3af;font-size:11px;">(${col})</span></li>`;
+          boardOverview += `<li style="margin:2px 0;"><span style="color:${typeColor};font-weight:600;font-size:11px;">[${typeLabel}]</span> ${escapeHtml(item.title)} <span style="color:#9ca3af;font-size:11px;">(${col})</span></li>`;
         }
         boardOverview += `</ul>`;
       }
@@ -328,7 +329,7 @@ export function openPrintableExport(state: BoardState) {
     for (const item of unlinkedItems) {
       const typeColor = item.type === "discovery" ? "#7c3aed" : "#0d9488";
       const typeLabel = item.type === "discovery" ? "Dis" : "Del";
-      unlinkedSection += `<li><span style="color:${typeColor};font-weight:600;font-size:11px;">[${typeLabel}]</span> ${item.title}</li>`;
+      unlinkedSection += `<li><span style="color:${typeColor};font-weight:600;font-size:11px;">[${typeLabel}]</span> ${escapeHtml(item.title)}</li>`;
     }
     unlinkedSection += `</ul>`;
   }
@@ -339,7 +340,7 @@ export function openPrintableExport(state: BoardState) {
     focusSection = `<h2 style="color:#1e1b4b;border-bottom:2px solid #e5e7eb;padding-bottom:8px;margin-top:32px;">Suositellut painopisteet</h2><ul style="font-size:14px;">`;
     for (const fi of sortedFocusItems) {
       const badge = fi.priority === "high" ? "🔴 Korkea" : fi.priority === "medium" ? "🟡 Keskitaso" : "🟢 Matala";
-      focusSection += `<li style="margin:8px 0;"><strong>${badge}</strong> — ${fi.title}<br/><span style="color:#6b7280;font-size:12px;">${fi.suggestedAction}</span></li>`;
+      focusSection += `<li style="margin:8px 0;"><strong>${badge}</strong> — ${escapeHtml(fi.title)}<br/><span style="color:#6b7280;font-size:12px;">${escapeHtml(fi.suggestedAction)}</span></li>`;
     }
     focusSection += `</ul>`;
   }
@@ -348,7 +349,7 @@ export function openPrintableExport(state: BoardState) {
 <html lang="fi">
 <head>
 <meta charset="utf-8" />
-<title>Shodoboard — ${productName}</title>
+<title>Shodoboard — ${escapeHtml(productName)}</title>
 <style>
   @media print {
     body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
@@ -371,7 +372,7 @@ export function openPrintableExport(state: BoardState) {
   <div class="header-logo">S</div>
   <div>
     <h1>Shodoboard</h1>
-    <p style="margin:4px 0 0 0;color:#6b7280;font-size:14px;">${productName} — ${date}</p>
+    <p style="margin:4px 0 0 0;color:#6b7280;font-size:14px;">${escapeHtml(productName)} — ${date}</p>
   </div>
   <div style="margin-left:auto;" class="no-print">
     <button class="print-btn" onclick="window.print()">💾 Save as PDF</button>
