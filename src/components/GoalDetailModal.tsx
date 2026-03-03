@@ -5,6 +5,7 @@ import { Flag } from "@phosphor-icons/react";
 import { useBoard } from "@/hooks/useBoard";
 import type { BusinessGoal } from "@/types/board";
 import SlidePanel from "./SlidePanel";
+import DeleteSection from "./DeleteSection";
 
 interface GoalDetailModalProps {
   goal: BusinessGoal;
@@ -92,6 +93,15 @@ export default function GoalDetailModal({
           {outcomeCount} outcome{outcomeCount !== 1 ? "s" : ""}
         </p>
       </div>
+
+      {/* Delete */}
+      <DeleteSection
+        label="Delete this goal"
+        onConfirm={() => {
+          dispatch({ type: "DELETE_GOAL", goalId: goal.id });
+          onClose();
+        }}
+      />
     </SlidePanel>
   );
 }

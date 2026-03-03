@@ -40,7 +40,10 @@ export type BoardAction =
   | { type: "ADD_ITEM"; item: WorkItem }
   | { type: "ADD_CHECKLIST_ITEM"; itemId: string; checklistItem: ChecklistItem }
   | { type: "UPDATE_CHECKLIST_ITEM"; itemId: string; checklistItemId: string; updates: Partial<ChecklistItem> }
-  | { type: "REMOVE_CHECKLIST_ITEM"; itemId: string; checklistItemId: string };
+  | { type: "REMOVE_CHECKLIST_ITEM"; itemId: string; checklistItemId: string }
+  | { type: "DELETE_ITEM"; itemId: string }
+  | { type: "DELETE_OUTCOME"; outcomeId: string }
+  | { type: "DELETE_GOAL"; goalId: string };
 
 function boardReducer(state: BoardState, action: BoardAction): BoardState {
   switch (action.type) {
@@ -171,6 +174,29 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
       );
       return { ...state, items };
     }
+
+    case "DELETE_ITEM":
+      return { ...state, items: state.items.filter((i) => i.id !== action.itemId) };
+
+    case "DELETE_OUTCOME":
+      return {
+        ...state,
+        outcomes: state.outcomes.filter((o) => o.id !== action.outcomeId),
+        // Orphan child items (set outcomeId to null)
+        items: state.items.map((i) =>
+          i.outcomeId === action.outcomeId ? { ...i, outcomeId: null } : i
+        ),
+      };
+
+    case "DELETE_GOAL":
+      return {
+        ...state,
+        goals: state.goals.filter((g) => g.id !== action.goalId),
+        // Orphan child outcomes (set goalId to null)
+        outcomes: state.outcomes.map((o) =>
+          o.goalId === action.goalId ? { ...o, goalId: null } : o
+        ),
+      };
 
     default:
       return state;

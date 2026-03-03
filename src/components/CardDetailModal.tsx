@@ -8,6 +8,7 @@ import type { WorkItem, Nudge, DiscoveryPrompt, Column, ChecklistItem } from "@/
 import NudgeBadge from "./NudgeBadge";
 import DiscoveryPrompts from "./DiscoveryPrompts";
 import SlidePanel from "./SlidePanel";
+import DeleteSection from "./DeleteSection";
 
 const COLUMN_OPTIONS: { value: Column; label: string }[] = [
   { value: "opportunities", label: "Opportunities" },
@@ -315,6 +316,15 @@ export default function CardDetailModal({
           <DiscoveryPrompts prompts={discoveryPrompts} />
         </div>
       )}
+
+      {/* Delete */}
+      <DeleteSection
+        label="Delete this work item"
+        onConfirm={() => {
+          dispatch({ type: "DELETE_ITEM", itemId: item.id });
+          onClose();
+        }}
+      />
     </SlidePanel>
   );
 }

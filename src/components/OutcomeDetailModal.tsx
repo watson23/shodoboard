@@ -6,6 +6,7 @@ import { useBoard } from "@/hooks/useBoard";
 import type { Outcome, Nudge } from "@/types/board";
 import NudgeBadge from "./NudgeBadge";
 import SlidePanel from "./SlidePanel";
+import DeleteSection from "./DeleteSection";
 
 interface OutcomeDetailModalProps {
   outcome: Outcome;
@@ -128,6 +129,15 @@ export default function OutcomeDetailModal({
           </div>
         </div>
       )}
+
+      {/* Delete */}
+      <DeleteSection
+        label="Delete this outcome"
+        onConfirm={() => {
+          dispatch({ type: "DELETE_OUTCOME", outcomeId: outcome.id });
+          onClose();
+        }}
+      />
     </SlidePanel>
   );
 }

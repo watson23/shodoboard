@@ -31,6 +31,7 @@ function extractTarget(action: BoardAction): {
     case "ADD_GOAL":
     case "UPDATE_GOAL":
     case "TOGGLE_GOAL_COLLAPSE":
+    case "DELETE_GOAL":
       return {
         targetType: "goal",
         targetId: "goalId" in action ? action.goalId : "goal" in action ? action.goal.id : undefined,
@@ -38,6 +39,7 @@ function extractTarget(action: BoardAction): {
     case "ADD_OUTCOME":
     case "UPDATE_OUTCOME":
     case "TOGGLE_OUTCOME_COLLAPSE":
+    case "DELETE_OUTCOME":
       return {
         targetType: "outcome",
         targetId: "outcomeId" in action ? action.outcomeId : "outcome" in action ? action.outcome.id : undefined,
@@ -45,6 +47,7 @@ function extractTarget(action: BoardAction): {
     case "ADD_ITEM":
     case "UPDATE_ITEM":
     case "MOVE_ITEM":
+    case "DELETE_ITEM":
       return {
         targetType: "item",
         targetId: "itemId" in action ? action.itemId : "item" in action ? action.item.id : undefined,
