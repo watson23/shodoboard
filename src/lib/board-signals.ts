@@ -191,17 +191,23 @@ export function analyzeBoardSignals(state: BoardState): BoardSignal[] {
     });
   }
 
-  for (const item of state.items) {
-    if (item.type === "discovery" && item.column === "opportunities") {
-      signals.push({
-        id: `stale-discovery:${item.id}`,
-        antiPattern: "stale-discovery",
-        severity: "low",
-        targetType: "item",
-        targetId: item.id,
-        evidence: { title: item.title },
-        humanReadable: `Discovery item "${item.title}" is still in opportunities.`,
-      });
+  // Only flag stale discovery if the board shows activity (items beyond opportunities/ready)
+  const boardHasActivity = state.items.some(
+    (i) => i.column !== "opportunities" && i.column !== "ready"
+  );
+  if (boardHasActivity) {
+    for (const item of state.items) {
+      if (item.type === "discovery" && item.column === "opportunities") {
+        signals.push({
+          id: `stale-discovery:${item.id}`,
+          antiPattern: "stale-discovery",
+          severity: "low",
+          targetType: "item",
+          targetId: item.id,
+          evidence: { title: item.title },
+          humanReadable: `Discovery item "${item.title}" is still in opportunities while other work is progressing.`,
+        });
+      }
     }
   }
 
