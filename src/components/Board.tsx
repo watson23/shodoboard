@@ -396,15 +396,16 @@ export default function Board({ boardId }: BoardProps) {
 
                                   {/* Outcome-level nudges */}
                                   {getNudgesForOutcome(outcome.id).length > 0 && (
-                                    <div className="pl-14 pr-4 pb-2">
+                                    <div className="pl-14 pr-4 py-2 space-y-2">
                                       {getNudgesForOutcome(outcome.id).map(
                                         (nudge) => (
                                           <NudgeBadge
                                             key={nudge.id}
-                                            nudge={nudge}
+                                            nudge={{ ...nudge, tier: "visible" }}
                                             onSpar={() =>
                                               setSparringNudgeId(nudge.id)
                                             }
+                                            initialExpanded
                                           />
                                         )
                                       )}
