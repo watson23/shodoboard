@@ -47,7 +47,7 @@ export default function WorkItemCard({
         />
       )}
 
-      <div className="px-3 py-2">
+      <div className="pl-7 pr-3 py-2">
         {/* Title */}
         <span className="text-gray-900 dark:text-gray-100 font-medium leading-snug line-clamp-2 block">
           {item.title}
