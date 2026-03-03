@@ -665,6 +665,7 @@ export default function Board({ boardId }: BoardProps) {
             setSparringNudgeId(nudgeId);
             setShowAgenda(false);
           }}
+          onRefresh={generateFocusItems}
           onClose={() => setShowAgenda(false)}
         />
       )}

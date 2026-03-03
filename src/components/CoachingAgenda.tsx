@@ -3,10 +3,10 @@
 import {
   X,
   ArrowRight,
+  ArrowsClockwise,
   ChatCircleDots,
   CheckCircle,
   Circle,
-  SpinnerGap,
   Target,
   ListChecks,
   Star,
@@ -20,6 +20,7 @@ interface CoachingAgendaProps {
   onItemClick: (focusItem: FocusItem) => void;
   onStatusChange: (focusItemId: string, status: FocusItemStatus) => void;
   onStartSparring: (focusItem: FocusItem) => void;
+  onRefresh?: () => void;
   onClose: () => void;
 }
 
@@ -96,7 +97,7 @@ function StatusButton({
         onClick={onClick}
         className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-colors"
       >
-        <SpinnerGap size={14} weight="bold" className="animate-spin" />
+        <Circle size={14} weight="fill" className="text-amber-500 dark:text-amber-400" />
         Kesken
       </button>
     );
@@ -207,6 +208,7 @@ export default function CoachingAgenda({
   onItemClick,
   onStatusChange,
   onStartSparring,
+  onRefresh,
   onClose,
 }: CoachingAgendaProps) {
   const sorted = sortByPriority(focusItems);
@@ -242,6 +244,16 @@ export default function CoachingAgenda({
               </p>
             )}
           </div>
+          {onRefresh && (
+            <button
+              onClick={onRefresh}
+              disabled={isLoading}
+              className="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Päivitä agenda"
+            >
+              <ArrowsClockwise size={18} weight="bold" className={isLoading ? "animate-spin" : ""} />
+            </button>
+          )}
           <button
             onClick={onClose}
             className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
