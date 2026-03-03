@@ -1,49 +1,23 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { FOCUS_SYSTEM_PROMPT } from "@/lib/prompts";
+import { getFocusSystemPrompt } from "@/lib/prompts";
+import { serializeBoardForAI, extractTextFromResponse, extractJsonBlock } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 import type { BoardState, FocusItem } from "@/types/board";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
 export async function POST(req: NextRequest) {
-  const { boardState } = (await req.json()) as { boardState: BoardState };
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json({ error: "API not configured" }, { status: 503 });
+  }
 
-  // Serialize board state for Claude (only relevant fields)
-  const boardDescription = JSON.stringify(
-    {
-      goals: boardState.goals.map((g) => ({
-        id: g.id,
-        statement: g.statement,
-        timeframe: g.timeframe,
-        metrics: g.metrics,
-      })),
-      outcomes: boardState.outcomes.map((o) => ({
-        id: o.id,
-        goalId: o.goalId,
-        statement: o.statement,
-        behaviorChange: o.behaviorChange,
-        measureOfSuccess: o.measureOfSuccess,
-      })),
-      items: boardState.items.map((i) => ({
-        id: i.id,
-        outcomeId: i.outcomeId,
-        title: i.title,
-        description: i.description,
-        type: i.type,
-        column: i.column,
-      })),
-    },
-    null,
-    2
-  );
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const { boardState } = (await req.json()) as { boardState: BoardState };
+  const boardDescription = serializeBoardForAI(boardState);
 
   try {
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 2048,
-      system: FOCUS_SYSTEM_PROMPT,
+      system: getFocusSystemPrompt(),
       messages: [
         {
           role: "user",
@@ -52,61 +26,39 @@ export async function POST(req: NextRequest) {
       ],
     });
 
-    const text = response.content
-      .filter((block): block is Anthropic.TextBlock => block.type === "text")
-      .map((block) => block.text)
-      .join("");
+    const text = extractTextFromResponse(response);
+    const result = extractJsonBlock(text);
 
-    // Parse focus JSON
-    const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
-    let analysis = {
-      totalItems: 0,
-      deliveryItems: 0,
-      discoveryItems: 0,
-      outcomesWithoutMeasure: 0,
-      unlinkedItems: 0,
-    };
-    let focusItems: FocusItem[] = [];
-
-    if (jsonMatch) {
-      try {
-        const parsed = JSON.parse(jsonMatch[1]);
-        analysis = parsed.analysis;
-        focusItems = parsed.focusItems.map(
-          (
-            f: {
-              priority: "high" | "medium" | "low";
-              title: string;
-              whyItMatters: string;
-              antiPattern: string;
-              targetType: "goal" | "outcome" | "item";
-              targetId: string;
-              suggestedAction: string;
-            },
-            i: number
-          ) => ({
-            id: `focus-${Date.now()}-${i}`,
-            priority: f.priority,
-            status: "pending",
-            title: f.title,
-            whyItMatters: f.whyItMatters,
-            antiPattern: f.antiPattern,
-            targetType: f.targetType,
-            targetId: f.targetId,
-            suggestedAction: f.suggestedAction,
-          })
-        );
-      } catch {
-        // Parse failed — return empty focus items
-      }
+    if (!result) {
+      console.error("Focus API: failed to parse AI response", text.slice(0, 200));
+      return NextResponse.json({ focusItems: [], parseError: true });
     }
 
-    return NextResponse.json({ analysis, focusItems });
+    const parsed = result.parsed as { focusItems: Array<{
+      priority: "high" | "medium" | "low";
+      title: string;
+      whyItMatters: string;
+      antiPattern: string;
+      targetType: "goal" | "outcome" | "item";
+      targetId: string;
+      suggestedAction: string;
+    }> };
+
+    const focusItems: FocusItem[] = parsed.focusItems.map((f, i) => ({
+      id: `focus-${Date.now()}-${i}`,
+      priority: f.priority,
+      status: "pending",
+      title: f.title,
+      whyItMatters: f.whyItMatters,
+      antiPattern: f.antiPattern,
+      targetType: f.targetType,
+      targetId: f.targetId,
+      suggestedAction: f.suggestedAction,
+    }));
+
+    return NextResponse.json({ focusItems });
   } catch (error) {
     console.error("Focus API error:", error);
-    return NextResponse.json(
-      { analysis: null, focusItems: [] },
-      { status: 500 }
-    );
+    return NextResponse.json({ focusItems: [] }, { status: 500 });
   }
 }

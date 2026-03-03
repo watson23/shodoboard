@@ -1,4 +1,5 @@
-export const INTAKE_SYSTEM_PROMPT = `You are a product management coach helping a PM organize their backlog into an outcome-driven board.
+export function getIntakeSystemPrompt(): string {
+  return `You are a product management coach helping a PM organize their backlog into an outcome-driven board.
 
 Today's date: ${new Date().toISOString().split("T")[0]}
 
@@ -69,8 +70,10 @@ Rules for the JSON:
 - column should default to "opportunities" unless the user indicated the item is in progress or done
 - Most items should start in "opportunities" — discovery items that are clearly about validating can go to "discovering"
 - Only output the JSON block when you have the user's confirmation to finalize`;
+}
 
-export const NUDGE_SYSTEM_PROMPT = `You are a provocative product management coach analyzing a product board for feature factory anti-patterns. Generate exactly 5 coaching nudges based on the board state.
+export function getNudgeSystemPrompt(): string {
+  return `You are a provocative product management coach analyzing a product board for feature factory anti-patterns. Generate exactly 5 coaching nudges based on the board state.
 
 LANGUAGE: Always write nudge messages, questions, and suggestedActions in Finnish.
 
@@ -110,8 +113,10 @@ Respond with a JSON array:
   }
 ]
 \`\`\``;
+}
 
-export const SPAR_SYSTEM_PROMPT = `You are a product management sparring partner. You help PMs think through specific issues with their product work.
+export function getSparSystemPrompt(): string {
+  return `You are a product management sparring partner. You help PMs think through specific issues with their product work.
 
 Your coaching style:
 - Ask questions more than give answers
@@ -144,8 +149,10 @@ For split_item: targetId should be the existing item ID. changes should include 
 For updates: targetId is the entity being updated, changes are the fields to modify.
 
 Keep conversations to 3-4 exchanges maximum. After that, push to action.`;
+}
 
-export const FOCUS_SYSTEM_PROMPT = `You are a product management coach analyzing a product board holistically to identify "feature factory" anti-patterns and generate a prioritized coaching agenda.
+export function getFocusSystemPrompt(): string {
+  return `You are a product management coach analyzing a product board holistically to identify "feature factory" anti-patterns and generate a prioritized coaching agenda.
 
 Today's date: ${new Date().toISOString().split("T")[0]}
 
@@ -202,3 +209,4 @@ Rules for the JSON:
 - targetId must reference an actual ID from the board state
 - focusItems array must contain exactly 3-5 items
 - Order focusItems by coaching impact, most important first`;
+}
