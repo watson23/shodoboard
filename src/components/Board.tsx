@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -11,6 +11,7 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { useBoard } from "@/hooks/useBoard";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import { useBoardActions } from "@/hooks/useBoardActions";
 import { handleSparringApply } from "@/lib/sparring";
@@ -58,11 +59,44 @@ interface BoardProps {
 }
 
 export default function Board({ boardId }: BoardProps) {
-  const { state, dispatch } = useBoard();
+  const { state, dispatch: rawDispatch } = useBoard();
+  const { logEvent, wrapDispatch } = useActivityLog(boardId);
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const dispatch = wrapDispatch(rawDispatch, () => stateRef.current);
   const saveStatus = useAutoSave(boardId ?? null, state);
   const { goals, outcomes, items, nudges, discoveryPrompts, focusItems } = state;
-  const [modal, setModal] = useState<ModalState>(null);
-  const [sparringNudgeId, setSparringNudgeId] = useState<string | null>(null);
+  const [modal, setModalRaw] = useState<ModalState>(null);
+  const setModal = useCallback(
+    (newModal: ModalState) => {
+      if (newModal) {
+        logEvent("open_modal", {
+          targetType: newModal.type === "card" ? "item" : newModal.type === "outcome" ? "outcome" : "goal",
+          targetId: newModal.type === "card" ? newModal.itemId : newModal.type === "outcome" ? newModal.outcomeId : newModal.goalId,
+          details: { modalType: newModal.type },
+        });
+      } else if (modal) {
+        logEvent("close_modal", {
+          details: { modalType: modal.type },
+        });
+      }
+      setModalRaw(newModal);
+    },
+    [logEvent, modal]
+  );
+  const [sparringNudgeId, setSparringNudgeIdRaw] = useState<string | null>(null);
+  const setSparringNudgeId = useCallback(
+    (nudgeId: string | null) => {
+      if (nudgeId) {
+        logEvent("start_sparring", {
+          targetType: "nudge",
+          targetId: nudgeId,
+        });
+      }
+      setSparringNudgeIdRaw(nudgeId);
+    },
+    [logEvent]
+  );
   const [activeItem, setActiveItem] = useState<WorkItem | null>(null);
   const [showAgenda, setShowAgenda] = useState(false);
   const [viewMode, setViewMode] = useState<"hierarchy" | "kanban">(
@@ -183,10 +217,26 @@ export default function Board({ boardId }: BoardProps) {
         productName={state.productName}
         onRefreshNudges={generateNudges}
         nudgesLoading={nudgesLoading}
-        onToggleAgenda={boardId ? () => setShowAgenda(!showAgenda) : undefined}
+        onToggleAgenda={
+          boardId
+            ? () => {
+                logEvent(showAgenda ? "close_agenda" : "open_agenda");
+                setShowAgenda(!showAgenda);
+              }
+            : undefined
+        }
         agendaOpen={showAgenda}
         viewMode={viewMode}
-        onViewModeChange={boardId ? setViewMode : undefined}
+        onViewModeChange={
+          boardId
+            ? (mode: "hierarchy" | "kanban") => {
+                logEvent("switch_view", {
+                  details: { from: viewMode, to: mode },
+                });
+                setViewMode(mode);
+              }
+            : undefined
+        }
       />
 
       {viewMode === "kanban" ? (
