@@ -1,6 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getSparSystemPrompt } from "@/lib/prompts";
 import { extractTextFromResponse, extractJsonBlock } from "@/lib/utils";
+import { PLAYBOOKS, formatPlaybooksForPrompt } from "@/lib/coaching-knowledge";
+import { ADMIN_COACHING_INSTRUCTIONS } from "@/lib/coaching-instructions";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -10,6 +12,13 @@ export async function POST(req: NextRequest) {
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const { messages, nudgeContext } = await req.json();
+
+  // Look up the playbook for this nudge's anti-pattern (if available)
+  const antiPattern = nudgeContext.nudge.antiPattern || "";
+  const playbook = PLAYBOOKS[antiPattern];
+  const playbookText = playbook
+    ? formatPlaybooksForPrompt([playbook])
+    : "No specific playbook for this nudge. Use your general coaching expertise.";
 
   const contextMessage = `[System context — the PM clicked "Think about this" on one of YOUR coaching nudges. They haven't said anything yet. Start by digging into the issue — don't praise them for noticing it, since you generated the nudge.]
 
@@ -34,7 +43,7 @@ ${JSON.stringify(nudgeContext.target, null, 2)}`;
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 1024,
-      system: getSparSystemPrompt(),
+      system: getSparSystemPrompt(playbookText, ADMIN_COACHING_INSTRUCTIONS),
       messages: claudeMessages,
     });
 
