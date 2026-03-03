@@ -172,10 +172,10 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
           <button
             onClick={onBoardSpar}
             className="flex items-center gap-1.5 text-xs text-indigo-200 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10"
-            title="Sparraa taulua AI-valmentajan kanssa"
+            title="Spar with AI coach about your board"
           >
             <ChatCircleDots size={16} weight="duotone" />
-            <span className="hidden sm:inline">Sparraa</span>
+            <span className="hidden sm:inline">Spar</span>
           </button>
         )}
         {boardId && onRefreshNudges && (
