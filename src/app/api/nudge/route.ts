@@ -1,6 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getNudgeSystemPrompt } from "@/lib/prompts";
 import { serializeBoardForAI, extractTextFromResponse, extractJsonBlock } from "@/lib/utils";
+import { analyzeBoardSignals, formatSignalsForPrompt } from "@/lib/board-signals";
+import { getPlaybooksForSignals, formatPlaybooksForPrompt } from "@/lib/coaching-knowledge";
+import { ADMIN_COACHING_INSTRUCTIONS } from "@/lib/coaching-instructions";
 import { NextRequest, NextResponse } from "next/server";
 import type { BoardState } from "@/types/board";
 
@@ -11,17 +14,34 @@ export async function POST(req: NextRequest) {
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const { boardState } = (await req.json()) as { boardState: BoardState };
+
+  // Layer 1: Pre-compute structural signals
+  const signals = analyzeBoardSignals(boardState);
+  const structuralFacts = formatSignalsForPrompt(signals);
+
+  // Get relevant playbooks for detected signals + always include content-quality playbooks
+  const structuralPatternIds = signals.map((s) => s.antiPattern);
+  const contentPlaybookIds = [
+    "output-not-outcome", "weak-measure", "measure-mismatch",
+    "assumption-risk", "goal-framing", "solution-as-problem",
+    "missing-who", "vague-goal", "duplicate-intent",
+    "timeframe-mismatch", "discovery-quality",
+  ];
+  const allPlaybookIds = [...structuralPatternIds, ...contentPlaybookIds];
+  const playbooks = getPlaybooksForSignals(allPlaybookIds);
+  const playbookText = formatPlaybooksForPrompt(playbooks);
+
   const boardDescription = serializeBoardForAI(boardState);
 
   try {
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 2048,
-      system: getNudgeSystemPrompt(),
+      system: getNudgeSystemPrompt(structuralFacts, playbookText, ADMIN_COACHING_INSTRUCTIONS),
       messages: [
         {
           role: "user",
-          content: `Here is the current board state:\n\n${boardDescription}\n\nGenerate 5 coaching nudges.`,
+          content: `Here is the full board content for your analysis:\n\n${boardDescription}`,
         },
       ],
     });
@@ -38,8 +58,11 @@ export async function POST(req: NextRequest) {
       targetType: string;
       targetId: string;
       tier: string;
+      priority: string;
+      antiPattern: string;
       message: string;
       question: string;
+      suggestedAction: string;
     }>;
 
     const nudges = parsed.map((n, i) => ({
@@ -47,8 +70,11 @@ export async function POST(req: NextRequest) {
       targetType: n.targetType,
       targetId: n.targetId,
       tier: n.tier,
+      priority: n.priority,
+      antiPattern: n.antiPattern,
       message: n.message,
       question: n.question,
+      suggestedAction: n.suggestedAction,
       status: "active",
     }));
 
