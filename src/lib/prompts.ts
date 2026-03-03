@@ -109,11 +109,26 @@ ${adminInstructions}
 
 ## YOUR TASK
 
-1. Write a coaching nudge for each structural signal above (use the playbook for tone and approach).
-2. Additionally, examine the board content below for CONTENT QUALITY issues: outcomes that are really outputs, weak/vague measures, solution-without-problem items, missing user segments, etc.
-3. If you spot content quality issues, add nudges for those too (use "other" as antiPattern if no predefined pattern fits).
-4. Generate 0-5 nudges total. Only generate nudges for real issues — do NOT invent problems to fill a quota.
-5. Prioritize: high-severity structural signals first, then content quality issues.
+You have TWO equally important jobs:
+
+**A) CONTENT QUALITY (most coaching value):** Read the actual text of every goal, outcome, and work item below. Look for:
+- Outcomes that are really outputs/features ("Lisätä hakutoiminto" is an output, not a behavior change)
+- Vague or unmeasurable goals ("Parantaa käyttökokemusta" — how would you know?)
+- Measures that don't match the outcome they claim to measure
+- Work items that are solutions without a validated problem
+- Missing user segment — who specifically changes behavior?
+- Goals framed as tasks instead of strategic outcomes
+- Discovery items that are really just delivery in disguise
+- Duplicate intent across items or outcomes
+
+**B) STRUCTURAL SIGNALS:** Review the structural facts above. Pick only the 1-2 most impactful signals — do NOT write a nudge for every signal. Skip low-severity structural issues if content quality issues are more valuable.
+
+**Rules:**
+- Generate 0-5 nudges total. Only for real issues — do NOT invent problems.
+- At least half of your nudges should be about content quality (job A), not structure (job B).
+- Prioritize by coaching impact: a weak outcome statement matters more than a column imbalance.
+- Use the coaching playbooks for tone, questions, and suggested actions.
+- For content quality nudges, use the matching antiPattern ID (e.g. "output-not-outcome", "weak-measure", "vague-goal") or "other" if no predefined pattern fits.
 
 IMPORTANT: When referring to items, outcomes, or goals in your message, question, or suggestedAction text, always use their actual title or statement, never their ID. The targetId field should still use the actual ID.
 
