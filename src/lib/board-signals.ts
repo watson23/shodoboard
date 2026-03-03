@@ -46,18 +46,19 @@ export function analyzeBoardSignals(state: BoardState): BoardSignal[] {
       });
     }
 
-    // shipped-not-learning
+    // shipped-not-learning — only flag when no work remains in earlier stages
     const shippedCount = byColumn("shipped").length;
     const measuringCount = byColumn("measuring").length;
-    if (shippedCount > 0 && measuringCount === 0) {
+    const inProgressCount = byColumn("building").length + byColumn("ready").length + byColumn("discovering").length;
+    if (shippedCount > 0 && measuringCount === 0 && inProgressCount === 0) {
       signals.push({
         id: `shipped-not-learning:${outcome.id}`,
         antiPattern: "shipped-not-learning",
         severity: "medium",
         targetType: "outcome",
         targetId: outcome.id,
-        evidence: { shippedCount, measuringCount, statement: outcome.statement },
-        humanReadable: `Outcome "${outcome.statement}": ${shippedCount} shipped, 0 measuring.`,
+        evidence: { shippedCount, measuringCount, inProgressCount, statement: outcome.statement },
+        humanReadable: `Outcome "${outcome.statement}": ${shippedCount} shipped, 0 measuring — all work is done but no one is looking at data.`,
       });
     }
 
