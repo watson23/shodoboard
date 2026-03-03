@@ -1,7 +1,7 @@
 "use client";
 
 import { Flag, Target, LinkBreak, WarningCircle, Plus } from "@phosphor-icons/react";
-import type { BoardState, BusinessGoal, Outcome, WorkItem, Nudge } from "@/types/board";
+import type { BoardState, BusinessGoal, Outcome, WorkItem, Nudge, FocusItem } from "@/types/board";
 import TypeBadge from "./TypeBadge";
 
 // --- Column status dot colors ---
@@ -39,7 +39,7 @@ function GoalCard({ goal, onClick }: { goal: BusinessGoal; onClick: () => void }
   );
 }
 
-function ItemRow({ item, onClick, hasNudge }: { item: WorkItem; onClick: () => void; hasNudge?: boolean }) {
+function ItemRow({ item, onClick, hasNudge, focusAction }: { item: WorkItem; onClick: () => void; hasNudge?: boolean; focusAction?: string }) {
   return (
     <div
       id={item.id}
@@ -56,6 +56,11 @@ function ItemRow({ item, onClick, hasNudge }: { item: WorkItem; onClick: () => v
       />
       {hasNudge && (
         <span className="w-2 h-2 rounded-full bg-orange-400 dark:bg-orange-500 flex-shrink-0" title="AI nudge" />
+      )}
+      {focusAction && (
+        <span className="text-[9px] text-orange-600 dark:text-orange-400 truncate max-w-[120px]" title={focusAction}>
+          🎯 {focusAction}
+        </span>
       )}
       {item.checklist && item.checklist.length > 0 && (
         <span className="text-[10px] text-gray-400 dark:text-gray-500 tabular-nums flex-shrink-0">
@@ -74,6 +79,8 @@ function OutcomeCard({
   onAddItem,
   nudgeCount = 0,
   getActiveNudgeCount,
+  focusItem,
+  getFocusAction,
 }: {
   outcome: Outcome;
   items: WorkItem[];
@@ -82,6 +89,8 @@ function OutcomeCard({
   onAddItem?: () => void;
   nudgeCount?: number;
   getActiveNudgeCount?: (targetId: string) => number;
+  focusItem?: FocusItem;
+  getFocusAction?: (targetId: string) => string | undefined;
 }) {
   const hasMeasure = !!outcome.measureOfSuccess;
   const borderColor = hasMeasure
@@ -125,6 +134,12 @@ function OutcomeCard({
                 {nudgeCount} nudge{nudgeCount !== 1 ? "s" : ""}
               </span>
             )}
+            {focusItem && (
+              <div className="flex items-start gap-1.5 mt-1.5 px-2 py-1 bg-orange-50 dark:bg-orange-950/20 border-l-2 border-orange-400 dark:border-orange-500 rounded-r">
+                <Target size={11} weight="bold" className="text-orange-500 flex-shrink-0 mt-0.5" />
+                <span className="text-[10px] text-orange-700 dark:text-orange-300 line-clamp-2">{focusItem.suggestedAction}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -133,7 +148,7 @@ function OutcomeCard({
       {items.length > 0 && (
         <div className="border-t border-gray-100 dark:border-gray-700">
           {items.map((item) => (
-            <ItemRow key={item.id} item={item} onClick={() => onItemClick(item.id)} hasNudge={getActiveNudgeCount ? getActiveNudgeCount(item.id) > 0 : false} />
+            <ItemRow key={item.id} item={item} onClick={() => onItemClick(item.id)} hasNudge={getActiveNudgeCount ? getActiveNudgeCount(item.id) > 0 : false} focusAction={getFocusAction ? getFocusAction(item.id) : undefined} />
           ))}
         </div>
       )}
@@ -168,6 +183,9 @@ interface HierarchyViewProps {
 
 export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onItemClick, onAddGoal, onAddOutcome, onAddItem }: HierarchyViewProps) {
   const { goals, outcomes, items, nudges } = state;
+
+  const getFocusItem = (targetId: string) =>
+    (state.focusItems || []).find((fi) => fi.targetId === targetId && fi.status !== "done");
 
   const getActiveNudgeCount = (targetId: string) =>
     (nudges || []).filter((n) => n.targetId === targetId && n.status === "active").length;
@@ -206,6 +224,8 @@ export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onIt
                         onAddItem={onAddItem ? () => onAddItem(outcome.id) : undefined}
                         nudgeCount={getActiveNudgeCount(outcome.id)}
                         getActiveNudgeCount={getActiveNudgeCount}
+                        focusItem={getFocusItem(outcome.id)}
+                        getFocusAction={(id) => getFocusItem(id)?.suggestedAction}
                       />
                     </div>
                   ))}

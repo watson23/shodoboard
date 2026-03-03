@@ -119,6 +119,9 @@ export default function Board({ boardId }: BoardProps) {
   const getDiscoveryPrompts = (itemId: string) =>
     discoveryPrompts.filter((dp) => dp.itemId === itemId);
 
+  const getFocusItemForTarget = (targetId: string) =>
+    focusItems.find((fi) => fi.targetId === targetId && fi.status !== "done");
+
   const getNudgesForOutcome = (outcomeId: string) =>
     nudges.filter(
       (n) =>
@@ -159,6 +162,7 @@ export default function Board({ boardId }: BoardProps) {
                   item={item}
                   nudges={getNudgesForItem(item.id)}
                   discoveryPrompts={getDiscoveryPrompts(item.id)}
+                  focusItem={getFocusItemForTarget(item.id)}
                   onClick={() => setModal({ type: "card", itemId: item.id })}
                   onSpar={(nudgeId) => setSparringNudgeId(nudgeId)}
                 />

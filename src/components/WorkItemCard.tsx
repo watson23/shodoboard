@@ -1,7 +1,7 @@
 "use client";
 
-import { Check } from "@phosphor-icons/react";
-import type { WorkItem, Nudge, DiscoveryPrompt } from "@/types/board";
+import { Check, Target } from "@phosphor-icons/react";
+import type { WorkItem, Nudge, DiscoveryPrompt, FocusItem } from "@/types/board";
 import NudgeBadge from "./NudgeBadge";
 import TypeBadge from "./TypeBadge";
 import DiscoveryPrompts from "./DiscoveryPrompts";
@@ -10,6 +10,7 @@ interface WorkItemCardProps {
   item: WorkItem;
   nudges: Nudge[];
   discoveryPrompts?: DiscoveryPrompt[];
+  focusItem?: FocusItem;
   onClick?: () => void;
   onSpar?: (nudgeId: string) => void;
 }
@@ -18,6 +19,7 @@ export default function WorkItemCard({
   item,
   nudges,
   discoveryPrompts = [],
+  focusItem,
   onClick,
   onSpar,
 }: WorkItemCardProps) {
@@ -79,6 +81,14 @@ export default function WorkItemCard({
         {/* Discovery prompts */}
         {discoveryPrompts.length > 0 && (
           <DiscoveryPrompts prompts={discoveryPrompts} />
+        )}
+
+        {/* Focus item banner */}
+        {focusItem && (
+          <div className="mt-1.5 flex items-start gap-1.5 px-2 py-1.5 -mx-1 bg-orange-50 dark:bg-orange-950/20 border-l-2 border-orange-400 dark:border-orange-500 rounded-r text-[10px] text-orange-700 dark:text-orange-300 leading-relaxed">
+            <Target size={11} weight="bold" className="flex-shrink-0 mt-0.5" />
+            <span className="line-clamp-2">{focusItem.suggestedAction}</span>
+          </div>
         )}
       </div>
     </div>
