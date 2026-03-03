@@ -97,8 +97,14 @@ export default function GoalDetailModal({
       {/* Delete */}
       <DeleteSection
         label="Delete this goal"
+        childCount={outcomeCount}
+        childLabel="outcomes"
         onConfirm={() => {
           dispatch({ type: "DELETE_GOAL", goalId: goal.id });
+          onClose();
+        }}
+        onConfirmWithChildren={() => {
+          dispatch({ type: "DELETE_GOAL", goalId: goal.id, deleteChildren: true });
           onClose();
         }}
       />

@@ -42,8 +42,8 @@ export type BoardAction =
   | { type: "UPDATE_CHECKLIST_ITEM"; itemId: string; checklistItemId: string; updates: Partial<ChecklistItem> }
   | { type: "REMOVE_CHECKLIST_ITEM"; itemId: string; checklistItemId: string }
   | { type: "DELETE_ITEM"; itemId: string }
-  | { type: "DELETE_OUTCOME"; outcomeId: string }
-  | { type: "DELETE_GOAL"; goalId: string };
+  | { type: "DELETE_OUTCOME"; outcomeId: string; deleteChildren?: boolean }
+  | { type: "DELETE_GOAL"; goalId: string; deleteChildren?: boolean };
 
 function boardReducer(state: BoardState, action: BoardAction): BoardState {
   switch (action.type) {
@@ -182,21 +182,30 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
       return {
         ...state,
         outcomes: state.outcomes.filter((o) => o.id !== action.outcomeId),
-        // Orphan child items (set outcomeId to null)
-        items: state.items.map((i) =>
-          i.outcomeId === action.outcomeId ? { ...i, outcomeId: null } : i
-        ),
+        items: action.deleteChildren
+          ? state.items.filter((i) => i.outcomeId !== action.outcomeId)
+          : state.items.map((i) =>
+              i.outcomeId === action.outcomeId ? { ...i, outcomeId: null } : i
+            ),
       };
 
-    case "DELETE_GOAL":
+    case "DELETE_GOAL": {
+      const childOutcomeIds = new Set(
+        state.outcomes.filter((o) => o.goalId === action.goalId).map((o) => o.id)
+      );
       return {
         ...state,
         goals: state.goals.filter((g) => g.id !== action.goalId),
-        // Orphan child outcomes (set goalId to null)
-        outcomes: state.outcomes.map((o) =>
-          o.goalId === action.goalId ? { ...o, goalId: null } : o
-        ),
+        outcomes: action.deleteChildren
+          ? state.outcomes.filter((o) => o.goalId !== action.goalId)
+          : state.outcomes.map((o) =>
+              o.goalId === action.goalId ? { ...o, goalId: null } : o
+            ),
+        items: action.deleteChildren
+          ? state.items.filter((i) => !childOutcomeIds.has(i.outcomeId ?? ""))
+          : state.items,
       };
+    }
 
     default:
       return state;

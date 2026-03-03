@@ -133,8 +133,14 @@ export default function OutcomeDetailModal({
       {/* Delete */}
       <DeleteSection
         label="Delete this outcome"
+        childCount={itemCount}
+        childLabel="work items"
         onConfirm={() => {
           dispatch({ type: "DELETE_OUTCOME", outcomeId: outcome.id });
+          onClose();
+        }}
+        onConfirmWithChildren={() => {
+          dispatch({ type: "DELETE_OUTCOME", outcomeId: outcome.id, deleteChildren: true });
           onClose();
         }}
       />
