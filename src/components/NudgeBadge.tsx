@@ -25,7 +25,7 @@ export default function NudgeBadge({ nudge, onSpar, initialExpanded = false }: N
             e.stopPropagation();
             setExpanded(true);
           }}
-          className="absolute -top-2 -right-2 inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-400 dark:bg-orange-500 rounded-full ring-2 ring-white dark:ring-gray-800 hover:scale-110 transition-transform text-[8px] font-bold text-white"
+          className="absolute top-1.5 right-1.5 inline-flex items-center gap-px px-1 py-px bg-orange-400 dark:bg-orange-500 rounded-full hover:scale-110 transition-transform text-[7px] font-bold text-white"
           title="AI-generated coaching nudge"
         >
           <Lightbulb size={9} weight="fill" />
