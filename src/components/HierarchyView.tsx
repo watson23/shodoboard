@@ -1,6 +1,6 @@
 "use client";
 
-import { Flag, Target, LinkBreak, WarningCircle, Plus } from "@phosphor-icons/react";
+import { Flag, Target, LinkBreak, WarningCircle, Plus, Lightbulb } from "@phosphor-icons/react";
 import type { BoardState, BusinessGoal, Outcome, WorkItem, Nudge, FocusItem } from "@/types/board";
 import TypeBadge from "./TypeBadge";
 import TreeConnectors from "./TreeConnectors";
@@ -54,14 +54,15 @@ function ItemRow({ item, onClick, hasNudge, focusAction }: { item: WorkItem; onC
       {(() => {
         const pill = COLUMN_PILLS[item.column];
         return pill ? (
-          <span className={`px-1.5 rounded-full text-[9px] font-semibold flex-shrink-0 leading-tight ${pill.bg} ${pill.text}`}>
+          <span title={item.column.charAt(0).toUpperCase() + item.column.slice(1)} className={`px-1.5 rounded-full text-[9px] font-semibold flex-shrink-0 leading-tight ${pill.bg} ${pill.text}`}>
             {pill.label}
           </span>
         ) : null;
       })()}
       {hasNudge && (
-        <span className="px-1.5 rounded-full text-[9px] font-semibold flex-shrink-0 leading-tight bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
-          Idea
+        <span className="inline-flex items-center gap-0.5 px-1.5 rounded-full text-[9px] font-semibold flex-shrink-0 leading-tight bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400" title="AI-generated coaching nudge">
+          <Lightbulb size={10} weight="fill" />
+          AI
         </span>
       )}
       {focusAction && (
@@ -137,8 +138,9 @@ function OutcomeCard({
             )}
             {nudgeCount > 0 && (
               <span className="inline-flex items-center gap-1.5 mt-1">
-                <span className="px-1.5 rounded-full text-[9px] font-semibold leading-tight bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
-                  {nudgeCount} {nudgeCount === 1 ? "Idea" : "Ideas"}
+                <span className="inline-flex items-center gap-0.5 px-1.5 rounded-full text-[9px] font-semibold leading-tight bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400" title="AI-generated coaching nudges">
+                  <Lightbulb size={10} weight="fill" />
+                  {nudgeCount} AI
                 </span>
               </span>
             )}
