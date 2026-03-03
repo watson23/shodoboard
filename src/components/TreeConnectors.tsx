@@ -37,15 +37,33 @@ export default function TreeConnectors({ goalId, outcomeIds }: TreeConnectorsPro
       if (!outcomeEl) continue;
 
       const outcomeRect = outcomeEl.getBoundingClientRect();
-      // End point: left-center of outcome card
-      const endX = outcomeRect.left - containerRect.left;
-      const endY = outcomeRect.top + 20 - containerRect.top; // ~center of header
+      // End point: top-center of outcome card
+      const endX = outcomeRect.left + outcomeRect.width / 2 - containerRect.left;
+      const endY = outcomeRect.top - containerRect.top;
 
-      // Midpoint Y for the horizontal rail
-      const midY = startY + 16;
+      // Horizontal rail sits halfway between goal bottom and outcome top
+      const midY = startY + (endY - startY) / 2;
 
-      // Path: vertical down from goal, then horizontal, then vertical to outcome
-      const d = `M ${startX} ${startY} L ${startX} ${midY} L ${endX - 8} ${midY} Q ${endX} ${midY} ${endX} ${midY + 8} L ${endX} ${endY}`;
+      const r = 8; // corner radius
+
+      // Path: down from goal → corner → horizontal to outcome center → corner → down into card
+      const dirX = endX > startX ? 1 : endX < startX ? -1 : 0;
+
+      let d: string;
+      if (dirX === 0) {
+        // Outcome directly below goal — straight vertical line
+        d = `M ${startX} ${startY} L ${endX} ${endY}`;
+      } else {
+        // Org-chart style: vertical → corner → horizontal → corner → vertical
+        d = [
+          `M ${startX} ${startY}`,
+          `L ${startX} ${midY - r}`,
+          `Q ${startX} ${midY} ${startX + dirX * r} ${midY}`,
+          `L ${endX - dirX * r} ${midY}`,
+          `Q ${endX} ${midY} ${endX} ${midY + r}`,
+          `L ${endX} ${endY}`,
+        ].join(" ");
+      }
 
       newPaths.push({ id: outcomeId, d });
     }
