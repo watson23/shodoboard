@@ -1,6 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getFocusSystemPrompt } from "@/lib/prompts";
 import { serializeBoardForAI, extractTextFromResponse, extractJsonBlock } from "@/lib/utils";
+import { analyzeBoardSignals, formatSignalsForPrompt } from "@/lib/board-signals";
+import { getPlaybooksForSignals, formatPlaybooksForPrompt } from "@/lib/coaching-knowledge";
+import { ADMIN_COACHING_INSTRUCTIONS } from "@/lib/coaching-instructions";
 import { NextRequest, NextResponse } from "next/server";
 import type { BoardState, FocusItem } from "@/types/board";
 
@@ -11,17 +14,31 @@ export async function POST(req: NextRequest) {
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const { boardState } = (await req.json()) as { boardState: BoardState };
+
+  const signals = analyzeBoardSignals(boardState);
+  const structuralFacts = formatSignalsForPrompt(signals);
+
+  const structuralPatternIds = signals.map((s) => s.antiPattern);
+  const contentPlaybookIds = [
+    "output-not-outcome", "weak-measure", "measure-mismatch",
+    "assumption-risk", "goal-framing", "solution-as-problem",
+    "missing-who", "vague-goal", "duplicate-intent",
+    "timeframe-mismatch", "discovery-quality",
+  ];
+  const playbooks = getPlaybooksForSignals([...structuralPatternIds, ...contentPlaybookIds]);
+  const playbookText = formatPlaybooksForPrompt(playbooks);
+
   const boardDescription = serializeBoardForAI(boardState);
 
   try {
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 2048,
-      system: getFocusSystemPrompt(),
+      system: getFocusSystemPrompt(structuralFacts, playbookText, ADMIN_COACHING_INSTRUCTIONS),
       messages: [
         {
           role: "user",
-          content: `Here is the current board state:\n\n${boardDescription}\n\nAnalyze the board and generate 3-5 prioritized coaching focus areas.`,
+          content: `Here is the full board content:\n\n${boardDescription}\n\nCreate a prioritized coaching agenda.`,
         },
       ],
     });
