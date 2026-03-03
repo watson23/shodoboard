@@ -57,6 +57,11 @@ function ItemRow({ item, onClick, hasNudge }: { item: WorkItem; onClick: () => v
       {hasNudge && (
         <span className="w-2 h-2 rounded-full bg-orange-400 dark:bg-orange-500 flex-shrink-0" title="AI nudge" />
       )}
+      {item.checklist && item.checklist.length > 0 && (
+        <span className="text-[10px] text-gray-400 dark:text-gray-500 tabular-nums flex-shrink-0">
+          {item.checklist.filter(ci => ci.done).length}/{item.checklist.length}
+        </span>
+      )}
     </div>
   );
 }

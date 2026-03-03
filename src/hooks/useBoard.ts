@@ -16,6 +16,7 @@ import type {
   BusinessGoal,
   Nudge,
   FocusItem,
+  ChecklistItem,
 } from "@/types/board";
 
 export type BoardAction =
@@ -36,7 +37,10 @@ export type BoardAction =
   | { type: "UPDATE_FOCUS_ITEM"; focusItemId: string; updates: Partial<FocusItem> }
   | { type: "ADD_GOAL"; goal: BusinessGoal }
   | { type: "ADD_OUTCOME"; outcome: Outcome }
-  | { type: "ADD_ITEM"; item: WorkItem };
+  | { type: "ADD_ITEM"; item: WorkItem }
+  | { type: "ADD_CHECKLIST_ITEM"; itemId: string; checklistItem: ChecklistItem }
+  | { type: "UPDATE_CHECKLIST_ITEM"; itemId: string; checklistItemId: string; updates: Partial<ChecklistItem> }
+  | { type: "REMOVE_CHECKLIST_ITEM"; itemId: string; checklistItemId: string };
 
 function boardReducer(state: BoardState, action: BoardAction): BoardState {
   switch (action.type) {
@@ -135,6 +139,38 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
 
     case "ADD_ITEM":
       return { ...state, items: [...state.items, action.item] };
+
+    case "ADD_CHECKLIST_ITEM": {
+      const items = state.items.map((item) =>
+        item.id === action.itemId
+          ? { ...item, checklist: [...(item.checklist || []), action.checklistItem] }
+          : item
+      );
+      return { ...state, items };
+    }
+
+    case "UPDATE_CHECKLIST_ITEM": {
+      const items = state.items.map((item) =>
+        item.id === action.itemId
+          ? {
+              ...item,
+              checklist: (item.checklist || []).map((ci) =>
+                ci.id === action.checklistItemId ? { ...ci, ...action.updates } : ci
+              ),
+            }
+          : item
+      );
+      return { ...state, items };
+    }
+
+    case "REMOVE_CHECKLIST_ITEM": {
+      const items = state.items.map((item) =>
+        item.id === action.itemId
+          ? { ...item, checklist: (item.checklist || []).filter((ci) => ci.id !== action.checklistItemId) }
+          : item
+      );
+      return { ...state, items };
+    }
 
     default:
       return state;

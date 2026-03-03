@@ -1,5 +1,6 @@
 "use client";
 
+import { Check } from "@phosphor-icons/react";
 import type { WorkItem, Nudge, DiscoveryPrompt } from "@/types/board";
 import NudgeBadge from "./NudgeBadge";
 import TypeBadge from "./TypeBadge";
@@ -66,6 +67,14 @@ export default function WorkItemCard({
             </span>
           )}
         </div>
+
+        {/* Checklist progress */}
+        {item.checklist && item.checklist.length > 0 && (
+          <div className="mt-1 flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500">
+            <Check size={10} weight="bold" />
+            <span>{item.checklist.filter(ci => ci.done).length}/{item.checklist.length}</span>
+          </div>
+        )}
 
         {/* Discovery prompts */}
         {discoveryPrompts.length > 0 && (

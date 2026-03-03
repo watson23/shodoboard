@@ -34,6 +34,14 @@ export interface WorkItem {
   column: Column;
   assignee?: string;
   order: number;
+  checklist?: ChecklistItem[];
+}
+
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  type: ItemType;
+  done: boolean;
 }
 
 export interface Nudge {

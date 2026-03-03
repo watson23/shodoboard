@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { Plus, X as XIcon, Check } from "@phosphor-icons/react";
+import { generateId } from "@/lib/utils";
 import { useBoard } from "@/hooks/useBoard";
-import type { WorkItem, Nudge, DiscoveryPrompt, Column } from "@/types/board";
+import type { WorkItem, Nudge, DiscoveryPrompt, Column, ChecklistItem } from "@/types/board";
 import NudgeBadge from "./NudgeBadge";
 import DiscoveryPrompts from "./DiscoveryPrompts";
 import SlidePanel from "./SlidePanel";
@@ -185,6 +187,104 @@ export default function CardDetailModal({
           className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500/40"
           placeholder="Name"
         />
+      </div>
+
+
+      {/* Checklist */}
+      <div>
+        <label className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide font-medium block mb-1.5">
+          Checklist
+        </label>
+        <div className="space-y-1">
+          {(item.checklist || []).map((ci) => (
+            <div key={ci.id} className="flex items-center gap-2 group/ci">
+              <button
+                onClick={() =>
+                  dispatch({
+                    type: "UPDATE_CHECKLIST_ITEM",
+                    itemId: item.id,
+                    checklistItemId: ci.id,
+                    updates: { done: !ci.done },
+                  })
+                }
+                className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-colors ${
+                  ci.done
+                    ? "bg-emerald-500 border-emerald-500 text-white"
+                    : "border-gray-300 dark:border-gray-600 hover:border-gray-400"
+                }`}
+              >
+                {ci.done && <Check size={10} weight="bold" />}
+              </button>
+              <span
+                className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                  ci.type === "discovery"
+                    ? "bg-purple-500 dark:bg-purple-400"
+                    : "bg-teal-500 dark:bg-teal-400"
+                }`}
+                title={ci.type === "discovery" ? "Discovery" : "Delivery"}
+              />
+              <button
+                onClick={() =>
+                  dispatch({
+                    type: "UPDATE_CHECKLIST_ITEM",
+                    itemId: item.id,
+                    checklistItemId: ci.id,
+                    updates: { type: ci.type === "discovery" ? "delivery" : "discovery" },
+                  })
+                }
+                className="text-[9px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0 w-3"
+                title="Toggle type"
+              >
+                ⇄
+              </button>
+              <input
+                defaultValue={ci.text}
+                onBlur={(e) =>
+                  dispatch({
+                    type: "UPDATE_CHECKLIST_ITEM",
+                    itemId: item.id,
+                    checklistItemId: ci.id,
+                    updates: { text: e.target.value },
+                  })
+                }
+                className={`flex-1 text-xs bg-transparent outline-none text-gray-700 dark:text-gray-300 ${
+                  ci.done ? "line-through text-gray-400 dark:text-gray-500" : ""
+                }`}
+                placeholder="Sub-task..."
+              />
+              <button
+                onClick={() =>
+                  dispatch({
+                    type: "REMOVE_CHECKLIST_ITEM",
+                    itemId: item.id,
+                    checklistItemId: ci.id,
+                  })
+                }
+                className="opacity-0 group-hover/ci:opacity-100 text-gray-400 hover:text-red-500 transition-opacity p-0.5"
+              >
+                <XIcon size={10} weight="bold" />
+              </button>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={() =>
+            dispatch({
+              type: "ADD_CHECKLIST_ITEM",
+              itemId: item.id,
+              checklistItem: {
+                id: generateId("cl"),
+                text: "",
+                type: item.type,
+                done: false,
+              },
+            })
+          }
+          className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors mt-2 px-1 py-0.5 rounded hover:bg-gray-50 dark:hover:bg-gray-800"
+        >
+          <Plus size={10} weight="bold" />
+          Add checklist item
+        </button>
       </div>
 
       {/* Nudges */}
