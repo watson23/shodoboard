@@ -3,6 +3,7 @@
 import { Flag, Target, LinkBreak, WarningCircle, Plus } from "@phosphor-icons/react";
 import type { BoardState, BusinessGoal, Outcome, WorkItem, Nudge, FocusItem } from "@/types/board";
 import TypeBadge from "./TypeBadge";
+import TreeConnectors from "./TreeConnectors";
 
 // --- Column status dot colors ---
 const COLUMN_COLORS: Record<string, string> = {
@@ -205,17 +206,24 @@ export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onIt
         const goalOutcomes = getOutcomesForGoal(goal.id);
 
         return (
-          <div key={goal.id} className="hierarchy-tree">
+          <div key={goal.id} className="relative">
+            {/* SVG tree connectors */}
+            {goalOutcomes.length > 0 && (
+              <TreeConnectors
+                goalId={goal.id}
+                outcomeIds={goalOutcomes.map((o) => o.id)}
+              />
+            )}
+
             {/* Goal card */}
             <GoalCard goal={goal} onClick={() => onGoalClick(goal.id)} />
 
-            {/* Connector + outcomes */}
+            {/* Outcomes */}
             {goalOutcomes.length > 0 && (
-              <div className="hierarchy-branch">
-                <div className="hierarchy-connector" />
-                <div className="flex flex-wrap gap-4 pt-4 pl-8">
+              <div className="relative ml-8 pt-8">
+                <div className="flex flex-wrap gap-4">
                   {goalOutcomes.map((outcome) => (
-                    <div key={outcome.id} className="hierarchy-leaf w-72">
+                    <div key={outcome.id} className="w-72">
                       <OutcomeCard
                         outcome={outcome}
                         items={getItemsForOutcome(outcome.id)}
@@ -232,7 +240,7 @@ export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onIt
 
                   {/* Add outcome button */}
                   {onAddOutcome && (
-                    <div className="hierarchy-leaf flex items-center">
+                    <div className="flex items-center">
                       <button
                         onClick={() => onAddOutcome(goal.id)}
                         className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 transition-colors px-3 py-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 hover:border-teal-400 dark:hover:border-teal-500"
