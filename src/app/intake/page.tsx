@@ -58,7 +58,7 @@ function ConsentScreen({
               </li>
               <li>Data poistetaan 30 päivän kuluessa</li>
               <li>
-                Taulusi data tallennetaan Firebase-tietokantaan
+                Taulusi data tallennetaan Googlen Firebase-tietokantaan
                 (EU-palvelin)
               </li>
             </ul>
@@ -69,7 +69,7 @@ function ConsentScreen({
               <li>Your backlog text is sent to Anthropic&apos;s Claude API for analysis</li>
               <li>Anthropic does not use your data to train its models</li>
               <li>Data is deleted within 30 days</li>
-              <li>Your board data is stored in Firebase (EU server)</li>
+              <li>Your board data is stored in Google Firebase (EU server)</li>
             </ul>
           </div>
 
