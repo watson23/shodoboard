@@ -129,10 +129,10 @@ export default function BoardSparringModal({ onClose }: BoardSparringModalProps)
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-              Sparraa taulua
+              Spar about your board
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Keskustele AI-valmentajan kanssa taulun kokonaisuudesta
+              Coaching conversation about your board as a whole
             </p>
           </div>
           <button
