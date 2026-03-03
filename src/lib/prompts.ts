@@ -160,15 +160,17 @@ Include 1-2 positive nudges when you see genuinely good work. Use antiPattern "s
 
 IMPORTANT: When referring to items, outcomes, or goals in your message, question, or suggestedAction text, always use their actual title or statement, never their ID. The targetId field should still use the actual ID.
 
+BREVITY: Nudges appear as small banners on the board. Keep all text extremely short — they must not dominate the view.
+
 For each nudge, provide:
 - targetType: "goal" | "outcome" | "item"
 - targetId: the ID of the target entity from the board content below
 - tier: "quiet" (subtle indicator) for minor issues, "visible" (banner) for important ones
 - priority: "high" | "medium" | "low"
 - antiPattern: the pattern ID (e.g. "unmeasured-outcome", "output-not-outcome", "other")
-- message: A short observation — for issues, frame as a decision or gentle question ("Minkä päätöksen...?"). For strengths, highlight what works well. (1 sentence)
-- question: A coaching question to prompt reflection or deepen good thinking (1 sentence)
-- suggestedAction: A concrete action the PM can take right now (1 sentence, imperative form)
+- message: A headline-style observation, max 60 characters. Like a sticky note: "Tulos on output, ei käyttäytymismuutos" or "Mittari puuttuu". No full sentences — just the core point.
+- question: A short coaching question, max 100 characters. (1 short sentence)
+- suggestedAction: A concrete next step, max 80 characters. Imperative form, 1 short sentence.
 
 Respond with a JSON array:
 \`\`\`json

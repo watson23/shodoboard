@@ -408,25 +408,34 @@ export default function Board({ boardId }: BoardProps) {
                                         Mittari puuttuu!
                                       </span>
                                     )}
+                                    {getNudgesForOutcome(outcome.id).length > 0 && (
+                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 ml-auto flex-shrink-0">
+                                        <Lightbulb size={11} weight="fill" />
+                                        {getNudgesForOutcome(outcome.id).length} AI
+                                      </span>
+                                    )}
                                   </div>
 
-                                  {/* Outcome-level nudges */}
-                                  {getNudgesForOutcome(outcome.id).length > 0 && (
-                                    <div className="pl-14 pr-4 py-2 space-y-2">
-                                      {getNudgesForOutcome(outcome.id).map(
-                                        (nudge) => (
-                                          <NudgeBadge
-                                            key={nudge.id}
-                                            nudge={{ ...nudge, tier: "visible" }}
-                                            onSpar={() =>
-                                              setSparringNudgeId(nudge.id)
-                                            }
-                                            initialExpanded
-                                          />
-                                        )
-                                      )}
-                                    </div>
-                                  )}
+                                  {/* Outcome-level nudge — show only the highest-priority one, collapsed */}
+                                  {(() => {
+                                    const outcomeNudges = getNudgesForOutcome(outcome.id);
+                                    if (outcomeNudges.length === 0) return null;
+                                    const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
+                                    const topNudge = [...outcomeNudges].sort(
+                                      (a, b) => (priorityOrder[a.priority ?? "low"] ?? 3) - (priorityOrder[b.priority ?? "low"] ?? 3)
+                                    )[0];
+                                    return (
+                                      <div className="pl-14 pr-4 py-1.5">
+                                        <NudgeBadge
+                                          key={topNudge.id}
+                                          nudge={{ ...topNudge, tier: "visible" }}
+                                          onSpar={() =>
+                                            setSparringNudgeId(topNudge.id)
+                                          }
+                                        />
+                                      </div>
+                                    );
+                                  })()}
 
                                   {/* Column slots for this outcome */}
                                   {!outcome.collapsed && (
