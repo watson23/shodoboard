@@ -46,7 +46,7 @@ function ItemRow({ item, onClick }: { item: WorkItem; onClick: () => void }) {
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       className="flex items-center gap-2 px-4 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer text-xs transition-colors"
     >
-      <TypeBadge type={item.type} />
+      <TypeBadge type={item.type} compact />
       <span className="text-gray-700 dark:text-gray-300 truncate flex-1">
         {item.title}
       </span>
@@ -236,7 +236,7 @@ export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onIt
                 onClick={() => onItemClick(item.id)}
                 className="bg-white dark:bg-gray-800 border border-dashed border-amber-300 dark:border-amber-700 rounded-lg px-3 py-2 text-xs cursor-pointer hover:border-amber-400 transition-colors w-40"
               >
-                <TypeBadge type={item.type} />
+                <TypeBadge type={item.type} compact />
                 <p className="text-gray-700 dark:text-gray-300 font-medium line-clamp-2">
                   {item.title}
                 </p>
