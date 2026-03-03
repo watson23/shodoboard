@@ -1,7 +1,8 @@
 "use client";
 
 import { Flag, Target, LinkBreak, WarningCircle, Plus } from "@phosphor-icons/react";
-import type { BoardState, BusinessGoal, Outcome, WorkItem, Nudge } from "@/types/board";
+import type { BoardState, BusinessGoal, Outcome, WorkItem } from "@/types/board";
+import TypeBadge from "./TypeBadge";
 
 // --- Column status dot colors ---
 const COLUMN_COLORS: Record<string, string> = {
@@ -45,18 +46,7 @@ function ItemRow({ item, onClick }: { item: WorkItem; onClick: () => void }) {
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       className="flex items-center gap-2 px-4 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer text-xs transition-colors"
     >
-      <span className="inline-flex rounded overflow-hidden text-[10px] font-medium flex-shrink-0">
-        <span className={`px-1.5 py-0.5 ${
-          item.type === "discovery"
-            ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
-            : "bg-purple-50 dark:bg-purple-900/10 text-purple-300 dark:text-purple-600"
-        }`}>Dis</span>
-        <span className={`px-1.5 py-0.5 ${
-          item.type === "delivery"
-            ? "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
-            : "bg-teal-50 dark:bg-teal-900/10 text-teal-300 dark:text-teal-600"
-        }`}>Del</span>
-      </span>
+      <TypeBadge type={item.type} />
       <span className="text-gray-700 dark:text-gray-300 truncate flex-1">
         {item.title}
       </span>
@@ -159,7 +149,7 @@ interface HierarchyViewProps {
 }
 
 export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onItemClick, onAddGoal, onAddOutcome, onAddItem }: HierarchyViewProps) {
-  const { goals, outcomes, items, nudges } = state;
+  const { goals, outcomes, items } = state;
 
   const getOutcomesForGoal = (goalId: string) =>
     outcomes.filter((o) => o.goalId === goalId).sort((a, b) => a.order - b.order);
@@ -246,18 +236,7 @@ export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onIt
                 onClick={() => onItemClick(item.id)}
                 className="bg-white dark:bg-gray-800 border border-dashed border-amber-300 dark:border-amber-700 rounded-lg px-3 py-2 text-xs cursor-pointer hover:border-amber-400 transition-colors w-40"
               >
-                <span className="inline-flex rounded overflow-hidden text-[10px] font-medium mb-1">
-                  <span className={`px-1.5 py-0.5 ${
-                    item.type === "discovery"
-                      ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
-                      : "bg-purple-50 dark:bg-purple-900/10 text-purple-300 dark:text-purple-600"
-                  }`}>Dis</span>
-                  <span className={`px-1.5 py-0.5 ${
-                    item.type === "delivery"
-                      ? "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
-                      : "bg-teal-50 dark:bg-teal-900/10 text-teal-300 dark:text-teal-600"
-                  }`}>Del</span>
-                </span>
+                <TypeBadge type={item.type} />
                 <p className="text-gray-700 dark:text-gray-300 font-medium line-clamp-2">
                   {item.title}
                 </p>
