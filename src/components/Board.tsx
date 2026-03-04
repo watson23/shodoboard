@@ -120,12 +120,18 @@ export default function Board({ boardId }: BoardProps) {
 
   // Generate nudges and focus items on first load for non-demo boards
   useEffect(() => {
-    if (boardId && state.nudges.length === 0) {
+    if (!boardId) return;
+
+    if (state.nudges.length === 0) {
       generateNudges();
     }
-    if (boardId && state.focusItems.length === 0) {
+    if (state.focusItems.length === 0) {
+      console.log("[Board] Auto-generating focus items for new board...");
       generateFocusItems().then((loaded) => {
+        console.log("[Board] Focus items loaded:", loaded);
         if (loaded) setShowAgenda(true);
+      }).catch((err) => {
+        console.error("[Board] Focus generation failed:", err);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -233,6 +239,10 @@ export default function Board({ boardId }: BoardProps) {
           boardId
             ? () => {
                 logEvent(showAgenda ? "close_agenda" : "open_agenda");
+                if (!showAgenda && focusItems.length === 0 && !focusLoading) {
+                  // Auto-generate focus items when opening empty agenda
+                  generateFocusItems();
+                }
                 setShowAgenda(!showAgenda);
               }
             : undefined
