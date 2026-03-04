@@ -102,9 +102,7 @@ export default function Board({ boardId }: BoardProps) {
   const [activeItem, setActiveItem] = useState<WorkItem | null>(null);
   const [showAgenda, setShowAgenda] = useState(false);
   const [showBoardSpar, setShowBoardSpar] = useState(false);
-  const [viewMode, setViewMode] = useState<"hierarchy" | "kanban">(
-    boardId ? "hierarchy" : "kanban"
-  );
+  const [viewMode, setViewMode] = useState<"hierarchy" | "kanban">("hierarchy");
   const [unlinkedCollapsed, setUnlinkedCollapsed] = useState(false);
 
   const {
@@ -119,15 +117,13 @@ export default function Board({ boardId }: BoardProps) {
     handleFocusStatusChange,
   } = useBoardActions();
 
-  // Generate nudges and focus items on first load for non-demo boards
+  // Generate nudges and focus items on first load
   useEffect(() => {
-    if (!boardId) return;
-
     if (state.nudges.length === 0) {
       generateNudges();
     }
     if (state.focusItems.length === 0) {
-      console.log("[Board] Auto-generating focus items for new board...");
+      console.log("[Board] Auto-generating focus items...");
       generateFocusItems().then((loaded) => {
         console.log("[Board] Focus items loaded:", loaded);
         if (loaded) setShowAgenda(true);
@@ -136,7 +132,7 @@ export default function Board({ boardId }: BoardProps) {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boardId]);
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -236,38 +232,25 @@ export default function Board({ boardId }: BoardProps) {
         productName={state.productName}
         onRefreshNudges={generateNudges}
         nudgesLoading={nudgesLoading}
-        onToggleAgenda={
-          boardId
-            ? () => {
-                logEvent(showAgenda ? "close_agenda" : "open_agenda");
-                if (!showAgenda && focusItems.length === 0 && !focusLoading) {
-                  // Auto-generate focus items when opening empty agenda
-                  generateFocusItems();
-                }
-                setShowAgenda(!showAgenda);
-              }
-            : undefined
-        }
+        onToggleAgenda={() => {
+          logEvent(showAgenda ? "close_agenda" : "open_agenda");
+          if (!showAgenda && focusItems.length === 0 && !focusLoading) {
+            generateFocusItems();
+          }
+          setShowAgenda(!showAgenda);
+        }}
         agendaOpen={showAgenda}
         viewMode={viewMode}
-        onViewModeChange={
-          boardId
-            ? (mode: "hierarchy" | "kanban") => {
-                logEvent("switch_view", {
-                  details: { from: viewMode, to: mode },
-                });
-                setViewMode(mode);
-              }
-            : undefined
-        }
-        onBoardSpar={
-          boardId
-            ? () => {
-                logEvent("open_board_spar");
-                setShowBoardSpar(true);
-              }
-            : undefined
-        }
+        onViewModeChange={(mode: "hierarchy" | "kanban") => {
+          logEvent("switch_view", {
+            details: { from: viewMode, to: mode },
+          });
+          setViewMode(mode);
+        }}
+        onBoardSpar={() => {
+          logEvent("open_board_spar");
+          setShowBoardSpar(true);
+        }}
       />
 
       {viewMode === "kanban" ? (
