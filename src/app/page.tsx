@@ -97,7 +97,7 @@ export default function Home() {
         nudges: [],
         focusItems: [],
         discoveryPrompts: [],
-      }, undefined, "pilot");
+      }, undefined, "default");
       router.push(`/board/${boardId}`);
     } catch (err) {
       console.error("Failed to create empty board:", err);

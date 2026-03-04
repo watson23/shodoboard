@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import {
   SignIn,
@@ -268,9 +268,22 @@ export default function AdminPage() {
                           {board.productName}
                         </td>
                         <td className="px-4 py-3">
-                          <span className="inline-flex px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-                            {board.cohort}
-                          </span>
+                          <CohortBadge
+                            boardId={board.boardId}
+                            cohort={board.cohort}
+                            user={user}
+                            onUpdated={(newCohort) => {
+                              setData((prev) => {
+                                if (!prev) return prev;
+                                return {
+                                  ...prev,
+                                  boards: prev.boards.map((b) =>
+                                    b.boardId === board.boardId ? { ...b, cohort: newCohort } : b
+                                  ),
+                                };
+                              });
+                            }}
+                          />
                         </td>
                         <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
                           {formatCreatedDate(board.createdAt)}
@@ -356,6 +369,87 @@ export default function AdminPage() {
         )}
       </main>
     </div>
+  );
+}
+
+function CohortBadge({
+  boardId,
+  cohort,
+  user,
+  onUpdated,
+}: {
+  boardId: string;
+  cohort: string;
+  user: { getIdToken: () => Promise<string> };
+  onUpdated: (newCohort: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(cohort);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [editing]);
+
+  const handleSubmit = async () => {
+    const trimmed = value.trim();
+    if (!trimmed || trimmed === cohort) {
+      setValue(cohort);
+      setEditing(false);
+      return;
+    }
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch("/api/admin/boards/update", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ boardId, cohort: trimmed }),
+      });
+      if (res.ok) {
+        onUpdated(trimmed);
+      }
+    } catch {
+      setValue(cohort);
+    }
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={handleSubmit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleSubmit();
+          if (e.key === "Escape") {
+            setValue(cohort);
+            setEditing(false);
+          }
+        }}
+        className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-white dark:bg-gray-700 border border-indigo-300 dark:border-indigo-500 text-gray-800 dark:text-gray-200 outline-none w-24"
+      />
+    );
+  }
+
+  return (
+    <button
+      onClick={() => {
+        setValue(cohort);
+        setEditing(true);
+      }}
+      className="inline-flex px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
+      title="Click to change cohort"
+    >
+      {cohort}
+    </button>
   );
 }
 
