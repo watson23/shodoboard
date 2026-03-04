@@ -12,6 +12,7 @@ import {
   Users,
   CalendarDots,
   Lightning,
+  Megaphone,
 } from "@phosphor-icons/react";
 
 interface BoardStat {
@@ -34,9 +35,24 @@ interface DashboardData {
   boards: BoardStat[];
 }
 
+interface FeedbackItem {
+  id: string;
+  boardId: string;
+  productName: string;
+  category: string;
+  message: string;
+  createdAt: string | null;
+}
+
+interface FeedbackData {
+  totalCount: number;
+  items: FeedbackItem[];
+}
+
 export default function AdminPage() {
   const { user, loading: authLoading, signIn, signOut } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
+  const [feedbackData, setFeedbackData] = useState<FeedbackData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,6 +72,19 @@ export default function AdminPage() {
       if (!res.ok) throw new Error("Failed to fetch");
       const json = await res.json();
       setData(json);
+
+      // Fetch feedback in parallel
+      try {
+        const fbRes = await fetch("/api/admin/feedback", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (fbRes.ok) {
+          const fbJson = await fbRes.json();
+          setFeedbackData(fbJson);
+        }
+      } catch {
+        // Feedback fetch is non-critical
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load data");
     } finally {
@@ -168,7 +197,7 @@ export default function AdminPage() {
         {data && (
           <>
             {/* Summary cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <SummaryCard
                 icon={<ChartBar size={20} weight="fill" />}
                 label="Total Boards"
@@ -192,6 +221,12 @@ export default function AdminPage() {
                 label="Events"
                 value={data.summary.totalEvents}
                 color="amber"
+              />
+              <SummaryCard
+                icon={<Megaphone size={20} weight="fill" />}
+                label="Feedback"
+                value={feedbackData?.totalCount ?? 0}
+                color="rose"
               />
             </div>
 
@@ -272,6 +307,42 @@ export default function AdminPage() {
                 </table>
               </div>
             </div>
+            {/* Feedback section */}
+            {feedbackData && feedbackData.items.length > 0 && (
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                  <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Recent Feedback ({feedbackData.totalCount})
+                  </h2>
+                </div>
+                <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {feedbackData.items.map((item) => (
+                    <div key={item.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                          item.category === "bug"
+                            ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
+                            : item.category === "question"
+                            ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                            : "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
+                        }`}>
+                          {item.category}
+                        </span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">
+                          {item.productName}
+                        </span>
+                        <span className="text-xs text-gray-300 dark:text-gray-600">
+                          {formatDate(item.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        {item.message}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
       </main>
@@ -295,6 +366,7 @@ function SummaryCard({
     green: "text-green-500 bg-green-50 dark:bg-green-900/20",
     blue: "text-blue-500 bg-blue-50 dark:bg-blue-900/20",
     amber: "text-amber-500 bg-amber-50 dark:bg-amber-900/20",
+    rose: "text-rose-500 bg-rose-50 dark:bg-rose-900/20",
   };
 
   return (

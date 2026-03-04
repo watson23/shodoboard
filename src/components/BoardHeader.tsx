@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link, ChatCircleDots } from "@phosphor-icons/react";
+import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link, ChatCircleDots, Megaphone } from "@phosphor-icons/react";
+import FeedbackModal from "./FeedbackModal";
 import { useTheme } from "@/hooks/useTheme";
 import { useBoard } from "@/hooks/useBoard";
 import { openPrintableExport } from "@/lib/export";
@@ -49,6 +50,7 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
   const { theme, setTheme } = useTheme();
   const { state, dispatch } = useBoard();
   const [copied, setCopied] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const handleCopyLink = async () => {
     try {
@@ -202,6 +204,13 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
           Export
         </button>
         <button
+          onClick={() => setFeedbackOpen(true)}
+          className="p-2 rounded-lg text-indigo-200 hover:text-white hover:bg-indigo-500 transition-colors"
+          title="Send feedback"
+        >
+          <Megaphone size={16} weight="duotone" />
+        </button>
+        <button
           onClick={cycleTheme}
           className="p-2 rounded-lg text-indigo-200 hover:text-white hover:bg-indigo-500 transition-colors"
           title={`Theme: ${theme}`}
@@ -209,6 +218,13 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
           <ThemeIcon size={18} weight="duotone" />
         </button>
       </div>
+      {feedbackOpen && (
+        <FeedbackModal
+          boardId={boardId}
+          productName={productName}
+          onClose={() => setFeedbackOpen(false)}
+        />
+      )}
     </header>
   );
 }
