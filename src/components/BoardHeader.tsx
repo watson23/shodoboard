@@ -162,7 +162,7 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
                 ? "bg-indigo-600 text-white"
                 : "text-indigo-200 hover:text-white hover:bg-white/10"
             }`}
-            title="Valmennusagenda"
+            title="Coaching Agenda"
           >
             <ListChecks size={16} weight="duotone" />
             <span className="hidden sm:inline">Agenda</span>

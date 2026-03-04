@@ -239,11 +239,11 @@ export default function CoachingAgenda({
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
-              Valmennusagenda
+              Coaching Agenda
             </h3>
             {totalCount > 0 && (
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {completedCount}/{totalCount} valmis
+                {completedCount}/{totalCount} done
               </p>
             )}
           </div>
@@ -252,7 +252,7 @@ export default function CoachingAgenda({
               onClick={onRefresh}
               disabled={isLoading}
               className="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              title="Päivitä agenda"
+              title="Refresh agenda"
             >
               <ArrowsClockwise size={18} weight="bold" className={isLoading ? "animate-spin" : ""} />
             </button>
@@ -269,10 +269,15 @@ export default function CoachingAgenda({
         <div className="flex-1 overflow-y-auto">
           {/* Loading state */}
           {isLoading && (
-            <div className="divide-y divide-gray-100 dark:divide-gray-800">
-              <SkeletonCard />
-              <SkeletonCard />
-              <SkeletonCard />
+            <div>
+              <div className="px-5 py-3 text-xs text-gray-400 dark:text-gray-500 text-center">
+                AI is analyzing your board — this may take up to 30 seconds.
+              </div>
+              <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </div>
             </div>
           )}
 
