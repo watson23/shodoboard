@@ -54,6 +54,7 @@ export default function AdminPage() {
   const { user, loading: authLoading, signIn, signOut } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [feedbackData, setFeedbackData] = useState<FeedbackData | null>(null);
+  const [defaultCohort, setDefaultCohort] = useState<string>("default");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -74,17 +75,22 @@ export default function AdminPage() {
       const json = await res.json();
       setData(json);
 
-      // Fetch feedback in parallel
+      // Fetch feedback and config
       try {
-        const fbRes = await fetch("/api/admin/feedback", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const [fbRes, cfgRes] = await Promise.all([
+          fetch("/api/admin/feedback", { headers: { Authorization: `Bearer ${token}` } }),
+          fetch("/api/admin/config", { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
         if (fbRes.ok) {
           const fbJson = await fbRes.json();
           setFeedbackData(fbJson);
         }
+        if (cfgRes.ok) {
+          const cfgJson = await cfgRes.json();
+          setDefaultCohort(cfgJson.defaultCohort || "default");
+        }
       } catch {
-        // Feedback fetch is non-critical
+        // Non-critical fetches
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load data");
@@ -228,6 +234,18 @@ export default function AdminPage() {
                 label="Feedback"
                 value={feedbackData?.totalCount ?? 0}
                 color="rose"
+              />
+            </div>
+
+            {/* Default cohort setting */}
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <span>New boards go to cohort:</span>
+              <CohortBadge
+                boardId="__config__"
+                cohort={defaultCohort}
+                user={user}
+                onUpdated={(newCohort) => setDefaultCohort(newCohort)}
+                isConfig
               />
             </div>
 
@@ -377,11 +395,13 @@ function CohortBadge({
   cohort,
   user,
   onUpdated,
+  isConfig,
 }: {
   boardId: string;
   cohort: string;
   user: { getIdToken: () => Promise<string> };
   onUpdated: (newCohort: string) => void;
+  isConfig?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(cohort);
@@ -403,13 +423,17 @@ function CohortBadge({
     }
     try {
       const token = await user.getIdToken();
-      const res = await fetch("/api/admin/boards/update", {
+      const url = isConfig ? "/api/admin/config" : "/api/admin/boards/update";
+      const body = isConfig
+        ? JSON.stringify({ defaultCohort: trimmed })
+        : JSON.stringify({ boardId, cohort: trimmed });
+      const res = await fetch(url, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ boardId, cohort: trimmed }),
+        body,
       });
       if (res.ok) {
         onUpdated(trimmed);

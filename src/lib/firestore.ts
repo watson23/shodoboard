@@ -30,12 +30,23 @@ export async function createBoard(
   intakeHistory?: ConversationMessage[],
   cohort?: string
 ): Promise<string> {
+  // If no cohort specified, fetch the default from config
+  let resolvedCohort = cohort;
+  if (!resolvedCohort) {
+    try {
+      const config = await getAppConfig();
+      resolvedCohort = config.defaultCohort;
+    } catch {
+      resolvedCohort = "default";
+    }
+  }
+
   const boardRef = doc(collection(db, BOARDS_COLLECTION));
   await setDoc(boardRef, {
     boardState,
     intakeHistory: intakeHistory ?? [],
     consentGiven: true,
-    cohort: cohort ?? "default",
+    cohort: resolvedCohort,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -91,6 +102,34 @@ export async function flushActivityEvents(
   }
 
   await updateDoc(boardRef, updateData);
+}
+
+// App config stored in config/app document
+export interface AppConfig {
+  defaultCohort: string;
+}
+
+const CONFIG_DOC = "config";
+const CONFIG_ID = "app";
+
+export async function getAppConfig(): Promise<AppConfig> {
+  const configRef = doc(db, CONFIG_DOC, CONFIG_ID);
+  const snap = await getDoc(configRef);
+  if (!snap.exists()) return { defaultCohort: "default" };
+  const data = snap.data();
+  return {
+    defaultCohort: data.defaultCohort || "default",
+  };
+}
+
+export async function updateAppConfig(updates: Partial<AppConfig>): Promise<void> {
+  const configRef = doc(db, CONFIG_DOC, CONFIG_ID);
+  const snap = await getDoc(configRef);
+  if (snap.exists()) {
+    await updateDoc(configRef, updates);
+  } else {
+    await setDoc(configRef, { defaultCohort: "default", ...updates });
+  }
 }
 
 export async function getAllBoardsActivity(): Promise<
