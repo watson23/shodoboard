@@ -393,7 +393,7 @@ export default function Board({ boardId }: BoardProps) {
                                 <div key={outcome.id} id={outcome.id} className="mx-2 mb-2 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-900">
                                   {/* Outcome header */}
                                   <div
-                                    className="w-full flex items-center gap-2 pl-10 pr-4 py-2 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-850 transition-colors text-left cursor-pointer border-l-[3px] border-l-teal-400 dark:border-l-teal-500"
+                                    className="w-full flex items-center flex-wrap gap-x-2 gap-y-0.5 pl-10 pr-4 py-2 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-850 transition-colors text-left cursor-pointer border-l-[3px] border-l-teal-400 dark:border-l-teal-500"
                                     onClick={() =>
                                       setModal({
                                         type: "outcome",
@@ -434,7 +434,7 @@ export default function Board({ boardId }: BoardProps) {
                                       {outcome.statement}
                                     </span>
                                     {outcome.measureOfSuccess && (
-                                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-2 truncate max-w-xs">
+                                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-2" title={outcome.measureOfSuccess}>
                                         {outcome.measureOfSuccess}
                                       </span>
                                     )}
