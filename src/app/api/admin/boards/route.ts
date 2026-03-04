@@ -76,11 +76,13 @@ export async function GET(request: Request) {
         totalEvents: boardStats.reduce((s, b) => s + b.eventCount, 0),
       },
       boards: boardStats.sort((a, b) => {
-        const aActive = a.lastActive ? new Date(a.lastActive).getTime() : 0;
-        const aHeartbeat = a.lastHeartbeat ? new Date(a.lastHeartbeat).getTime() : 0;
-        const bActive = b.lastActive ? new Date(b.lastActive).getTime() : 0;
-        const bHeartbeat = b.lastHeartbeat ? new Date(b.lastHeartbeat).getTime() : 0;
-        return Math.max(bActive, bHeartbeat) - Math.max(aActive, aHeartbeat);
+        const aTime = a.lastActive ? new Date(a.lastActive).getTime() : 0;
+        const bTime = b.lastActive ? new Date(b.lastActive).getTime() : 0;
+        if (aTime !== bTime) return bTime - aTime;
+        // If same real activity, fall back to heartbeat
+        const aHb = a.lastHeartbeat ? new Date(a.lastHeartbeat).getTime() : 0;
+        const bHb = b.lastHeartbeat ? new Date(b.lastHeartbeat).getTime() : 0;
+        return bHb - aHb;
       }),
     });
   } catch (err) {
