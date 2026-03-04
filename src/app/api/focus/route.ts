@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 import Anthropic from "@anthropic-ai/sdk";
 import { getFocusSystemPrompt } from "@/lib/prompts";
 import { serializeBoardForAI, extractTextFromResponse, extractJsonBlock } from "@/lib/utils";

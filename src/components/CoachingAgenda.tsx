@@ -10,6 +10,7 @@ import {
   Target,
   ListChecks,
   Star,
+  WarningCircle,
 } from "@phosphor-icons/react";
 import type { FocusItem, FocusItemStatus } from "@/types/board";
 
@@ -17,6 +18,7 @@ interface CoachingAgendaProps {
   focusItems: FocusItem[];
   boardStrengths?: string[];
   isLoading: boolean;
+  hasError?: boolean;
   onItemClick: (focusItem: FocusItem) => void;
   onStatusChange: (focusItemId: string, status: FocusItemStatus) => void;
   onStartSparring: (focusItem: FocusItem) => void;
@@ -205,6 +207,7 @@ export default function CoachingAgenda({
   focusItems,
   boardStrengths = [],
   isLoading,
+  hasError = false,
   onItemClick,
   onStatusChange,
   onStartSparring,
@@ -273,8 +276,36 @@ export default function CoachingAgenda({
             </div>
           )}
 
+          {/* Error state */}
+          {!isLoading && hasError && focusItems.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mb-4">
+                <WarningCircle
+                  size={24}
+                  weight="duotone"
+                  className="text-rose-500 dark:text-rose-400"
+                />
+              </div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                Agendan lataus epäonnistui
+              </p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 max-w-[240px] mb-4">
+                AI-analyysi ei vastannut ajoissa. Kokeile uudelleen.
+              </p>
+              {onRefresh && (
+                <button
+                  onClick={onRefresh}
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors"
+                >
+                  <ArrowsClockwise size={14} weight="bold" />
+                  Yritä uudelleen
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Empty state */}
-          {!isLoading && focusItems.length === 0 && (
+          {!isLoading && !hasError && focusItems.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
               <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
                 <ListChecks
@@ -287,7 +318,7 @@ export default function CoachingAgenda({
                 Ei fokuskohteita
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 max-w-[240px]">
-                Lis&auml;&auml; tavoitteita ja tuloksia taulullesi, niin valmennus tunnistaa t&auml;rkeimm&auml;t kehityskohteet.
+                Lisää tavoitteita ja tuloksia taulullesi, niin valmennus tunnistaa tärkeimmät kehityskohteet.
               </p>
             </div>
           )}

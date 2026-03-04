@@ -9,6 +9,7 @@ export function useBoardActions() {
   const { nudges } = state;
   const [nudgesLoading, setNudgesLoading] = useState(false);
   const [focusLoading, setFocusLoading] = useState(false);
+  const [focusError, setFocusError] = useState(false);
   const [boardStrengths, setBoardStrengths] = useState<string[]>([]);
 
   const generateNudges = useCallback(async () => {
@@ -31,12 +32,19 @@ export function useBoardActions() {
 
   const generateFocusItems = useCallback(async () => {
     setFocusLoading(true);
+    setFocusError(false);
     try {
       const res = await fetch("/api/focus", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ boardState: state }),
       });
+      if (!res.ok) {
+        console.error("[Focus] API error:", res.status, res.statusText);
+        setFocusError(true);
+        setFocusLoading(false);
+        return false;
+      }
       const data = await res.json();
       if (data.boardStrengths) {
         setBoardStrengths(data.boardStrengths);
@@ -44,10 +52,12 @@ export function useBoardActions() {
       if (data.focusItems && data.focusItems.length > 0) {
         dispatch({ type: "SET_FOCUS_ITEMS", focusItems: data.focusItems });
         setFocusLoading(false);
-        return true; // signal that items were loaded (caller can open agenda)
+        return true;
       }
+      console.warn("[Focus] API returned no focus items", data);
     } catch (err) {
-      console.error("Failed to generate focus items:", err);
+      console.error("[Focus] Failed to generate focus items:", err);
+      setFocusError(true);
     }
     setFocusLoading(false);
     return false;
@@ -90,6 +100,7 @@ export function useBoardActions() {
   return {
     nudgesLoading,
     focusLoading,
+    focusError,
     boardStrengths,
     generateNudges,
     generateFocusItems,

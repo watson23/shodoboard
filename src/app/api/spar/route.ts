@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 import Anthropic from "@anthropic-ai/sdk";
 import { getSparSystemPrompt } from "@/lib/prompts";
 import { extractTextFromResponse, extractJsonBlock } from "@/lib/utils";

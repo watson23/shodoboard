@@ -110,6 +110,7 @@ export default function Board({ boardId }: BoardProps) {
   const {
     nudgesLoading,
     focusLoading,
+    focusError,
     boardStrengths,
     generateNudges,
     generateFocusItems,
@@ -687,6 +688,7 @@ export default function Board({ boardId }: BoardProps) {
           focusItems={focusItems}
           boardStrengths={boardStrengths}
           isLoading={focusLoading}
+          hasError={focusError}
           onItemClick={handleFocusItemClick}
           onStatusChange={handleFocusStatusChange}
           onStartSparring={(focusItem) => {
