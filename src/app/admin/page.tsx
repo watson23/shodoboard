@@ -21,6 +21,7 @@ interface BoardStat {
   cohort: string;
   createdAt: string | null;
   lastActive: string | null;
+  lastHeartbeat: string | null;
   sessionCount: number;
   eventCount: number;
 }
@@ -275,7 +276,15 @@ export default function AdminPage() {
                           {formatCreatedDate(board.createdAt)}
                         </td>
                         <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
-                          {formatDate(board.lastActive)}
+                          <div className="flex items-center gap-1.5">
+                            {formatDate(board.lastActive)}
+                            {board.lastHeartbeat && (Date.now() - new Date(board.lastHeartbeat).getTime()) < 3 * 60 * 1000 && (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                Board open
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300 tabular-nums">
                           {board.sessionCount}

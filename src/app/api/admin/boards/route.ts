@@ -18,26 +18,34 @@ export async function GET(request: Request) {
     const now = Date.now();
     const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
 
+    const HEARTBEAT_ACTIONS = new Set(["session_heartbeat", "session_start", "session_end"]);
+
     const boardStats = boards.map((b) => {
-      const lastEvent = b.events.length > 0
-        ? b.events[b.events.length - 1]
-        : null;
+      let lastActiveMs = 0;   // last real user interaction
+      let lastHeartbeatMs = 0; // last heartbeat (board tab open)
+
+      for (const event of b.events) {
+        if (!event.timestamp) continue;
+        const ts = typeof event.timestamp === "string"
+          ? new Date(event.timestamp).getTime()
+          : event.timestamp;
+
+        if (HEARTBEAT_ACTIONS.has(event.action)) {
+          if (ts > lastHeartbeatMs) lastHeartbeatMs = ts;
+        } else {
+          if (ts > lastActiveMs) lastActiveMs = ts;
+        }
+      }
+
+      // Also check session endedAt for last activity
       const lastSession = b.sessions.length > 0
         ? b.sessions[b.sessions.length - 1]
         : null;
-
-      let lastActiveMs = 0;
-      if (lastEvent?.timestamp) {
-        const ts = typeof lastEvent.timestamp === "string"
-          ? new Date(lastEvent.timestamp).getTime()
-          : lastEvent.timestamp;
-        if (ts > lastActiveMs) lastActiveMs = ts;
-      }
       if (lastSession?.endedAt) {
         const ts = typeof lastSession.endedAt === "string"
           ? new Date(lastSession.endedAt).getTime()
           : lastSession.endedAt;
-        if (ts > lastActiveMs) lastActiveMs = ts;
+        if (ts > lastHeartbeatMs) lastHeartbeatMs = ts;
       }
 
       return {
@@ -46,13 +54,18 @@ export async function GET(request: Request) {
         cohort: b.cohort || "default",
         createdAt: b.createdAt,
         lastActive: lastActiveMs > 0 ? new Date(lastActiveMs).toISOString() : null,
+        lastHeartbeat: lastHeartbeatMs > 0 ? new Date(lastHeartbeatMs).toISOString() : null,
         sessionCount: b.sessions.length,
         eventCount: b.events.length,
       };
     });
 
     const activeLastWeek = boardStats.filter(
-      (b) => b.lastActive && new Date(b.lastActive).getTime() > sevenDaysAgo
+      (b) => {
+        const activeTime = b.lastActive ? new Date(b.lastActive).getTime() : 0;
+        const heartbeatTime = b.lastHeartbeat ? new Date(b.lastHeartbeat).getTime() : 0;
+        return Math.max(activeTime, heartbeatTime) > sevenDaysAgo;
+      }
     ).length;
 
     return NextResponse.json({
@@ -63,9 +76,11 @@ export async function GET(request: Request) {
         totalEvents: boardStats.reduce((s, b) => s + b.eventCount, 0),
       },
       boards: boardStats.sort((a, b) => {
-        const aTime = a.lastActive ? new Date(a.lastActive).getTime() : 0;
-        const bTime = b.lastActive ? new Date(b.lastActive).getTime() : 0;
-        return bTime - aTime;
+        const aActive = a.lastActive ? new Date(a.lastActive).getTime() : 0;
+        const aHeartbeat = a.lastHeartbeat ? new Date(a.lastHeartbeat).getTime() : 0;
+        const bActive = b.lastActive ? new Date(b.lastActive).getTime() : 0;
+        const bHeartbeat = b.lastHeartbeat ? new Date(b.lastHeartbeat).getTime() : 0;
+        return Math.max(bActive, bHeartbeat) - Math.max(aActive, aHeartbeat);
       }),
     });
   } catch (err) {
