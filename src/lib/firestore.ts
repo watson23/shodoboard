@@ -16,6 +16,7 @@ export interface BoardDocument {
   boardState: BoardState;
   intakeHistory?: ConversationMessage[];
   consentGiven: boolean;
+  cohort?: string;
   createdAt: unknown;
   updatedAt: unknown;
   activityLog?: ActivityEvent[];
@@ -26,13 +27,15 @@ const BOARDS_COLLECTION = "boards";
 
 export async function createBoard(
   boardState: BoardState,
-  intakeHistory?: ConversationMessage[]
+  intakeHistory?: ConversationMessage[],
+  cohort?: string
 ): Promise<string> {
   const boardRef = doc(collection(db, BOARDS_COLLECTION));
   await setDoc(boardRef, {
     boardState,
     intakeHistory: intakeHistory ?? [],
     consentGiven: true,
+    cohort: cohort ?? "default",
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -94,6 +97,8 @@ export async function getAllBoardsActivity(): Promise<
   {
     boardId: string;
     productName?: string;
+    cohort?: string;
+    createdAt?: string;
     sessions: SessionSummary[];
     events: ActivityEvent[];
   }[]
@@ -103,6 +108,8 @@ export async function getAllBoardsActivity(): Promise<
   const results: {
     boardId: string;
     productName?: string;
+    cohort?: string;
+    createdAt?: string;
     sessions: SessionSummary[];
     events: ActivityEvent[];
   }[] = [];
@@ -112,9 +119,17 @@ export async function getAllBoardsActivity(): Promise<
     const events = data.activityLog || [];
     const sessions = data.activitySessions || [];
     if (events.length > 0 || sessions.length > 0) {
+      // Convert Firestore Timestamp to ISO string
+      let createdAtStr: string | undefined;
+      if (data.createdAt && typeof data.createdAt === "object" && "toDate" in data.createdAt) {
+        createdAtStr = (data.createdAt as { toDate: () => Date }).toDate().toISOString();
+      }
+
       results.push({
         boardId: docSnap.id,
         productName: data.boardState?.productName,
+        cohort: data.cohort,
+        createdAt: createdAtStr,
         sessions,
         events,
       });

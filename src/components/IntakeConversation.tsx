@@ -262,7 +262,7 @@ export default function IntakeConversation({
     try {
       const boardState = transformBoardData(boardData);
       const conversationHistory = toConversationMessages(messages);
-      const boardId = await createBoard(boardState, conversationHistory);
+      const boardId = await createBoard(boardState, conversationHistory, "pilot");
 
       setCreatedBoardId(boardId);
       setShowTransition(true);
