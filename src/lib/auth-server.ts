@@ -28,6 +28,9 @@ export async function verifyAdmin(
   const isAdmin = ADMIN_EMAILS.includes(decoded.email.toLowerCase());
 
   if (!isAdmin) {
+    console.error(
+      `Admin check failed: email="${decoded.email}", adminEmails=${JSON.stringify(ADMIN_EMAILS)}, ADMIN_EMAILS env set=${!!process.env.ADMIN_EMAILS}`
+    );
     throw new Error("Not authorized as admin");
   }
 
