@@ -173,10 +173,10 @@ export default function IntakeConversation({
 
   // Focus input after AI responds
   useEffect(() => {
-    if (!isLoading && !boardData && inputRef.current) {
+    if (!isLoading && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [isLoading, boardData]);
+  }, [isLoading]);
 
   // Call the intake API
   const callIntakeApi = useCallback(
@@ -232,7 +232,12 @@ export default function IntakeConversation({
   // Handle user message submission
   const handleSend = () => {
     const text = userInput.trim();
-    if (!text || isLoading || boardData) return;
+    if (!text || isLoading) return;
+
+    // If user sends a message after board is ready, they want to continue — clear boardData
+    if (boardData) {
+      setBoardData(null);
+    }
 
     const userMessage: ChatMsg = { role: "user", text };
     const updatedMessages = [...messages, userMessage];
@@ -343,10 +348,10 @@ export default function IntakeConversation({
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            disabled={isLoading || !!boardData}
+            disabled={isLoading}
             placeholder={
               boardData
-                ? "Conversation complete"
+                ? "Add more or click Create your board..."
                 : isLoading
                   ? "Waiting for AI..."
                   : "Type your response..."
@@ -355,7 +360,7 @@ export default function IntakeConversation({
           />
           <button
             onClick={handleSend}
-            disabled={isLoading || !!boardData || !userInput.trim()}
+            disabled={isLoading || !userInput.trim()}
             className="flex-shrink-0 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl px-4 py-3 transition-colors"
             aria-label="Send message"
           >
