@@ -20,6 +20,7 @@ import type {
 } from "@/types/board";
 
 export type BoardAction =
+  | { type: "SET_PRODUCT_NAME"; name: string }
   | { type: "MOVE_ITEM"; itemId: string; toColumn: Column; toIndex: number; toOutcomeId?: string | null }
   | { type: "TOGGLE_GOAL_COLLAPSE"; goalId: string }
   | { type: "TOGGLE_OUTCOME_COLLAPSE"; outcomeId: string }
@@ -49,6 +50,8 @@ export type BoardAction =
 
 function boardReducer(state: BoardState, action: BoardAction): BoardState {
   switch (action.type) {
+    case "SET_PRODUCT_NAME":
+      return { ...state, productName: action.name };
     case "MOVE_ITEM": {
       const items = state.items.map((item) =>
         item.id === action.itemId

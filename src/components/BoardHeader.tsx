@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link, ChatCircleDots, Megaphone } from "@phosphor-icons/react";
+import { useState, useRef, useEffect } from "react";
+import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link, ChatCircleDots, Megaphone, PencilSimple } from "@phosphor-icons/react";
 import FeedbackModal from "./FeedbackModal";
 import { useTheme } from "@/hooks/useTheme";
 import { useBoard } from "@/hooks/useBoard";
@@ -51,6 +51,26 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
   const { state, dispatch } = useBoard();
   const [copied, setCopied] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState(productName || "");
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingName) {
+      nameInputRef.current?.focus();
+      nameInputRef.current?.select();
+    }
+  }, [editingName]);
+
+  const handleNameSubmit = () => {
+    const trimmed = nameValue.trim();
+    if (trimmed && trimmed !== productName) {
+      dispatch({ type: "SET_PRODUCT_NAME", name: trimmed });
+    } else {
+      setNameValue(productName || "");
+    }
+    setEditingName(false);
+  };
 
   const handleCopyLink = async () => {
     try {
@@ -89,10 +109,34 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
         <h1 className="font-bold text-white text-sm whitespace-nowrap">
           Shodoboard
         </h1>
-        {productName && (
-          <span className="text-sm text-indigo-200 whitespace-nowrap">
-            {productName}
-          </span>
+        {editingName ? (
+          <input
+            ref={nameInputRef}
+            value={nameValue}
+            onChange={(e) => setNameValue(e.target.value)}
+            onBlur={handleNameSubmit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleNameSubmit();
+              if (e.key === "Escape") {
+                setNameValue(productName || "");
+                setEditingName(false);
+              }
+            }}
+            className="text-sm text-white bg-indigo-500/40 border border-indigo-400/50 rounded px-1.5 py-0.5 outline-none focus:border-white/50 min-w-[120px]"
+            placeholder="Product name"
+          />
+        ) : (
+          <button
+            onClick={() => {
+              setNameValue(productName || "");
+              setEditingName(true);
+            }}
+            className="group flex items-center gap-1 text-sm text-indigo-200 hover:text-white transition-colors whitespace-nowrap"
+            title="Click to rename"
+          >
+            {productName || "Untitled"}
+            <PencilSimple size={12} className="opacity-0 group-hover:opacity-70 transition-opacity" />
+          </button>
         )}
       </div>
 
