@@ -233,41 +233,39 @@ export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onIt
             {/* Goal card */}
             <GoalCard goal={goal} onClick={() => onGoalClick(goal.id)} nudgeCount={getActiveNudgeCount(goal.id)} />
 
-            {/* Outcomes */}
-            {goalOutcomes.length > 0 && (
-              <div className="relative ml-8 pt-8">
-                <div className="flex flex-wrap gap-4">
-                  {goalOutcomes.map((outcome) => (
-                    <div key={outcome.id} className="w-72">
-                      <OutcomeCard
-                        outcome={outcome}
-                        items={getItemsForOutcome(outcome.id)}
-                        onOutcomeClick={() => onOutcomeClick(outcome.id)}
-                        onItemClick={onItemClick}
-                        onAddItem={onAddItem ? () => onAddItem(outcome.id) : undefined}
-                        nudgeCount={getActiveNudgeCount(outcome.id)}
-                        getActiveNudgeCount={getActiveNudgeCount}
-                        focusItem={getFocusItem(outcome.id)}
-                        getFocusAction={(id) => getFocusItem(id)?.suggestedAction}
-                      />
-                    </div>
-                  ))}
+            {/* Outcomes + Add outcome button (always rendered so empty goals show the button) */}
+            <div className="relative ml-8 pt-8">
+              <div className="flex flex-wrap gap-4">
+                {goalOutcomes.map((outcome) => (
+                  <div key={outcome.id} className="w-72">
+                    <OutcomeCard
+                      outcome={outcome}
+                      items={getItemsForOutcome(outcome.id)}
+                      onOutcomeClick={() => onOutcomeClick(outcome.id)}
+                      onItemClick={onItemClick}
+                      onAddItem={onAddItem ? () => onAddItem(outcome.id) : undefined}
+                      nudgeCount={getActiveNudgeCount(outcome.id)}
+                      getActiveNudgeCount={getActiveNudgeCount}
+                      focusItem={getFocusItem(outcome.id)}
+                      getFocusAction={(id) => getFocusItem(id)?.suggestedAction}
+                    />
+                  </div>
+                ))}
 
-                  {/* Add outcome button */}
-                  {onAddOutcome && (
-                    <div className="flex items-center">
-                      <button
-                        onClick={() => onAddOutcome(goal.id)}
-                        className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 transition-colors px-3 py-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 hover:border-teal-400 dark:hover:border-teal-500"
-                      >
-                        <Plus size={12} weight="bold" />
-                        Add outcome
-                      </button>
-                    </div>
-                  )}
-                </div>
+                {/* Add outcome button */}
+                {onAddOutcome && (
+                  <div className="flex items-center">
+                    <button
+                      onClick={() => onAddOutcome(goal.id)}
+                      className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 transition-colors px-3 py-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 hover:border-teal-400 dark:hover:border-teal-500"
+                    >
+                      <Plus size={12} weight="bold" />
+                      Add outcome
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         );
       })}
