@@ -32,6 +32,7 @@ import HierarchyView from "./HierarchyView";
 import {
   CaretDown,
   CaretRight,
+  CaretUp,
   Target,
   Flag,
   Lightbulb,
@@ -289,9 +290,9 @@ export default function Board({ boardId }: BoardProps) {
 
                 {/* Goal sections */}
                 <div className="divide-y divide-gray-200 dark:divide-gray-800">
-                  {goals
-                    .sort((a, b) => a.order - b.order)
-                    .map((goal) => {
+                  {(() => {
+                    const sortedGoals = [...goals].sort((a, b) => a.order - b.order);
+                    return sortedGoals.map((goal, goalIndex) => {
                       const goalOutcomes = outcomes
                         .filter((o) => o.goalId === goal.id)
                         .sort((a, b) => a.order - b.order);
@@ -352,12 +353,32 @@ export default function Board({ boardId }: BoardProps) {
                                 {getNudgesForGoal(goal.id).length} AI
                               </span>
                             )}
+                            {sortedGoals.length > 1 && (
+                              <div className="flex items-center gap-0.5 flex-shrink-0 ml-1" onClick={(e) => e.stopPropagation()}>
+                                <button
+                                  onClick={() => dispatch({ type: "REORDER_GOAL", goalId: goal.id, direction: "up" })}
+                                  disabled={goalIndex === 0}
+                                  className="p-0.5 rounded hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors disabled:opacity-20 disabled:cursor-default text-indigo-400 dark:text-indigo-300"
+                                  title="Move up"
+                                >
+                                  <CaretUp size={12} weight="bold" />
+                                </button>
+                                <button
+                                  onClick={() => dispatch({ type: "REORDER_GOAL", goalId: goal.id, direction: "down" })}
+                                  disabled={goalIndex === sortedGoals.length - 1}
+                                  className="p-0.5 rounded hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors disabled:opacity-20 disabled:cursor-default text-indigo-400 dark:text-indigo-300"
+                                  title="Move down"
+                                >
+                                  <CaretDown size={12} weight="bold" />
+                                </button>
+                              </div>
+                            )}
                           </div>
 
                           {/* Outcomes within this goal */}
                           {!goal.collapsed && (
                             <div className="divide-y divide-gray-100 dark:divide-gray-800/50">
-                              {goalOutcomes.map((outcome) => (
+                              {goalOutcomes.map((outcome, outcomeIndex) => (
                                 <div key={outcome.id} id={outcome.id} className="mx-2 mb-2 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-900">
                                   {/* Outcome header */}
                                   <div
@@ -417,6 +438,26 @@ export default function Board({ boardId }: BoardProps) {
                                         <Lightbulb size={11} weight="fill" />
                                         {getNudgesForOutcome(outcome.id).length} AI
                                       </span>
+                                    )}
+                                    {goalOutcomes.length > 1 && (
+                                      <div className="flex items-center gap-0.5 flex-shrink-0 ml-1" onClick={(e) => e.stopPropagation()}>
+                                        <button
+                                          onClick={() => dispatch({ type: "REORDER_OUTCOME", outcomeId: outcome.id, direction: "up" })}
+                                          disabled={outcomeIndex === 0}
+                                          className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-20 disabled:cursor-default text-gray-400 dark:text-gray-500"
+                                          title="Move up"
+                                        >
+                                          <CaretUp size={12} weight="bold" />
+                                        </button>
+                                        <button
+                                          onClick={() => dispatch({ type: "REORDER_OUTCOME", outcomeId: outcome.id, direction: "down" })}
+                                          disabled={outcomeIndex === goalOutcomes.length - 1}
+                                          className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-20 disabled:cursor-default text-gray-400 dark:text-gray-500"
+                                          title="Move down"
+                                        >
+                                          <CaretDown size={12} weight="bold" />
+                                        </button>
+                                      </div>
                                     )}
                                   </div>
 
@@ -485,7 +526,8 @@ export default function Board({ boardId }: BoardProps) {
                           )}
                         </div>
                       );
-                    })}
+                    });
+                  })()}
 
                   {/* Add goal button */}
                   <div className="px-4 py-2">
@@ -607,6 +649,12 @@ export default function Board({ boardId }: BoardProps) {
             });
             dispatch({ type: "ADD_ITEM", item: newItem });
             setModal({ type: "card", itemId: newItem.id });
+          }}
+          onReorderGoal={(goalId, direction) => {
+            dispatch({ type: "REORDER_GOAL", goalId, direction });
+          }}
+          onReorderOutcome={(outcomeId, direction) => {
+            dispatch({ type: "REORDER_OUTCOME", outcomeId, direction });
           }}
         />
       )}

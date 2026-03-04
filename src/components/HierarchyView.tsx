@@ -1,6 +1,6 @@
 "use client";
 
-import { Flag, Target, LinkBreak, WarningCircle, Plus, Lightbulb } from "@phosphor-icons/react";
+import { Flag, Target, LinkBreak, WarningCircle, Plus, Lightbulb, CaretUp, CaretDown, CaretLeft, CaretRight } from "@phosphor-icons/react";
 import type { BoardState, BusinessGoal, Outcome, WorkItem, Nudge, FocusItem } from "@/types/board";
 import TypeBadge from "./TypeBadge";
 import TreeConnectors from "./TreeConnectors";
@@ -195,9 +195,11 @@ interface HierarchyViewProps {
   onAddGoal?: () => void;
   onAddOutcome?: (goalId: string) => void;
   onAddItem?: (outcomeId: string | null) => void;
+  onReorderGoal?: (goalId: string, direction: "up" | "down") => void;
+  onReorderOutcome?: (outcomeId: string, direction: "up" | "down") => void;
 }
 
-export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onItemClick, onAddGoal, onAddOutcome, onAddItem }: HierarchyViewProps) {
+export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onItemClick, onAddGoal, onAddOutcome, onAddItem, onReorderGoal, onReorderOutcome }: HierarchyViewProps) {
   const { goals, outcomes, items, nudges } = state;
 
   const getFocusItem = (targetId: string) =>
@@ -217,7 +219,7 @@ export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onIt
 
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-10">
-      {sortedGoals.map((goal) => {
+      {sortedGoals.map((goal, goalIndex) => {
         const goalOutcomes = getOutcomesForGoal(goal.id);
 
         return (
@@ -230,13 +232,37 @@ export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onIt
               />
             )}
 
-            {/* Goal card */}
-            <GoalCard goal={goal} onClick={() => onGoalClick(goal.id)} nudgeCount={getActiveNudgeCount(goal.id)} />
+            {/* Goal card with reorder controls */}
+            <div className="flex items-start gap-2">
+              <div className="flex-1">
+                <GoalCard goal={goal} onClick={() => onGoalClick(goal.id)} nudgeCount={getActiveNudgeCount(goal.id)} />
+              </div>
+              {onReorderGoal && sortedGoals.length > 1 && (
+                <div className="flex flex-col gap-0.5 pt-3">
+                  <button
+                    onClick={() => onReorderGoal(goal.id, "up")}
+                    disabled={goalIndex === 0}
+                    className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-20 disabled:cursor-default text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    title="Move up"
+                  >
+                    <CaretUp size={14} weight="bold" />
+                  </button>
+                  <button
+                    onClick={() => onReorderGoal(goal.id, "down")}
+                    disabled={goalIndex === sortedGoals.length - 1}
+                    className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-20 disabled:cursor-default text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    title="Move down"
+                  >
+                    <CaretDown size={14} weight="bold" />
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Outcomes + Add outcome button (always rendered so empty goals show the button) */}
             <div className="relative ml-8 pt-8">
               <div className="flex flex-wrap gap-4">
-                {goalOutcomes.map((outcome) => (
+                {goalOutcomes.map((outcome, outcomeIndex) => (
                   <div key={outcome.id} className="w-72">
                     <OutcomeCard
                       outcome={outcome}
@@ -249,6 +275,26 @@ export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onIt
                       focusItem={getFocusItem(outcome.id)}
                       getFocusAction={(id) => getFocusItem(id)?.suggestedAction}
                     />
+                    {onReorderOutcome && goalOutcomes.length > 1 && (
+                      <div className="flex items-center justify-center gap-1 mt-1">
+                        <button
+                          onClick={() => onReorderOutcome(outcome.id, "up")}
+                          disabled={outcomeIndex === 0}
+                          className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-20 disabled:cursor-default text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                          title="Move left"
+                        >
+                          <CaretLeft size={12} weight="bold" />
+                        </button>
+                        <button
+                          onClick={() => onReorderOutcome(outcome.id, "down")}
+                          disabled={outcomeIndex === goalOutcomes.length - 1}
+                          className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-20 disabled:cursor-default text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                          title="Move right"
+                        >
+                          <CaretRight size={12} weight="bold" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
 

@@ -43,7 +43,9 @@ export type BoardAction =
   | { type: "REMOVE_CHECKLIST_ITEM"; itemId: string; checklistItemId: string }
   | { type: "DELETE_ITEM"; itemId: string }
   | { type: "DELETE_OUTCOME"; outcomeId: string; deleteChildren?: boolean }
-  | { type: "DELETE_GOAL"; goalId: string; deleteChildren?: boolean };
+  | { type: "DELETE_GOAL"; goalId: string; deleteChildren?: boolean }
+  | { type: "REORDER_GOAL"; goalId: string; direction: "up" | "down" }
+  | { type: "REORDER_OUTCOME"; outcomeId: string; direction: "up" | "down" };
 
 function boardReducer(state: BoardState, action: BoardAction): BoardState {
   switch (action.type) {
@@ -205,6 +207,37 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
           ? state.items.filter((i) => !childOutcomeIds.has(i.outcomeId ?? ""))
           : state.items,
       };
+    }
+
+    case "REORDER_GOAL": {
+      const sorted = [...state.goals].sort((a, b) => a.order - b.order);
+      const idx = sorted.findIndex((g) => g.id === action.goalId);
+      if (idx < 0) return state;
+      const swapIdx = action.direction === "up" ? idx - 1 : idx + 1;
+      if (swapIdx < 0 || swapIdx >= sorted.length) return state;
+      const goals = state.goals.map((g) => {
+        if (g.id === sorted[idx].id) return { ...g, order: sorted[swapIdx].order };
+        if (g.id === sorted[swapIdx].id) return { ...g, order: sorted[idx].order };
+        return g;
+      });
+      return { ...state, goals };
+    }
+
+    case "REORDER_OUTCOME": {
+      const outcome = state.outcomes.find((o) => o.id === action.outcomeId);
+      if (!outcome) return state;
+      const siblings = [...state.outcomes]
+        .filter((o) => o.goalId === outcome.goalId)
+        .sort((a, b) => a.order - b.order);
+      const idx = siblings.findIndex((o) => o.id === action.outcomeId);
+      const swapIdx = action.direction === "up" ? idx - 1 : idx + 1;
+      if (swapIdx < 0 || swapIdx >= siblings.length) return state;
+      const outcomes = state.outcomes.map((o) => {
+        if (o.id === siblings[idx].id) return { ...o, order: siblings[swapIdx].order };
+        if (o.id === siblings[swapIdx].id) return { ...o, order: siblings[idx].order };
+        return o;
+      });
+      return { ...state, outcomes };
     }
 
     default:
