@@ -149,10 +149,21 @@ export default function Board({ boardId }: BoardProps) {
     const { active, over } = event;
     if (!over) return;
     const overId = over.id as string;
-    const column = (overId.includes(":") ? overId.split(":")[1] : overId) as Column;
-    if (active.id !== overId) {
-      dispatch({ type: "MOVE_ITEM", itemId: active.id as string, toColumn: column, toIndex: 0 });
-    }
+    const parts = overId.split(":");
+    const column = (parts.length > 1 ? parts[1] : overId) as Column;
+    const dropOutcomeId = parts.length > 1 ? (parts[0] === "null" ? null : parts[0]) : undefined;
+    const draggedItem = items.find((i) => i.id === active.id);
+    if (!draggedItem) return;
+
+    const outcomeChanged = dropOutcomeId !== undefined && dropOutcomeId !== draggedItem.outcomeId;
+
+    dispatch({
+      type: "MOVE_ITEM",
+      itemId: active.id as string,
+      toColumn: column,
+      toIndex: 0,
+      ...(outcomeChanged ? { toOutcomeId: dropOutcomeId } : {}),
+    });
   };
 
   const getNudgesForItem = (itemId: string) =>

@@ -20,7 +20,7 @@ import type {
 } from "@/types/board";
 
 export type BoardAction =
-  | { type: "MOVE_ITEM"; itemId: string; toColumn: Column; toIndex: number }
+  | { type: "MOVE_ITEM"; itemId: string; toColumn: Column; toIndex: number; toOutcomeId?: string | null }
   | { type: "TOGGLE_GOAL_COLLAPSE"; goalId: string }
   | { type: "TOGGLE_OUTCOME_COLLAPSE"; outcomeId: string }
   | { type: "DISMISS_NUDGE"; nudgeId: string }
@@ -52,7 +52,12 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
     case "MOVE_ITEM": {
       const items = state.items.map((item) =>
         item.id === action.itemId
-          ? { ...item, column: action.toColumn, order: action.toIndex }
+          ? {
+              ...item,
+              column: action.toColumn,
+              order: action.toIndex,
+              ...(action.toOutcomeId !== undefined ? { outcomeId: action.toOutcomeId } : {}),
+            }
           : item
       );
       return { ...state, items };
