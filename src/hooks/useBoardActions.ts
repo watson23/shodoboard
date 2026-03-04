@@ -31,6 +31,7 @@ export function useBoardActions() {
   }, [state, dispatch]);
 
   const generateFocusItems = useCallback(async () => {
+    console.log("[Focus] Starting generation. Board has:", state.goals?.length, "goals,", state.outcomes?.length, "outcomes,", state.items?.length, "items");
     setFocusLoading(true);
     setFocusError(false);
     try {
@@ -39,6 +40,7 @@ export function useBoardActions() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ boardState: state }),
       });
+      console.log("[Focus] API responded:", res.status, res.statusText);
       if (!res.ok) {
         console.error("[Focus] API error:", res.status, res.statusText);
         setFocusError(true);
@@ -46,15 +48,17 @@ export function useBoardActions() {
         return false;
       }
       const data = await res.json();
+      console.log("[Focus] Parsed response — focusItems:", data.focusItems?.length, "strengths:", data.boardStrengths?.length);
       if (data.boardStrengths) {
         setBoardStrengths(data.boardStrengths);
       }
       if (data.focusItems && data.focusItems.length > 0) {
+        console.log("[Focus] Dispatching SET_FOCUS_ITEMS with", data.focusItems.length, "items");
         dispatch({ type: "SET_FOCUS_ITEMS", focusItems: data.focusItems });
         setFocusLoading(false);
         return true;
       }
-      console.warn("[Focus] API returned no focus items", data);
+      console.warn("[Focus] API returned no focus items", JSON.stringify(data).slice(0, 300));
     } catch (err) {
       console.error("[Focus] Failed to generate focus items:", err);
       setFocusError(true);
