@@ -23,6 +23,7 @@ export async function GET(request: Request) {
     const boardStats = boards.map((b) => {
       let lastActiveMs = 0;   // last real user interaction
       let lastHeartbeatMs = 0; // last heartbeat (board tab open)
+      let realEventCount = 0;
 
       for (const event of b.events) {
         if (!event.timestamp) continue;
@@ -33,6 +34,7 @@ export async function GET(request: Request) {
         if (HEARTBEAT_ACTIONS.has(event.action)) {
           if (ts > lastHeartbeatMs) lastHeartbeatMs = ts;
         } else {
+          realEventCount++;
           if (ts > lastActiveMs) lastActiveMs = ts;
         }
       }
@@ -56,7 +58,7 @@ export async function GET(request: Request) {
         lastActive: lastActiveMs > 0 ? new Date(lastActiveMs).toISOString() : null,
         lastHeartbeat: lastHeartbeatMs > 0 ? new Date(lastHeartbeatMs).toISOString() : null,
         sessionCount: b.sessions.length,
-        eventCount: b.events.length,
+        eventCount: realEventCount,
       };
     });
 
