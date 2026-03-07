@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link, ChatCircleDots, Megaphone, PencilSimple, DotsThree, UserCircle, SignIn } from "@phosphor-icons/react";
+import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link, ChatCircleDots, Megaphone, PencilSimple, DotsThree, UserCircle, SignIn, GearSix } from "@phosphor-icons/react";
 import FeedbackModal from "./FeedbackModal";
+import ManageBoardModal from "./ManageBoardModal";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useBoard } from "@/hooks/useBoard";
 import { openPrintableExport } from "@/lib/export";
-import { claimBoard, unclaimBoard } from "@/lib/firestore";
+import { claimBoard } from "@/lib/firestore";
+import type { BoardMember, BoardVisitor } from "@/lib/firestore";
 import type { SaveStatus } from "@/hooks/useAutoSave";
 
 function ShodoLogoSmall() {
@@ -41,7 +43,11 @@ interface BoardHeaderProps {
   productName?: string;
   ownerId?: string;
   ownerEmail?: string;
+  accessMode?: "link" | "invite_only";
+  members?: BoardMember[];
+  recentVisitors?: BoardVisitor[];
   onOwnershipChange?: (ownerId: string | undefined, ownerEmail: string | undefined) => void;
+  onAccessChange?: (accessMode: "link" | "invite_only", members: BoardMember[]) => void;
   onRefreshNudges?: () => void;
   nudgesLoading?: boolean;
   onToggleAgenda?: () => void;
@@ -51,7 +57,7 @@ interface BoardHeaderProps {
   onBoardSpar?: () => void;
 }
 
-export default function BoardHeader({ saveStatus, boardId, productName, ownerId, ownerEmail, onOwnershipChange, onRefreshNudges, nudgesLoading, onToggleAgenda, agendaOpen, viewMode, onViewModeChange, onBoardSpar }: BoardHeaderProps) {
+export default function BoardHeader({ saveStatus, boardId, productName, ownerId, ownerEmail, accessMode, members, recentVisitors, onOwnershipChange, onAccessChange, onRefreshNudges, nudgesLoading, onToggleAgenda, agendaOpen, viewMode, onViewModeChange, onBoardSpar }: BoardHeaderProps) {
   const { theme, setTheme } = useTheme();
   const { user, signIn } = useAuth();
   const { state, dispatch } = useBoard();
@@ -61,6 +67,7 @@ export default function BoardHeader({ saveStatus, boardId, productName, ownerId,
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(productName || "");
   const [claiming, setClaiming] = useState(false);
+  const [manageBoardOpen, setManageBoardOpen] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -147,21 +154,6 @@ export default function BoardHeader({ saveStatus, boardId, productName, ownerId,
       }
     } catch (err) {
       console.error("Failed to claim board:", err);
-    } finally {
-      setClaiming(false);
-      setMenuOpen(false);
-    }
-  };
-
-  const handleUnclaim = async () => {
-    setClaiming(true);
-    try {
-      if (boardId) {
-        await unclaimBoard(boardId);
-        onOwnershipChange?.(undefined, undefined);
-      }
-    } catch (err) {
-      console.error("Failed to unclaim board:", err);
     } finally {
       setClaiming(false);
       setMenuOpen(false);
@@ -358,22 +350,16 @@ export default function BoardHeader({ saveStatus, boardId, productName, ownerId,
                     </button>
                   )}
                   {isOwner && (
-                    <div className="px-3 py-2">
-                      <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
-                        <UserCircle size={14} weight="fill" />
-                        Claimed by you
-                      </div>
-                      <div className="text-[11px] text-gray-400 dark:text-gray-500 ml-5 mt-0.5">
-                        {ownerEmail}
-                      </div>
-                      <button
-                        onClick={handleUnclaim}
-                        disabled={claiming}
-                        className="text-[11px] text-gray-400 hover:text-red-500 dark:hover:text-red-400 ml-5 mt-1 transition-colors disabled:opacity-50"
-                      >
-                        {claiming ? "Removing..." : "Remove claim"}
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => {
+                        setManageBoardOpen(true);
+                        setMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      <GearSix size={16} className="text-gray-400 dark:text-gray-500" />
+                      Manage board
+                    </button>
                   )}
                   {isClaimed && !isOwner && (
                     <div className="px-3 py-2">
@@ -402,6 +388,25 @@ export default function BoardHeader({ saveStatus, boardId, productName, ownerId,
           boardId={boardId}
           productName={productName}
           onClose={() => setFeedbackOpen(false)}
+        />
+      )}
+      {manageBoardOpen && boardId && ownerEmail && (
+        <ManageBoardModal
+          boardId={boardId}
+          ownerEmail={ownerEmail}
+          accessMode={accessMode ?? "link"}
+          members={members ?? []}
+          recentVisitors={recentVisitors ?? []}
+          onAccessModeChange={(mode) => {
+            onAccessChange?.(mode, members ?? []);
+          }}
+          onMembersChange={(updatedMembers) => {
+            onAccessChange?.(accessMode ?? "link", updatedMembers);
+          }}
+          onUnclaim={() => {
+            onOwnershipChange?.(undefined, undefined);
+          }}
+          onClose={() => setManageBoardOpen(false)}
         />
       )}
     </header>

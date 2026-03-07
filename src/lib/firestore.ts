@@ -13,6 +13,17 @@ import type { BoardState } from "@/types/board";
 import type { ConversationMessage } from "@/types/intake";
 import type { ActivityEvent, SessionSummary } from "@/types/activity";
 
+export interface BoardMember {
+  email: string;      // normalized lowercase
+  addedAt: string;    // ISO 8601
+}
+
+export interface BoardVisitor {
+  uid: string;
+  email: string;
+  lastVisitedAt: string;
+}
+
 export interface BoardDocument {
   boardState: BoardState;
   intakeHistory?: ConversationMessage[];
@@ -20,6 +31,9 @@ export interface BoardDocument {
   cohort?: string;
   ownerId?: string;
   ownerEmail?: string;
+  accessMode?: "link" | "invite_only";
+  members?: BoardMember[];
+  recentVisitors?: BoardVisitor[];
   createdAt: unknown;
   updatedAt: unknown;
   activityLog?: ActivityEvent[];
@@ -92,8 +106,92 @@ export async function unclaimBoard(boardId: string): Promise<void> {
   await updateDoc(boardRef, {
     ownerId: deleteField(),
     ownerEmail: deleteField(),
+    accessMode: deleteField(),
+    members: deleteField(),
+    recentVisitors: deleteField(),
     updatedAt: serverTimestamp(),
   });
+}
+
+export async function updateBoardAccessMode(
+  boardId: string,
+  accessMode: "link" | "invite_only"
+): Promise<void> {
+  const boardRef = doc(db, BOARDS_COLLECTION, boardId);
+  await updateDoc(boardRef, {
+    accessMode,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function addBoardMember(
+  boardId: string,
+  email: string
+): Promise<BoardMember[]> {
+  const normalized = email.toLowerCase().trim();
+  const boardRef = doc(db, BOARDS_COLLECTION, boardId);
+  const snap = await getDoc(boardRef);
+  if (!snap.exists()) return [];
+
+  const data = snap.data() as BoardDocument;
+  const existing = data.members || [];
+
+  // Dedup check
+  if (existing.some((m) => m.email === normalized)) return existing;
+
+  const newMember: BoardMember = {
+    email: normalized,
+    addedAt: new Date().toISOString(),
+  };
+  const updated = [...existing, newMember];
+  await updateDoc(boardRef, { members: updated, updatedAt: serverTimestamp() });
+  return updated;
+}
+
+export async function removeBoardMember(
+  boardId: string,
+  email: string
+): Promise<BoardMember[]> {
+  const normalized = email.toLowerCase().trim();
+  const boardRef = doc(db, BOARDS_COLLECTION, boardId);
+  const snap = await getDoc(boardRef);
+  if (!snap.exists()) return [];
+
+  const data = snap.data() as BoardDocument;
+  const updated = (data.members || []).filter((m) => m.email !== normalized);
+  await updateDoc(boardRef, { members: updated, updatedAt: serverTimestamp() });
+  return updated;
+}
+
+const MAX_VISITORS = 50;
+
+export async function recordBoardVisitor(
+  boardId: string,
+  uid: string,
+  email: string
+): Promise<void> {
+  const boardRef = doc(db, BOARDS_COLLECTION, boardId);
+  const snap = await getDoc(boardRef);
+  if (!snap.exists()) return;
+
+  const data = snap.data() as BoardDocument;
+  const visitors = data.recentVisitors || [];
+  const now = new Date().toISOString();
+
+  const existingIdx = visitors.findIndex((v) => v.uid === uid);
+  if (existingIdx >= 0) {
+    visitors[existingIdx].lastVisitedAt = now;
+    visitors[existingIdx].email = email; // update in case it changed
+  } else {
+    visitors.push({ uid, email, lastVisitedAt: now });
+  }
+
+  // Cap at MAX_VISITORS, keep most recent
+  const capped = visitors
+    .sort((a, b) => b.lastVisitedAt.localeCompare(a.lastVisitedAt))
+    .slice(0, MAX_VISITORS);
+
+  await updateDoc(boardRef, { recentVisitors: capped });
 }
 
 export async function flushActivityEvents(

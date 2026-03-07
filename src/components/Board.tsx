@@ -61,10 +61,14 @@ interface BoardProps {
   boardId?: string;
   ownerId?: string;
   ownerEmail?: string;
+  accessMode?: "link" | "invite_only";
+  members?: import("@/lib/firestore").BoardMember[];
+  recentVisitors?: import("@/lib/firestore").BoardVisitor[];
   onOwnershipChange?: (ownerId: string | undefined, ownerEmail: string | undefined) => void;
+  onAccessChange?: (accessMode: "link" | "invite_only", members: import("@/lib/firestore").BoardMember[]) => void;
 }
 
-export default function Board({ boardId, ownerId, ownerEmail, onOwnershipChange }: BoardProps) {
+export default function Board({ boardId, ownerId, ownerEmail, accessMode, members, recentVisitors, onOwnershipChange, onAccessChange }: BoardProps) {
   const { state, dispatch: rawDispatch } = useBoard();
   const { logEvent, wrapDispatch } = useActivityLog(boardId);
   const stateRef = useRef(state);
@@ -247,7 +251,11 @@ export default function Board({ boardId, ownerId, ownerEmail, onOwnershipChange 
         productName={state.productName}
         ownerId={ownerId}
         ownerEmail={ownerEmail}
+        accessMode={accessMode}
+        members={members}
+        recentVisitors={recentVisitors}
         onOwnershipChange={onOwnershipChange}
+        onAccessChange={onAccessChange}
         onRefreshNudges={generateNudges}
         nudgesLoading={nudgesLoading}
         onToggleAgenda={() => {
