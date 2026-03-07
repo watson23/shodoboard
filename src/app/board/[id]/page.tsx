@@ -2,7 +2,7 @@
 
 import { use, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { getBoard, recordBoardVisitor } from "@/lib/firestore";
+import { getBoard, recordBoardVisitor, upsertUserBoardEntry } from "@/lib/firestore";
 import type { BoardMember, BoardVisitor } from "@/lib/firestore";
 import { BoardProvider } from "@/hooks/useBoard";
 import { useAuth } from "@/hooks/useAuth";
@@ -56,8 +56,28 @@ export default function DynamicBoardPage({
   useEffect(() => {
     if (!loading && boardState && user?.email) {
       recordBoardVisitor(id, user.uid, user.email).catch(() => {});
+
+      // Sync user doc for owners and members
+      const isOwner = user.uid === ownerId;
+      const isMember = (members ?? []).some(
+        (m) => m.email === user.email?.toLowerCase()
+      );
+      if (isOwner || isMember) {
+        upsertUserBoardEntry(
+          user.uid,
+          user.email || "",
+          user.displayName || undefined,
+          {
+            boardId: id,
+            productName: boardState?.productName || "Untitled",
+            role: isOwner ? "owner" : "member",
+            lastVisitedAt: new Date().toISOString(),
+            addedAt: new Date().toISOString(),
+          }
+        );
+      }
     }
-  }, [loading, boardState, user, id]);
+  }, [loading, boardState, user, id, ownerId, members]);
 
   if (loading) {
     return (
