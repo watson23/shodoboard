@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link, ChatCircleDots, Megaphone, PencilSimple, DotsThree, UserCircle, SignIn, GearSix } from "@phosphor-icons/react";
+import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link, ChatCircleDots, Megaphone, PencilSimple, DotsThree, UserCircle, SignIn, GearSix, Crown } from "@phosphor-icons/react";
 import FeedbackModal from "./FeedbackModal";
 import ManageBoardModal from "./ManageBoardModal";
 import { useTheme } from "@/hooks/useTheme";
@@ -68,6 +68,7 @@ export default function BoardHeader({ saveStatus, boardId, productName, ownerId,
   const [nameValue, setNameValue] = useState(productName || "");
   const [claiming, setClaiming] = useState(false);
   const [manageBoardOpen, setManageBoardOpen] = useState(false);
+  const [showClaimExplainer, setShowClaimExplainer] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -333,20 +334,18 @@ export default function BoardHeader({ saveStatus, boardId, productName, ownerId,
                   <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
                   {!isClaimed && (
                     <button
-                      onClick={handleClaim}
-                      disabled={claiming}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setShowClaimExplainer(true);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
                       {user ? (
                         <UserCircle size={16} className="text-gray-400 dark:text-gray-500" />
                       ) : (
                         <SignIn size={16} className="text-gray-400 dark:text-gray-500" />
                       )}
-                      {claiming
-                        ? "Claiming..."
-                        : user
-                        ? "Claim this board"
-                        : "Sign in to claim this board"}
+                      {user ? "Claim this board" : "Sign in to claim this board"}
                     </button>
                   )}
                   {isOwner && (
@@ -389,6 +388,53 @@ export default function BoardHeader({ saveStatus, boardId, productName, ownerId,
           productName={productName}
           onClose={() => setFeedbackOpen(false)}
         />
+      )}
+      {showClaimExplainer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/30 dark:bg-black/50"
+            onClick={() => setShowClaimExplainer(false)}
+          />
+          <div
+            className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl max-w-sm w-full mx-4 p-6 text-center space-y-4 animate-[slide-in_0.15s_ease-out]"
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setShowClaimExplainer(false);
+            }}
+          >
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/30">
+              <Crown size={24} weight="duotone" className="text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+              Claim this board
+            </h3>
+            <div className="space-y-2 text-sm text-gray-500 dark:text-gray-400">
+              <p>
+                Claiming makes you the owner, giving you access controls and visibility into who visits.
+              </p>
+              <p>
+                You can fully use and share this board without claiming — claiming just gives you more control.
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-3 pt-1">
+              <button
+                onClick={() => setShowClaimExplainer(false)}
+                className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowClaimExplainer(false);
+                  handleClaim();
+                }}
+                disabled={claiming}
+                className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                {claiming ? "Claiming..." : "Claim"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       {manageBoardOpen && boardId && ownerEmail && (
         <ManageBoardModal
