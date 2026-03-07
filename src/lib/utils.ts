@@ -74,6 +74,70 @@ export function serializeBoardForAI(boardState: BoardState): string {
 }
 
 /**
+ * Serialize board state as hierarchical text for AI coaching prompts.
+ * Shows Goal → Outcome → Item tree with indentation.
+ */
+export function serializeBoardHierarchical(state: BoardState): string {
+  const { goals, outcomes, items } = state;
+  const lines: string[] = [];
+
+  lines.push(`Product: ${state.productName || "Unknown"}`);
+  lines.push(`${goals.length} goals, ${outcomes.length} outcomes, ${items.length} work items`);
+  lines.push("");
+
+  for (const goal of goals) {
+    lines.push(`GOAL [${goal.id}]: ${goal.statement}`);
+    if (goal.timeframe) lines.push(`  Timeframe: ${goal.timeframe}`);
+    if (goal.metrics && goal.metrics.length > 0) {
+      lines.push(`  Metrics: ${goal.metrics.join(", ")}`);
+    }
+
+    const goalOutcomes = outcomes.filter((o) => o.goalId === goal.id);
+    for (const outcome of goalOutcomes) {
+      lines.push(`  OUTCOME [${outcome.id}]: ${outcome.statement}`);
+      if (outcome.behaviorChange) lines.push(`    Behavior change: ${outcome.behaviorChange}`);
+      if (outcome.measureOfSuccess) lines.push(`    Measure: ${outcome.measureOfSuccess}`);
+
+      const outcomeItems = items.filter((i) => i.outcomeId === outcome.id);
+      for (const item of outcomeItems) {
+        lines.push(`    ITEM [${item.id}] (${item.type}, ${item.column}): ${item.title}`);
+        if (item.description) lines.push(`      Description: ${item.description}`);
+      }
+    }
+    lines.push("");
+  }
+
+  // Unlinked outcomes (with their items)
+  const unlinkedOutcomes = outcomes.filter((o) => !o.goalId);
+  if (unlinkedOutcomes.length > 0) {
+    lines.push("UNLINKED OUTCOMES:");
+    for (const outcome of unlinkedOutcomes) {
+      lines.push(`  OUTCOME [${outcome.id}]: ${outcome.statement}`);
+      if (outcome.behaviorChange) lines.push(`    Behavior change: ${outcome.behaviorChange}`);
+      if (outcome.measureOfSuccess) lines.push(`    Measure: ${outcome.measureOfSuccess}`);
+      const outcomeItems = items.filter((i) => i.outcomeId === outcome.id);
+      for (const item of outcomeItems) {
+        lines.push(`    ITEM [${item.id}] (${item.type}, ${item.column}): ${item.title}`);
+        if (item.description) lines.push(`      Description: ${item.description}`);
+      }
+    }
+    lines.push("");
+  }
+
+  // Unlinked items
+  const unlinkedItems = items.filter((i) => !i.outcomeId);
+  if (unlinkedItems.length > 0) {
+    lines.push("UNLINKED ITEMS:");
+    for (const item of unlinkedItems) {
+      lines.push(`  ITEM [${item.id}] (${item.type}, ${item.column}): ${item.title}`);
+      if (item.description) lines.push(`    Description: ${item.description}`);
+    }
+  }
+
+  return lines.join("\n");
+}
+
+/**
  * Extract plain text from an Anthropic API response.
  */
 export function extractTextFromResponse(response: Anthropic.Message): string {

@@ -2,7 +2,7 @@ export const maxDuration = 60;
 
 import Anthropic from "@anthropic-ai/sdk";
 import { getNudgeSystemPrompt } from "@/lib/prompts";
-import { serializeBoardForAI, extractTextFromResponse, extractJsonBlock } from "@/lib/utils";
+import { serializeBoardHierarchical, extractTextFromResponse, extractJsonBlock } from "@/lib/utils";
 import { analyzeBoardSignals, formatSignalsForPrompt } from "@/lib/board-signals";
 import { getPlaybooksForSignals, formatPlaybooksForPrompt } from "@/lib/coaching-knowledge";
 import { ADMIN_COACHING_INSTRUCTIONS } from "@/lib/coaching-instructions";
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   const playbooks = getPlaybooksForSignals(allPlaybookIds);
   const playbookText = formatPlaybooksForPrompt(playbooks);
 
-  const boardDescription = serializeBoardForAI(boardState);
+  const boardDescription = serializeBoardHierarchical(boardState);
 
   try {
     const response = await anthropic.messages.create({
