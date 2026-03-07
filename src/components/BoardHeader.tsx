@@ -144,6 +144,11 @@ export default function BoardHeader({ saveStatus, boardId, productName, ownerId,
       dispatch({ type: "SET_PRODUCT_NAME", name: trimmed });
       if (user && boardId) {
         updateUserBoardProductName(user.uid, boardId, trimmed);
+        setUserBoards((prev) =>
+          prev.map((b) =>
+            b.boardId === boardId ? { ...b, productName: trimmed } : b
+          )
+        );
       }
     } else {
       setNameValue(productName || "");
@@ -192,18 +197,28 @@ export default function BoardHeader({ saveStatus, boardId, productName, ownerId,
       if (claimUser && boardId) {
         await claimBoard(boardId, claimUser.uid, claimUser.email || "");
         onOwnershipChange?.(claimUser.uid, claimUser.email || undefined);
+        const claimEntry = {
+          boardId: boardId,
+          productName: state.productName || "Untitled",
+          role: "owner" as const,
+          lastVisitedAt: new Date().toISOString(),
+          addedAt: new Date().toISOString(),
+        };
         upsertUserBoardEntry(
           claimUser.uid,
           claimUser.email || "",
           claimUser.displayName || undefined,
-          {
-            boardId: boardId,
-            productName: state.productName || "Untitled",
-            role: "owner",
-            lastVisitedAt: new Date().toISOString(),
-            addedAt: new Date().toISOString(),
-          }
+          claimEntry
         );
+        setUserBoards((prev) => {
+          const idx = prev.findIndex((b) => b.boardId === boardId);
+          if (idx >= 0) {
+            const updated = [...prev];
+            updated[idx] = claimEntry;
+            return updated;
+          }
+          return [...prev, claimEntry];
+        });
       }
     } catch (err) {
       console.error("Failed to claim board:", err);
