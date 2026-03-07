@@ -101,10 +101,17 @@ export default function Home() {
       setLoadingBoards(false);
       return;
     }
-    getUserDoc(user.uid).then((doc) => {
-      setBoards(doc?.boards || []);
-      setLoadingBoards(false);
-    });
+    getUserDoc(user.uid)
+      .then((doc) => {
+        setBoards(doc?.boards || []);
+      })
+      .catch((err) => {
+        console.error("Failed to load user boards:", err);
+        setBoards([]);
+      })
+      .finally(() => {
+        setLoadingBoards(false);
+      });
   }, [user, authLoading]);
 
   const handleStartEmpty = async () => {
