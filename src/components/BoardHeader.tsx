@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link, ChatCircleDots, Megaphone, PencilSimple } from "@phosphor-icons/react";
+import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link, ChatCircleDots, Megaphone, PencilSimple, DotsThree } from "@phosphor-icons/react";
 import FeedbackModal from "./FeedbackModal";
 import { useTheme } from "@/hooks/useTheme";
 import { useBoard } from "@/hooks/useBoard";
@@ -51,9 +51,11 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
   const { state, dispatch } = useBoard();
   const [copied, setCopied] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(productName || "");
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (editingName) {
@@ -61,6 +63,28 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
       nameInputRef.current?.select();
     }
   }, [editingName]);
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [menuOpen]);
+
+  // Close menu on Escape
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [menuOpen]);
 
   const handleNameSubmit = () => {
     const trimmed = nameValue.trim();
@@ -88,19 +112,23 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
+    setMenuOpen(false);
   };
 
   const handleExport = () => {
     openPrintableExport(state);
+    setMenuOpen(false);
   };
 
   const cycleTheme = () => {
     if (theme === "light") setTheme("dark");
     else if (theme === "dark") setTheme("system");
     else setTheme("light");
+    setMenuOpen(false);
   };
 
   const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
+  const themeLabel = theme === "dark" ? "Dark mode" : theme === "light" ? "Light mode" : "System theme";
 
   return (
     <header className="sticky top-0 z-30 bg-indigo-600 dark:bg-indigo-700 px-4 h-14 flex items-center gap-3">
@@ -188,17 +216,7 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
         )}
       </div>
 
-      {boardId && (
-        <button
-          onClick={handleCopyLink}
-          className="flex items-center gap-1.5 text-xs text-indigo-200 hover:text-white transition-colors px-2 py-1.5 rounded-lg hover:bg-indigo-500"
-          title="Copy board link"
-        >
-          <Link size={14} weight="bold" />
-          {copied ? "Copied!" : "Copy link"}
-        </button>
-      )}
-
+      {/* Primary actions — always visible */}
       <div className="flex items-center gap-2">
         {onToggleAgenda && (
           <button
@@ -240,27 +258,51 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
           </button>
         )}
         <button
-          onClick={handleExport}
-          className="flex items-center gap-1.5 text-xs text-indigo-200 hover:text-white transition-colors px-2 py-1.5 rounded-lg hover:bg-indigo-500"
-          title="Export board as PDF"
-        >
-          <Export size={14} weight="bold" />
-          Export
-        </button>
-        <button
           onClick={() => setFeedbackOpen(true)}
           className="p-2 rounded-lg text-indigo-200 hover:text-white hover:bg-indigo-500 transition-colors"
           title="Send feedback"
         >
           <Megaphone size={16} weight="duotone" />
         </button>
-        <button
-          onClick={cycleTheme}
-          className="p-2 rounded-lg text-indigo-200 hover:text-white hover:bg-indigo-500 transition-colors"
-          title={`Theme: ${theme}`}
-        >
-          <ThemeIcon size={18} weight="duotone" />
-        </button>
+
+        {/* Overflow menu */}
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="p-2 rounded-lg text-indigo-200 hover:text-white hover:bg-indigo-500 transition-colors"
+            title="More options"
+          >
+            <DotsThree size={20} weight="bold" />
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 min-w-[180px] z-50 animate-[slide-in_0.1s_ease-out]">
+              {boardId && (
+                <button
+                  onClick={handleCopyLink}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <Link size={16} className="text-gray-400 dark:text-gray-500" />
+                  {copied ? "Copied!" : "Copy link"}
+                </button>
+              )}
+              <button
+                onClick={handleExport}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <Export size={16} className="text-gray-400 dark:text-gray-500" />
+                Export as PDF
+              </button>
+              <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+              <button
+                onClick={cycleTheme}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <ThemeIcon size={16} className="text-gray-400 dark:text-gray-500" />
+                {themeLabel}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       {feedbackOpen && (
         <FeedbackModal
