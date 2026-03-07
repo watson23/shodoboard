@@ -24,6 +24,22 @@ export interface BoardVisitor {
   lastVisitedAt: string;
 }
 
+export interface UserBoardEntry {
+  boardId: string;
+  productName: string;
+  role: "owner" | "member";
+  lastVisitedAt: string;    // ISO 8601
+  addedAt: string;          // ISO 8601
+}
+
+export interface UserDocument {
+  email: string;
+  displayName?: string;
+  boards: UserBoardEntry[];
+  createdAt: unknown;       // Firestore serverTimestamp
+  updatedAt: unknown;
+}
+
 export interface BoardDocument {
   boardState: BoardState;
   intakeHistory?: ConversationMessage[];
@@ -41,6 +57,7 @@ export interface BoardDocument {
 }
 
 const BOARDS_COLLECTION = "boards";
+const USERS_COLLECTION = "users";
 
 export async function createBoard(
   boardState: BoardState,
@@ -363,5 +380,92 @@ export async function getAllBoardsActivity(): Promise<
   } catch (err) {
     console.error("Failed to load board activity:", err);
     throw new Error(`Failed to load board activity: ${err instanceof Error ? err.message : String(err)}`);
+  }
+}
+
+export async function getUserDoc(uid: string): Promise<UserDocument | null> {
+  try {
+    const userRef = doc(db, USERS_COLLECTION, uid);
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) return null;
+    return snap.data() as UserDocument;
+  } catch (err) {
+    console.error(`Failed to load user doc ${uid}:`, err);
+    return null;
+  }
+}
+
+export async function upsertUserBoardEntry(
+  uid: string,
+  email: string,
+  displayName: string | undefined,
+  entry: UserBoardEntry
+): Promise<void> {
+  try {
+    const userRef = doc(db, USERS_COLLECTION, uid);
+    const snap = await getDoc(userRef);
+
+    if (!snap.exists()) {
+      await setDoc(userRef, {
+        email,
+        displayName: displayName || undefined,
+        boards: [entry],
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      return;
+    }
+
+    const data = snap.data() as UserDocument;
+    const boards = data.boards || [];
+    const idx = boards.findIndex((b) => b.boardId === entry.boardId);
+    if (idx >= 0) {
+      boards[idx] = { ...boards[idx], ...entry };
+    } else {
+      boards.push(entry);
+    }
+
+    await updateDoc(userRef, { boards, updatedAt: serverTimestamp() });
+  } catch (err) {
+    console.error(`Failed to upsert board entry for user ${uid}:`, err);
+  }
+}
+
+export async function removeUserBoardEntry(
+  uid: string,
+  boardId: string
+): Promise<void> {
+  try {
+    const userRef = doc(db, USERS_COLLECTION, uid);
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) return;
+
+    const data = snap.data() as UserDocument;
+    const boards = (data.boards || []).filter((b) => b.boardId !== boardId);
+    await updateDoc(userRef, { boards, updatedAt: serverTimestamp() });
+  } catch (err) {
+    console.error(`Failed to remove board entry for user ${uid}:`, err);
+  }
+}
+
+export async function updateUserBoardProductName(
+  uid: string,
+  boardId: string,
+  productName: string
+): Promise<void> {
+  try {
+    const userRef = doc(db, USERS_COLLECTION, uid);
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) return;
+
+    const data = snap.data() as UserDocument;
+    const boards = data.boards || [];
+    const idx = boards.findIndex((b) => b.boardId === boardId);
+    if (idx < 0) return;
+
+    boards[idx].productName = productName;
+    await updateDoc(userRef, { boards, updatedAt: serverTimestamp() });
+  } catch (err) {
+    console.error(`Failed to update product name for user ${uid}:`, err);
   }
 }
