@@ -130,6 +130,45 @@ export default function Board({ boardId, ownerId, ownerEmail, accessMode, member
         n.status === "active"
     );
 
+  // Shared callbacks for KanbanView and HierarchyView
+  const onGoalClick = (goalId: string) => setModal({ type: "goal", goalId });
+
+  const onOutcomeClick = (outcomeId: string) =>
+    setModal({ type: "outcome", outcomeId });
+
+  const onItemClick = (itemId: string) =>
+    setModal({ type: "card", itemId });
+
+  const onAddGoal = () => {
+    const newGoal = createGoal({ order: goals.length });
+    dispatch({ type: "ADD_GOAL", goal: newGoal });
+    setModal({ type: "goal", goalId: newGoal.id });
+  };
+
+  const onAddOutcome = (goalId: string) => {
+    const newOutcome = createOutcome(goalId, {
+      order: outcomes.filter(o => o.goalId === goalId).length,
+    });
+    dispatch({ type: "ADD_OUTCOME", outcome: newOutcome });
+    setModal({ type: "outcome", outcomeId: newOutcome.id });
+  };
+
+  const onAddItem = (outcomeId: string | null) => {
+    const newItem = createItem(outcomeId, {
+      order: items.filter(i => i.outcomeId === outcomeId).length,
+    });
+    dispatch({ type: "ADD_ITEM", item: newItem });
+    setModal({ type: "card", itemId: newItem.id });
+  };
+
+  const onReorderGoal = (goalId: string, direction: "up" | "down") => {
+    dispatch({ type: "REORDER_GOAL", goalId, direction });
+  };
+
+  const onReorderOutcome = (outcomeId: string, direction: "up" | "down") => {
+    dispatch({ type: "REORDER_OUTCOME", outcomeId, direction });
+  };
+
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
       <BoardHeader
@@ -169,34 +208,14 @@ export default function Board({ boardId, ownerId, ownerEmail, accessMode, member
       {viewMode === "kanban" ? (
         <KanbanView
           state={state}
-          onGoalClick={(goalId) => setModal({ type: "goal", goalId })}
-          onOutcomeClick={(outcomeId) => setModal({ type: "outcome", outcomeId })}
-          onItemClick={(itemId) => setModal({ type: "card", itemId })}
-          onAddGoal={() => {
-            const newGoal = createGoal({ order: goals.length });
-            dispatch({ type: "ADD_GOAL", goal: newGoal });
-            setModal({ type: "goal", goalId: newGoal.id });
-          }}
-          onAddOutcome={(goalId) => {
-            const newOutcome = createOutcome(goalId, {
-              order: outcomes.filter(o => o.goalId === goalId).length,
-            });
-            dispatch({ type: "ADD_OUTCOME", outcome: newOutcome });
-            setModal({ type: "outcome", outcomeId: newOutcome.id });
-          }}
-          onAddItem={(outcomeId) => {
-            const newItem = createItem(outcomeId, {
-              order: items.filter(i => i.outcomeId === outcomeId).length,
-            });
-            dispatch({ type: "ADD_ITEM", item: newItem });
-            setModal({ type: "card", itemId: newItem.id });
-          }}
-          onReorderGoal={(goalId, direction) => {
-            dispatch({ type: "REORDER_GOAL", goalId, direction });
-          }}
-          onReorderOutcome={(outcomeId, direction) => {
-            dispatch({ type: "REORDER_OUTCOME", outcomeId, direction });
-          }}
+          onGoalClick={onGoalClick}
+          onOutcomeClick={onOutcomeClick}
+          onItemClick={onItemClick}
+          onAddGoal={onAddGoal}
+          onAddOutcome={onAddOutcome}
+          onAddItem={onAddItem}
+          onReorderGoal={onReorderGoal}
+          onReorderOutcome={onReorderOutcome}
           onToggleGoalCollapse={(goalId) => {
             dispatch({ type: "TOGGLE_GOAL_COLLAPSE", goalId });
           }}
@@ -212,39 +231,19 @@ export default function Board({ boardId, ownerId, ownerEmail, accessMode, member
               ...(toOutcomeId !== undefined ? { toOutcomeId } : {}),
             });
           }}
-          onSpar={(nudgeId) => setSparringNudgeId(nudgeId)}
+          onSpar={setSparringNudgeId}
         />
       ) : (
         <HierarchyView
           state={state}
-          onGoalClick={(goalId) => setModal({ type: "goal", goalId })}
-          onOutcomeClick={(outcomeId) => setModal({ type: "outcome", outcomeId })}
-          onItemClick={(itemId) => setModal({ type: "card", itemId })}
-          onAddGoal={() => {
-            const newGoal = createGoal({ order: goals.length });
-            dispatch({ type: "ADD_GOAL", goal: newGoal });
-            setModal({ type: "goal", goalId: newGoal.id });
-          }}
-          onAddOutcome={(goalId) => {
-            const newOutcome = createOutcome(goalId, {
-              order: outcomes.filter(o => o.goalId === goalId).length,
-            });
-            dispatch({ type: "ADD_OUTCOME", outcome: newOutcome });
-            setModal({ type: "outcome", outcomeId: newOutcome.id });
-          }}
-          onAddItem={(outcomeId) => {
-            const newItem = createItem(outcomeId, {
-              order: items.filter(i => i.outcomeId === outcomeId).length,
-            });
-            dispatch({ type: "ADD_ITEM", item: newItem });
-            setModal({ type: "card", itemId: newItem.id });
-          }}
-          onReorderGoal={(goalId, direction) => {
-            dispatch({ type: "REORDER_GOAL", goalId, direction });
-          }}
-          onReorderOutcome={(outcomeId, direction) => {
-            dispatch({ type: "REORDER_OUTCOME", outcomeId, direction });
-          }}
+          onGoalClick={onGoalClick}
+          onOutcomeClick={onOutcomeClick}
+          onItemClick={onItemClick}
+          onAddGoal={onAddGoal}
+          onAddOutcome={onAddOutcome}
+          onAddItem={onAddItem}
+          onReorderGoal={onReorderGoal}
+          onReorderOutcome={onReorderOutcome}
         />
       )}
 
