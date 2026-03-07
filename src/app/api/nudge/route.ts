@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     "output-not-outcome", "weak-measure", "measure-mismatch",
     "assumption-risk", "goal-framing", "solution-as-problem",
     "missing-who", "vague-goal", "duplicate-intent",
-    "timeframe-mismatch", "discovery-quality",
+    "timeframe-mismatch", "discovery-quality", "goal-outcome-alignment",
   ];
   const allPlaybookIds = [...structuralPatternIds, ...contentPlaybookIds];
   const playbooks = getPlaybooksForSignals(allPlaybookIds);

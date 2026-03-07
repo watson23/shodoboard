@@ -143,6 +143,7 @@ You have TWO equally important jobs:
 - Goals framed as tasks instead of strategic outcomes
 - Discovery items that are really just delivery in disguise
 - Duplicate intent across items or outcomes
+- Outcomes that don't align with their parent goal's metrics or intent — does achieving this outcome actually move the goal forward?
 
 **B) STRUCTURAL SIGNALS:** Review the structural facts above. Pick only the 1-2 most impactful signals — do NOT write a nudge for every signal. Skip low-severity structural issues if content quality issues are more valuable.
 
@@ -316,7 +317,7 @@ Based on the structural signals and your analysis of board content quality, crea
 1. First, identify what the PM is doing well (clear outcomes, good measures, discovery work, well-scoped goals). Include these as a "boardStrengths" list in your response.
 2. Then rank coaching opportunities by impact (most important first).
 3. Group related signals into single focus items where appropriate (e.g. multiple orphan items → one focus item).
-4. Also analyze board content for quality issues (outputs disguised as outcomes, weak measures, etc.).
+4. Also analyze board content for quality issues (outputs disguised as outcomes, weak measures, goal-outcome misalignment, etc.).
 5. Frame each focus item as a decision the PM needs to make, not a problem they have.
 6. Generate 1-5 focus items. Only include real issues — fewer is better than filler.
 7. Include an analysis summary with counts.

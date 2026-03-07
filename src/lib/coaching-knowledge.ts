@@ -360,6 +360,22 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
       "Lisää kuvaukseen hypoteesi: 'Uskomme että [X], ja testaamme sen [tavalla]'",
     ],
   },
+  "goal-outcome-alignment": {
+    id: "goal-outcome-alignment",
+    name: "Goal-Outcome Misalignment",
+    layer: "content",
+    philosophy: "An outcome must ladder up to its parent goal — if the outcome doesn't move the goal's metrics, the team is solving the wrong problem.",
+    coachingApproach: "Compare the outcome statement to the parent goal's intent and metrics. Ask whether achieving this outcome would actually move the goal forward.",
+    exampleQuestions: [
+      "Jos tämä outcome toteutuu, liikkuvatko tavoitteen mittarit?",
+      "Miten tämä outcome kytkeytyy tavoitteeseen — mikä on ketju?",
+      "Voiko tavoite onnistua ilman tätä outcomea — tai epäonnistua huolimatta siitä?",
+    ],
+    suggestedActions: [
+      "Tarkista outcome'n ja tavoitteen mittareiden yhteys — kerro miten outcome vaikuttaa tavoitteeseen",
+      "Jos yhteys on heikko, harkitse outcome'n siirtämistä oikeamman tavoitteen alle",
+    ],
+  },
 };
 
 /** Get playbooks for a list of anti-pattern IDs. */
