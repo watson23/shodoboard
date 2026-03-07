@@ -72,7 +72,11 @@ export default function SparringPanel({
           body: JSON.stringify({
             messages: conversationMessages,
             nudgeContext: { nudge, target },
-            boardState,
+            boardState: {
+              goals: boardState.goals,
+              outcomes: boardState.outcomes,
+              items: boardState.items,
+            },
           }),
         });
 

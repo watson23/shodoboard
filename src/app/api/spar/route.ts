@@ -13,7 +13,10 @@ function buildSubtreeContext(
   targetType: "goal" | "outcome" | "item",
   targetId: string
 ): string {
-  if (!boardState) return "";
+  if (!boardState || !Array.isArray(boardState.goals) ||
+      !Array.isArray(boardState.outcomes) || !Array.isArray(boardState.items)) {
+    return "";
+  }
 
   const { goals, outcomes, items } = boardState;
 
