@@ -360,6 +360,54 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
       "Lisää kuvaukseen hypoteesi: 'Uskomme että [X], ja testaamme sen [tavalla]'",
     ],
   },
+  "weak-goal-metric": {
+    id: "weak-goal-metric",
+    name: "Weak Goal Metric",
+    layer: "content",
+    philosophy: "A goal metric that doesn't connect to measurable business outcomes is a vanity metric. 'Number of features shipped' or 'user satisfaction' without specifics gives the team no real target to aim for.",
+    coachingApproach: "Challenge goal-level metrics: do they measure actual business impact or just activity? Push for leading indicators of real behavior change.",
+    exampleQuestions: [
+      "Jos tämä mittari paranee, parantuuko liiketoiminta oikeasti — vai tuntuuko vain siltä?",
+      "Voiko tämä mittari nousta ilman että kenenkään käyttäytyminen muuttuu?",
+      "Mikä on se yksi numero jonka liikkuminen kertoo että olette onnistuneet?",
+    ],
+    suggestedActions: [
+      "Korvaa vanity-mittari käyttäytymispohjaisella mittarilla joka kertoo oikeasta muutoksesta",
+      "Kysy: 'Jos tämä numero nousee, mitä se tarkoittaa asiakkaillemme?'",
+    ],
+  },
+  "statement-behavior-mismatch": {
+    id: "statement-behavior-mismatch",
+    name: "Statement-Behavior Mismatch",
+    layer: "content",
+    philosophy: "An outcome has two key fields: the statement (what we want to achieve) and the behavior change (how user behavior changes). When these tell different stories, the team has unclear intent — they don't know if they're building for a metric or a behavior.",
+    coachingApproach: "Put the statement and behaviorChange side by side. If they describe different things, ask which one the team actually cares about.",
+    exampleQuestions: [
+      "Outcome'n statement ja käyttäytymismuutos kertovat eri tarinaa — kumpi on oikea?",
+      "Jos käyttäytymismuutos toteutuu, toteutuuko myös outcome'n statement — vai ovatko ne irrallisia?",
+      "Kumpi kuvaa paremmin sitä mitä oikeasti tavoittelette?",
+    ],
+    suggestedActions: [
+      "Yhdenmukaista statement ja behaviorChange — niiden pitäisi kertoa sama tarina eri näkökulmista",
+      "Jos ne ovat ristiriidassa, valitse toinen ja muokkaa toista vastaamaan",
+    ],
+  },
+  "misaligned-item": {
+    id: "misaligned-item",
+    name: "Misaligned Work Item",
+    layer: "content",
+    philosophy: "A work item should clearly contribute to its outcome's behavior change. If you can't draw a line from the item to the outcome, it's either under the wrong outcome or solving the wrong problem.",
+    coachingApproach: "Ask how this specific item moves the outcome's behavior change forward. If the connection is weak, suggest relinking or reconsidering.",
+    exampleQuestions: [
+      "Miten tämä työ muuttaa käyttäjien käyttäytymistä outcome'n kuvaamalla tavalla?",
+      "Jos tämä item valmistuu, liikkuuko outcome'n mittari — miksi?",
+      "Onko tämä oikean outcome'n alla vai pitäisikö se linkittää toiseen?",
+    ],
+    suggestedActions: [
+      "Tarkista yhteys: item → outcome'n behaviorChange. Jos ketju on heikko, harkitse uudelleenlinkitystä",
+      "Jos item ei selvästi tue mitään outcomea, harkitse onko se tarpeellinen juuri nyt",
+    ],
+  },
   "goal-outcome-alignment": {
     id: "goal-outcome-alignment",
     name: "Goal-Outcome Misalignment",
