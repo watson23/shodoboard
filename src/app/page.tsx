@@ -1,16 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Upload,
   Brain,
   Kanban,
+  SignIn,
   type IconProps,
 } from "@phosphor-icons/react";
 import type { ComponentType } from "react";
-import { createBoard } from "@/lib/firestore";
+import { createBoard, getUserDoc } from "@/lib/firestore";
+import type { UserBoardEntry } from "@/lib/firestore";
+import { useAuth } from "@/hooks/useAuth";
+import Dashboard from "@/components/Dashboard";
 
 function ShodoLogo({ className = "" }: { className?: string }) {
   return (
@@ -86,6 +90,22 @@ function Feature({
 export default function Home() {
   const router = useRouter();
   const [creating, setCreating] = useState(false);
+  const { user, loading: authLoading, signIn, signOut } = useAuth();
+  const [boards, setBoards] = useState<UserBoardEntry[]>([]);
+  const [loadingBoards, setLoadingBoards] = useState(true);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setBoards([]);
+      setLoadingBoards(false);
+      return;
+    }
+    getUserDoc(user.uid).then((doc) => {
+      setBoards(doc?.boards || []);
+      setLoadingBoards(false);
+    });
+  }, [user, authLoading]);
 
   const handleStartEmpty = async () => {
     setCreating(true);
@@ -105,8 +125,50 @@ export default function Home() {
     }
   };
 
+  // Loading state — prevent flash
+  if (authLoading || loadingBoards) {
+    return <div className="min-h-screen" />;
+  }
+
+  // Signed-in user with boards — show Dashboard
+  if (user && boards.length > 0) {
+    return (
+      <Dashboard
+        boards={boards}
+        email={user.email || ""}
+        onSignOut={signOut}
+        onCreateEmpty={handleStartEmpty}
+      />
+    );
+  }
+
+  // Landing page — anonymous or signed-in-no-boards
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-6 py-12 gap-12">
+    <div className="relative flex flex-col items-center justify-center min-h-screen px-6 py-12 gap-12">
+      {/* Sign in button — anonymous users */}
+      {!user && (
+        <button
+          onClick={signIn}
+          className="absolute top-4 right-4 flex items-center gap-1.5 text-sm text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+        >
+          Sign in
+          <SignIn size={16} />
+        </button>
+      )}
+
+      {/* Signed in indicator — user with no boards */}
+      {user && boards.length === 0 && (
+        <div className="absolute top-4 right-4 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+          <span>{user.email}</span>
+          <button
+            onClick={signOut}
+            className="text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+          >
+            Sign out
+          </button>
+        </div>
+      )}
+
       {/* Hero */}
       <div className="flex flex-col items-center text-center">
         <ShodoLogo className="w-16 h-16 text-indigo-500 dark:text-indigo-400 mb-5" />
