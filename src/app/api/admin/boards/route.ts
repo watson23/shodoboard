@@ -24,8 +24,12 @@ export async function GET(request: Request) {
       let lastActiveMs = 0;   // last real user interaction
       let lastHeartbeatMs = 0; // last heartbeat (board tab open)
       let realEventCount = 0;
+      const userIds = new Set<string>();
 
       for (const event of b.events) {
+        // Collect distinct user IDs
+        if (event.userId) userIds.add(event.userId);
+
         if (!event.timestamp) continue;
         const ts = typeof event.timestamp === "string"
           ? new Date(event.timestamp).getTime()
@@ -37,6 +41,11 @@ export async function GET(request: Request) {
           realEventCount++;
           if (ts > lastActiveMs) lastActiveMs = ts;
         }
+      }
+
+      // Also collect user IDs from sessions
+      for (const session of b.sessions) {
+        if (session.userId) userIds.add(session.userId);
       }
 
       // Also check session endedAt for last activity
@@ -59,6 +68,7 @@ export async function GET(request: Request) {
         lastHeartbeat: lastHeartbeatMs > 0 ? new Date(lastHeartbeatMs).toISOString() : null,
         sessionCount: b.sessions.length,
         eventCount: realEventCount,
+        userCount: userIds.size,
       };
     });
 
@@ -70,12 +80,20 @@ export async function GET(request: Request) {
       }
     ).length;
 
+    // Count total unique users across all boards
+    const allUserIds = new Set<string>();
+    boards.forEach((b) => {
+      b.events.forEach((e) => { if (e.userId) allUserIds.add(e.userId); });
+      b.sessions.forEach((s) => { if (s.userId) allUserIds.add(s.userId); });
+    });
+
     return NextResponse.json({
       summary: {
         totalBoards: boardStats.length,
         activeLastWeek,
         totalSessions: boardStats.reduce((s, b) => s + b.sessionCount, 0),
         totalEvents: boardStats.reduce((s, b) => s + b.eventCount, 0),
+        totalUsers: allUserIds.size,
       },
       boards: boardStats.sort((a, b) => {
         const aTime = a.lastActive ? new Date(a.lastActive).getTime() : 0;

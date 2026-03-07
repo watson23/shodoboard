@@ -9,6 +9,26 @@ export function generateId(prefix: string): string {
 }
 
 /**
+ * Get or create a persistent anonymous user ID stored in localStorage.
+ * Used to track distinct users per board without requiring authentication.
+ */
+export function getAnonymousUserId(): string {
+  const STORAGE_KEY = "shodo-anon-uid";
+  if (typeof window === "undefined") return "server";
+  try {
+    let uid = localStorage.getItem(STORAGE_KEY);
+    if (!uid) {
+      uid = `u-${crypto.randomUUID()}`;
+      localStorage.setItem(STORAGE_KEY, uid);
+    }
+    return uid;
+  } catch {
+    // Fallback if localStorage is unavailable (e.g. private browsing)
+    return `u-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  }
+}
+
+/**
  * Escape HTML special characters to prevent XSS.
  */
 export function escapeHtml(str: string): string {

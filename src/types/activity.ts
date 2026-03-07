@@ -2,6 +2,7 @@ export interface ActivityEvent {
   id: string;
   boardId: string;
   sessionId: string;
+  userId?: string; // anonymous persistent user ID
   timestamp: string; // ISO 8601
   category: "state_change" | "ui_interaction" | "session";
   action: string;
@@ -14,6 +15,7 @@ export interface ActivityEvent {
 export interface SessionSummary {
   sessionId: string;
   boardId: string;
+  userId?: string; // anonymous persistent user ID
   startedAt: string;
   endedAt?: string;
   userAgent: string;

@@ -10,6 +10,7 @@ import {
   DownloadSimple,
   ChartBar,
   Users,
+  UserCircle,
   CalendarDots,
   Lightning,
   Megaphone,
@@ -24,6 +25,7 @@ interface BoardStat {
   lastHeartbeat: string | null;
   sessionCount: number;
   eventCount: number;
+  userCount: number;
 }
 
 interface DashboardData {
@@ -32,6 +34,7 @@ interface DashboardData {
     activeLastWeek: number;
     totalSessions: number;
     totalEvents: number;
+    totalUsers: number;
   };
   boards: BoardStat[];
 }
@@ -204,7 +207,7 @@ export default function AdminPage() {
         {data && (
           <>
             {/* Summary cards */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
               <SummaryCard
                 icon={<ChartBar size={20} weight="fill" />}
                 label="Total Boards"
@@ -216,6 +219,12 @@ export default function AdminPage() {
                 label="Active (7d)"
                 value={data.summary.activeLastWeek}
                 color="green"
+              />
+              <SummaryCard
+                icon={<UserCircle size={20} weight="fill" />}
+                label="Unique Users"
+                value={data.summary.totalUsers ?? 0}
+                color="violet"
               />
               <SummaryCard
                 icon={<Users size={20} weight="fill" />}
@@ -271,6 +280,7 @@ export default function AdminPage() {
                       <th className="px-4 py-2 font-medium">Cohort</th>
                       <th className="px-4 py-2 font-medium">Created</th>
                       <th className="px-4 py-2 font-medium">Last Active</th>
+                      <th className="px-4 py-2 font-medium text-right">Users</th>
                       <th className="px-4 py-2 font-medium text-right">Sessions</th>
                       <th className="px-4 py-2 font-medium text-right">Events</th>
                       <th className="px-4 py-2 font-medium"></th>
@@ -318,6 +328,9 @@ export default function AdminPage() {
                           </div>
                         </td>
                         <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300 tabular-nums">
+                          {board.userCount || "—"}
+                        </td>
+                        <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300 tabular-nums">
                           {board.sessionCount}
                         </td>
                         <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300 tabular-nums">
@@ -338,7 +351,7 @@ export default function AdminPage() {
                     ))}
                     {data.boards.length === 0 && (
                       <tr>
-                        <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
+                        <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
                           No boards found
                         </td>
                       </tr>
@@ -491,6 +504,7 @@ function SummaryCard({
   const colorMap: Record<string, string> = {
     indigo: "text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20",
     green: "text-green-500 bg-green-50 dark:bg-green-900/20",
+    violet: "text-violet-500 bg-violet-50 dark:bg-violet-900/20",
     blue: "text-blue-500 bg-blue-50 dark:bg-blue-900/20",
     amber: "text-amber-500 bg-amber-50 dark:bg-amber-900/20",
     rose: "text-rose-500 bg-rose-50 dark:bg-rose-900/20",

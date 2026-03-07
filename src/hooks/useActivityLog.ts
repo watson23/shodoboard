@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useCallback } from "react";
-import { generateId } from "@/lib/utils";
+import { generateId, getAnonymousUserId } from "@/lib/utils";
 import { flushActivityEvents } from "@/lib/firestore";
 import type { ActivityEvent, SessionSummary } from "@/types/activity";
 import type { BoardAction } from "@/hooks/useBoard";
@@ -144,6 +144,7 @@ export function useActivityLog(boardId: string | undefined) {
         id: generateId("evt"),
         boardId,
         sessionId,
+        userId: getAnonymousUserId(),
         timestamp: new Date().toISOString(),
         category,
         action,
@@ -216,6 +217,7 @@ export function useActivityLog(boardId: string | undefined) {
     sessionRef.current = {
       sessionId,
       boardId,
+      userId: getAnonymousUserId(),
       startedAt: startTimeRef.current,
       userAgent: navigator.userAgent,
       viewport: `${window.innerWidth}x${window.innerHeight}`,
