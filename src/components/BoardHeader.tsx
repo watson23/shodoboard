@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link, ChatCircleDots, Megaphone, PencilSimple, DotsThree, UserCircle, SignIn, GearSix, Crown } from "@phosphor-icons/react";
+import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link as LinkIcon, ChatCircleDots, Megaphone, PencilSimple, DotsThree, UserCircle, SignIn, GearSix, Crown, CaretDown, Users } from "@phosphor-icons/react";
+import Link from "next/link";
 import FeedbackModal from "./FeedbackModal";
 import ManageBoardModal from "./ManageBoardModal";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useBoard } from "@/hooks/useBoard";
 import { openPrintableExport } from "@/lib/export";
-import { claimBoard, upsertUserBoardEntry, updateUserBoardProductName } from "@/lib/firestore";
-import type { BoardMember, BoardVisitor } from "@/lib/firestore";
+import { claimBoard, upsertUserBoardEntry, updateUserBoardProductName, getUserDoc } from "@/lib/firestore";
+import type { BoardMember, BoardVisitor, UserBoardEntry } from "@/lib/firestore";
 import type { SaveStatus } from "@/hooks/useAutoSave";
 
 function ShodoLogoSmall() {
@@ -69,8 +70,11 @@ export default function BoardHeader({ saveStatus, boardId, productName, ownerId,
   const [claiming, setClaiming] = useState(false);
   const [manageBoardOpen, setManageBoardOpen] = useState(false);
   const [showClaimExplainer, setShowClaimExplainer] = useState(false);
+  const [userBoards, setUserBoards] = useState<UserBoardEntry[]>([]);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const switcherRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (editingName) {
@@ -100,6 +104,39 @@ export default function BoardHeader({ saveStatus, boardId, productName, ownerId,
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [menuOpen]);
+
+  // Fetch user boards when user is available
+  useEffect(() => {
+    if (!user) {
+      setUserBoards([]);
+      return;
+    }
+    getUserDoc(user.uid).then((doc) => {
+      if (doc?.boards) setUserBoards(doc.boards);
+    });
+  }, [user]);
+
+  // Close switcher on outside click
+  useEffect(() => {
+    if (!switcherOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (switcherRef.current && !switcherRef.current.contains(e.target as Node)) {
+        setSwitcherOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [switcherOpen]);
+
+  // Close switcher on Escape
+  useEffect(() => {
+    if (!switcherOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSwitcherOpen(false);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [switcherOpen]);
 
   const handleNameSubmit = () => {
     const trimmed = nameValue.trim();
@@ -184,40 +221,104 @@ export default function BoardHeader({ saveStatus, boardId, productName, ownerId,
 
   return (
     <header className="sticky top-0 z-30 bg-indigo-600 dark:bg-indigo-700 px-4 h-14 flex items-center gap-3">
-      <ShodoLogoSmall />
+      {user ? (
+        <Link href="/">
+          <ShodoLogoSmall />
+        </Link>
+      ) : (
+        <ShodoLogoSmall />
+      )}
       <div className="flex items-baseline gap-2 min-w-0">
         <h1 className="font-bold text-white text-sm whitespace-nowrap">
           Shodoboard
         </h1>
-        {editingName ? (
-          <input
-            ref={nameInputRef}
-            value={nameValue}
-            onChange={(e) => setNameValue(e.target.value)}
-            onBlur={handleNameSubmit}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleNameSubmit();
-              if (e.key === "Escape") {
+        <div className="relative" ref={switcherRef}>
+          {editingName ? (
+            <input
+              ref={nameInputRef}
+              value={nameValue}
+              onChange={(e) => setNameValue(e.target.value)}
+              onBlur={handleNameSubmit}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleNameSubmit();
+                if (e.key === "Escape") {
+                  setNameValue(productName || "");
+                  setEditingName(false);
+                }
+              }}
+              className="text-sm text-white bg-indigo-500/40 border border-indigo-400/50 rounded px-1.5 py-0.5 outline-none focus:border-white/50 min-w-[120px]"
+              placeholder="Product name"
+            />
+          ) : (
+            <button
+              onClick={() => {
+                if (user && userBoards.length > 0) {
+                  setSwitcherOpen(!switcherOpen);
+                } else {
+                  setNameValue(productName || "");
+                  setEditingName(true);
+                }
+              }}
+              onDoubleClick={() => {
+                setSwitcherOpen(false);
                 setNameValue(productName || "");
-                setEditingName(false);
-              }
-            }}
-            className="text-sm text-white bg-indigo-500/40 border border-indigo-400/50 rounded px-1.5 py-0.5 outline-none focus:border-white/50 min-w-[120px]"
-            placeholder="Product name"
-          />
-        ) : (
-          <button
-            onClick={() => {
-              setNameValue(productName || "");
-              setEditingName(true);
-            }}
-            className="group flex items-center gap-1 text-sm text-indigo-200 hover:text-white transition-colors whitespace-nowrap"
-            title="Click to rename"
-          >
-            {productName || "Untitled"}
-            <PencilSimple size={12} className="opacity-0 group-hover:opacity-70 transition-opacity" />
-          </button>
-        )}
+                setEditingName(true);
+              }}
+              className="group flex items-center gap-1 text-sm text-indigo-200 hover:text-white transition-colors whitespace-nowrap"
+            >
+              {productName || "Untitled"}
+              {user && userBoards.length > 0 ? (
+                <CaretDown size={12} className="opacity-50 group-hover:opacity-100 transition-opacity" />
+              ) : (
+                <PencilSimple size={12} className="opacity-0 group-hover:opacity-70 transition-opacity" />
+              )}
+            </button>
+          )}
+          {switcherOpen && (
+            <div className="absolute left-0 top-full mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 min-w-[220px] z-50 animate-[slide-in_0.1s_ease-out]">
+              {[...userBoards]
+                .sort((a, b) => b.lastVisitedAt.localeCompare(a.lastVisitedAt))
+                .map((board) => (
+                  <Link
+                    key={board.boardId}
+                    href={`/board/${board.boardId}`}
+                    onClick={() => setSwitcherOpen(false)}
+                    className={`flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
+                      board.boardId === boardId
+                        ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-medium"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    <span className="truncate flex-1">{board.productName || "Untitled"}</span>
+                    {board.role === "owner" ? (
+                      <Crown size={12} className="text-indigo-400 flex-shrink-0" />
+                    ) : (
+                      <Users size={12} className="text-gray-400 flex-shrink-0" />
+                    )}
+                  </Link>
+                ))}
+              <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+              <Link
+                href="/"
+                onClick={() => setSwitcherOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                View all boards
+              </Link>
+              <button
+                onClick={() => {
+                  setSwitcherOpen(false);
+                  setNameValue(productName || "");
+                  setEditingName(true);
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <PencilSimple size={12} />
+                Rename board
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {onViewModeChange && (
@@ -333,7 +434,7 @@ export default function BoardHeader({ saveStatus, boardId, productName, ownerId,
                   onClick={handleCopyLink}
                   className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <Link size={16} className="text-gray-400 dark:text-gray-500" />
+                  <LinkIcon size={16} className="text-gray-400 dark:text-gray-500" />
                   {copied ? "Copied!" : "Copy link"}
                 </button>
               )}
