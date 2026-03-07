@@ -59,9 +59,12 @@ const COLUMNS: { key: Column; label: string; phase: string; phaseColor: string }
 
 interface BoardProps {
   boardId?: string;
+  ownerId?: string;
+  ownerEmail?: string;
+  onOwnershipChange?: (ownerId: string | undefined, ownerEmail: string | undefined) => void;
 }
 
-export default function Board({ boardId }: BoardProps) {
+export default function Board({ boardId, ownerId, ownerEmail, onOwnershipChange }: BoardProps) {
   const { state, dispatch: rawDispatch } = useBoard();
   const { logEvent, wrapDispatch } = useActivityLog(boardId);
   const stateRef = useRef(state);
@@ -242,6 +245,9 @@ export default function Board({ boardId }: BoardProps) {
         saveStatus={saveStatus}
         boardId={boardId}
         productName={state.productName}
+        ownerId={ownerId}
+        ownerEmail={ownerEmail}
+        onOwnershipChange={onOwnershipChange}
         onRefreshNudges={generateNudges}
         nudgesLoading={nudgesLoading}
         onToggleAgenda={() => {

@@ -19,14 +19,14 @@ import { auth } from "@/lib/firebase";
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
-  signIn: () => Promise<void>;
+  signIn: () => Promise<User | null>;
   signOut: () => Promise<void>;
 }
 
 const AuthCtx = createContext<AuthContextValue>({
   user: null,
   loading: true,
-  signIn: async () => {},
+  signIn: async () => null,
   signOut: async () => {},
 });
 
@@ -44,8 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsubscribe;
   }, []);
 
-  const signIn = async () => {
-    await signInWithPopup(auth, googleProvider);
+  const signIn = async (): Promise<User | null> => {
+    const result = await signInWithPopup(auth, googleProvider);
+    return result.user;
   };
 
   const signOut = async () => {

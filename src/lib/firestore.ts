@@ -4,6 +4,7 @@ import {
   getDocs,
   setDoc,
   updateDoc,
+  deleteField,
   collection,
   serverTimestamp,
 } from "firebase/firestore";
@@ -17,6 +18,8 @@ export interface BoardDocument {
   intakeHistory?: ConversationMessage[];
   consentGiven: boolean;
   cohort?: string;
+  ownerId?: string;
+  ownerEmail?: string;
   createdAt: unknown;
   updatedAt: unknown;
   activityLog?: ActivityEvent[];
@@ -67,6 +70,28 @@ export async function updateBoardState(
   const boardRef = doc(db, BOARDS_COLLECTION, boardId);
   await updateDoc(boardRef, {
     boardState,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function claimBoard(
+  boardId: string,
+  ownerId: string,
+  ownerEmail: string
+): Promise<void> {
+  const boardRef = doc(db, BOARDS_COLLECTION, boardId);
+  await updateDoc(boardRef, {
+    ownerId,
+    ownerEmail,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function unclaimBoard(boardId: string): Promise<void> {
+  const boardRef = doc(db, BOARDS_COLLECTION, boardId);
+  await updateDoc(boardRef, {
+    ownerId: deleteField(),
+    ownerEmail: deleteField(),
     updatedAt: serverTimestamp(),
   });
 }

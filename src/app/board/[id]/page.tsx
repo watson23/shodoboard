@@ -18,6 +18,8 @@ export default function DynamicBoardPage({
   const [boardState, setBoardState] = useState<BoardState | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [ownerId, setOwnerId] = useState<string | undefined>();
+  const [ownerEmail, setOwnerEmail] = useState<string | undefined>();
 
   useEffect(() => {
     getBoard(id)
@@ -26,6 +28,8 @@ export default function DynamicBoardPage({
           const boardState = doc.boardState;
           boardState.focusItems = boardState.focusItems ?? [];
           setBoardState(boardState);
+          setOwnerId(doc.ownerId);
+          setOwnerEmail(doc.ownerEmail);
         } else {
           setNotFound(true);
         }
@@ -57,7 +61,15 @@ export default function DynamicBoardPage({
   return (
     <BoardProvider initialState={boardState}>
       <ErrorBoundary>
-        <Board boardId={id} />
+        <Board
+          boardId={id}
+          ownerId={ownerId}
+          ownerEmail={ownerEmail}
+          onOwnershipChange={(newOwnerId, newOwnerEmail) => {
+            setOwnerId(newOwnerId);
+            setOwnerEmail(newOwnerEmail);
+          }}
+        />
       </ErrorBoundary>
     </BoardProvider>
   );

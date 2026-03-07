@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link, ChatCircleDots, Megaphone, PencilSimple, DotsThree } from "@phosphor-icons/react";
+import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link, ChatCircleDots, Megaphone, PencilSimple, DotsThree, UserCircle, SignIn } from "@phosphor-icons/react";
 import FeedbackModal from "./FeedbackModal";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/hooks/useAuth";
 import { useBoard } from "@/hooks/useBoard";
 import { openPrintableExport } from "@/lib/export";
+import { claimBoard, unclaimBoard } from "@/lib/firestore";
 import type { SaveStatus } from "@/hooks/useAutoSave";
 
 function ShodoLogoSmall() {
@@ -37,6 +39,9 @@ interface BoardHeaderProps {
   saveStatus?: SaveStatus;
   boardId?: string;
   productName?: string;
+  ownerId?: string;
+  ownerEmail?: string;
+  onOwnershipChange?: (ownerId: string | undefined, ownerEmail: string | undefined) => void;
   onRefreshNudges?: () => void;
   nudgesLoading?: boolean;
   onToggleAgenda?: () => void;
@@ -46,14 +51,16 @@ interface BoardHeaderProps {
   onBoardSpar?: () => void;
 }
 
-export default function BoardHeader({ saveStatus, boardId, productName, onRefreshNudges, nudgesLoading, onToggleAgenda, agendaOpen, viewMode, onViewModeChange, onBoardSpar }: BoardHeaderProps) {
+export default function BoardHeader({ saveStatus, boardId, productName, ownerId, ownerEmail, onOwnershipChange, onRefreshNudges, nudgesLoading, onToggleAgenda, agendaOpen, viewMode, onViewModeChange, onBoardSpar }: BoardHeaderProps) {
   const { theme, setTheme } = useTheme();
+  const { user, signIn } = useAuth();
   const { state, dispatch } = useBoard();
   const [copied, setCopied] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(productName || "");
+  const [claiming, setClaiming] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -126,6 +133,43 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
     else setTheme("light");
     setMenuOpen(false);
   };
+
+  const handleClaim = async () => {
+    setClaiming(true);
+    try {
+      let claimUser = user;
+      if (!claimUser) {
+        claimUser = await signIn();
+      }
+      if (claimUser && boardId) {
+        await claimBoard(boardId, claimUser.uid, claimUser.email || "");
+        onOwnershipChange?.(claimUser.uid, claimUser.email || undefined);
+      }
+    } catch (err) {
+      console.error("Failed to claim board:", err);
+    } finally {
+      setClaiming(false);
+      setMenuOpen(false);
+    }
+  };
+
+  const handleUnclaim = async () => {
+    setClaiming(true);
+    try {
+      if (boardId) {
+        await unclaimBoard(boardId);
+        onOwnershipChange?.(undefined, undefined);
+      }
+    } catch (err) {
+      console.error("Failed to unclaim board:", err);
+    } finally {
+      setClaiming(false);
+      setMenuOpen(false);
+    }
+  };
+
+  const isClaimed = !!ownerId;
+  const isOwner = user && ownerId === user.uid;
 
   const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
   const themeLabel = theme === "dark" ? "Dark mode" : theme === "light" ? "Light mode" : "System theme";
@@ -292,6 +336,55 @@ export default function BoardHeader({ saveStatus, boardId, productName, onRefres
                 <Export size={16} className="text-gray-400 dark:text-gray-500" />
                 Export as PDF
               </button>
+              {boardId && (
+                <>
+                  <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+                  {!isClaimed && (
+                    <button
+                      onClick={handleClaim}
+                      disabled={claiming}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                    >
+                      {user ? (
+                        <UserCircle size={16} className="text-gray-400 dark:text-gray-500" />
+                      ) : (
+                        <SignIn size={16} className="text-gray-400 dark:text-gray-500" />
+                      )}
+                      {claiming
+                        ? "Claiming..."
+                        : user
+                        ? "Claim this board"
+                        : "Sign in to claim this board"}
+                    </button>
+                  )}
+                  {isOwner && (
+                    <div className="px-3 py-2">
+                      <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
+                        <UserCircle size={14} weight="fill" />
+                        Claimed by you
+                      </div>
+                      <div className="text-[11px] text-gray-400 dark:text-gray-500 ml-5 mt-0.5">
+                        {ownerEmail}
+                      </div>
+                      <button
+                        onClick={handleUnclaim}
+                        disabled={claiming}
+                        className="text-[11px] text-gray-400 hover:text-red-500 dark:hover:text-red-400 ml-5 mt-1 transition-colors disabled:opacity-50"
+                      >
+                        {claiming ? "Removing..." : "Remove claim"}
+                      </button>
+                    </div>
+                  )}
+                  {isClaimed && !isOwner && (
+                    <div className="px-3 py-2">
+                      <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                        <UserCircle size={14} weight="fill" />
+                        Claimed by {ownerEmail}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
               <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
               <button
                 onClick={cycleTheme}
