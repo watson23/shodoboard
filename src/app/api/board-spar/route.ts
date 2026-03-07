@@ -3,6 +3,7 @@ export const maxDuration = 60;
 import Anthropic from "@anthropic-ai/sdk";
 import { getBoardSparSystemPrompt } from "@/lib/prompts";
 import { serializeBoardHierarchical, extractTextFromResponse } from "@/lib/utils";
+import { analyzeBoardSignals, formatSignalsForPrompt } from "@/lib/board-signals";
 import type { BoardState } from "@/types/board";
 import { ADMIN_COACHING_INSTRUCTIONS } from "@/lib/coaching-instructions";
 import { NextRequest, NextResponse } from "next/server";
@@ -18,10 +19,18 @@ export async function POST(req: NextRequest) {
   // Build a compact board summary for context
   const boardSummary = serializeBoardHierarchical(boardState);
 
-  const contextMessage = `[System context — the PM clicked "Sparraa taulua" to start a coaching conversation about their entire board. They haven't said anything yet. Start by asking what's on their mind, and offer 2-3 observations about their board as conversation starters.]
+  // Pre-compute structural signals for richer coaching context
+  const signals = analyzeBoardSignals(boardState);
+  const structuralFacts = formatSignalsForPrompt(signals);
+
+  let contextMessage = `[System context — the PM clicked "Sparraa taulua" to start a coaching conversation about their entire board. They haven't said anything yet. Start by asking what's on their mind, and offer 2-3 observations about their board as conversation starters.]
 
 Current board state:
 ${boardSummary}`;
+
+  if (signals.length > 0) {
+    contextMessage += `\n\nStructural analysis (verified facts):\n${structuralFacts}`;
+  }
 
   const claudeMessages: { role: "user" | "assistant"; content: string }[] = [];
   claudeMessages.push({ role: "user", content: contextMessage });
@@ -38,7 +47,7 @@ ${boardSummary}`;
   try {
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 1024,
+      max_tokens: 2048,
       system: getBoardSparSystemPrompt(ADMIN_COACHING_INSTRUCTIONS),
       messages: claudeMessages,
     });

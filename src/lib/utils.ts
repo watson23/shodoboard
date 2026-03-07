@@ -69,6 +69,11 @@ export function serializeBoardHierarchical(state: BoardState): string {
       for (const item of outcomeItems) {
         lines.push(`    ITEM [${item.id}] (${item.type}, ${item.column}): ${item.title}`);
         if (item.description) lines.push(`      Description: ${item.description}`);
+        if (item.checklist && item.checklist.length > 0) {
+          for (const cl of item.checklist) {
+            lines.push(`      CHECKLIST: [${cl.type}] ${cl.text} (${cl.done ? "done" : "pending"})`);
+          }
+        }
       }
     }
     lines.push("");
@@ -86,6 +91,11 @@ export function serializeBoardHierarchical(state: BoardState): string {
       for (const item of outcomeItems) {
         lines.push(`    ITEM [${item.id}] (${item.type}, ${item.column}): ${item.title}`);
         if (item.description) lines.push(`      Description: ${item.description}`);
+        if (item.checklist && item.checklist.length > 0) {
+          for (const cl of item.checklist) {
+            lines.push(`      CHECKLIST: [${cl.type}] ${cl.text} (${cl.done ? "done" : "pending"})`);
+          }
+        }
       }
     }
     lines.push("");
@@ -98,6 +108,11 @@ export function serializeBoardHierarchical(state: BoardState): string {
     for (const item of unlinkedItems) {
       lines.push(`  ITEM [${item.id}] (${item.type}, ${item.column}): ${item.title}`);
       if (item.description) lines.push(`    Description: ${item.description}`);
+      if (item.checklist && item.checklist.length > 0) {
+        for (const cl of item.checklist) {
+          lines.push(`    CHECKLIST: [${cl.type}] ${cl.text} (${cl.done ? "done" : "pending"})`);
+        }
+      }
     }
   }
 
