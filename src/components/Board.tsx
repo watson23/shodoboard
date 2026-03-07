@@ -355,7 +355,14 @@ export default function Board({ boardId, ownerId, ownerEmail, accessMode, member
         <BoardSparringModal onClose={() => setShowBoardSpar(false)} />
       )}
 
-      {boardId && <BookmarkToast boardId={boardId} />}
+      {boardId && (
+        <BookmarkToast
+          boardId={boardId}
+          ownerId={ownerId}
+          members={members}
+          onOwnershipChange={onOwnershipChange}
+        />
+      )}
     </div>
   );
 }

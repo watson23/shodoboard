@@ -7,8 +7,10 @@ import {
   addBoardMember,
   removeBoardMember,
   unclaimBoard,
+  removeUserBoardEntry,
 } from "@/lib/firestore";
 import type { BoardMember, BoardVisitor } from "@/lib/firestore";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ManageBoardModalProps {
   boardId: string;
@@ -45,6 +47,7 @@ export default function ManageBoardModal({
   onUnclaim,
   onClose,
 }: ManageBoardModalProps) {
+  const { user } = useAuth();
   const [emailInput, setEmailInput] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
@@ -156,6 +159,9 @@ export default function ManageBoardModal({
     setUnclaiming(true);
     try {
       await unclaimBoard(boardId);
+      if (user) {
+        removeUserBoardEntry(user.uid, boardId);
+      }
       onUnclaim();
       onClose();
     } catch (err) {

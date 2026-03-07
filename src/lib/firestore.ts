@@ -448,6 +448,27 @@ export async function removeUserBoardEntry(
   }
 }
 
+export async function cleanStaleUserBoardEntries(
+  uid: string,
+  validBoardIds: string[]
+): Promise<void> {
+  try {
+    const userRef = doc(db, USERS_COLLECTION, uid);
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) return;
+
+    const data = snap.data() as UserDocument;
+    const cleaned = (data.boards || []).filter((b) =>
+      validBoardIds.includes(b.boardId)
+    );
+    if (cleaned.length !== (data.boards || []).length) {
+      await updateDoc(userRef, { boards: cleaned, updatedAt: serverTimestamp() });
+    }
+  } catch (err) {
+    console.error(`Failed to clean stale entries for user ${uid}:`, err);
+  }
+}
+
 export async function updateUserBoardProductName(
   uid: string,
   boardId: string,

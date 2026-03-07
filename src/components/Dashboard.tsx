@@ -1,8 +1,11 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { SignOut, Crown, Users } from "@phosphor-icons/react";
+import { getBoard, cleanStaleUserBoardEntries } from "@/lib/firestore";
 import type { UserBoardEntry } from "@/lib/firestore";
+import { useAuth } from "@/hooks/useAuth";
 
 function timeAgo(iso: string): string {
   const seconds = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -62,7 +65,46 @@ export default function Dashboard({
   onSignOut,
   onCreateEmpty,
 }: DashboardProps) {
-  const sortedBoards = [...boards].sort(
+  const { user } = useAuth();
+  const [validBoards, setValidBoards] = useState<UserBoardEntry[] | null>(null);
+
+  useEffect(() => {
+    if (!user || boards.length === 0) return;
+
+    let cancelled = false;
+
+    async function validateBoards() {
+      const results = await Promise.all(
+        boards.map(async (b) => {
+          try {
+            const boardDoc = await getBoard(b.boardId);
+            return boardDoc ? b : null;
+          } catch {
+            return null;
+          }
+        })
+      );
+
+      if (cancelled) return;
+
+      const valid = results.filter((b): b is UserBoardEntry => b !== null);
+      setValidBoards(valid);
+
+      if (valid.length !== boards.length) {
+        const validBoardIds = valid.map((b) => b.boardId);
+        cleanStaleUserBoardEntries(user!.uid, validBoardIds);
+      }
+    }
+
+    validateBoards();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, boards]);
+
+  const displayBoards = validBoards ?? boards;
+  const sortedBoards = [...displayBoards].sort(
     (a, b) =>
       new Date(b.lastVisitedAt).getTime() - new Date(a.lastVisitedAt).getTime()
   );
