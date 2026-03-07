@@ -340,6 +340,7 @@ export default function Board({ boardId, ownerId, ownerEmail, accessMode, member
           <SparringPanel
             nudge={nudge}
             target={target}
+            boardState={state}
             onClose={() => setSparringNudgeId(null)}
             onApply={(suggestion) => {
               handleSparringApply(suggestion, nudge, items, dispatch);

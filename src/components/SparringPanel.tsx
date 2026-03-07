@@ -10,7 +10,7 @@ import {
   CheckCircle,
   SpinnerGap,
 } from "@phosphor-icons/react";
-import type { Nudge, BusinessGoal, Outcome, WorkItem } from "@/types/board";
+import type { Nudge, BusinessGoal, Outcome, WorkItem, BoardState } from "@/types/board";
 
 interface Suggestion {
   type: "suggestion";
@@ -22,6 +22,7 @@ interface Suggestion {
 interface SparringPanelProps {
   nudge: Nudge;
   target: BusinessGoal | Outcome | WorkItem;
+  boardState: BoardState;
   onClose: () => void;
   onApply?: (suggestion: Suggestion) => void;
 }
@@ -36,6 +37,7 @@ const MAX_TURNS = 4;
 export default function SparringPanel({
   nudge,
   target,
+  boardState,
   onClose,
   onApply,
 }: SparringPanelProps) {
@@ -70,6 +72,7 @@ export default function SparringPanel({
           body: JSON.stringify({
             messages: conversationMessages,
             nudgeContext: { nudge, target },
+            boardState,
           }),
         });
 
@@ -92,7 +95,7 @@ export default function SparringPanel({
         setIsLoading(false);
       }
     },
-    [nudge, target]
+    [nudge, target, boardState]
   );
 
   // Initial fetch on mount
