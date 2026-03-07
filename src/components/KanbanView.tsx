@@ -88,7 +88,7 @@ export default function KanbanView({
     const overId = over.id as string;
     const parts = overId.split(":");
     const column = (parts.length > 1 ? parts[1] : overId) as Column;
-    const dropOutcomeId = parts.length > 1 ? (parts[0] === "null" ? null : parts[0]) : undefined;
+    const dropOutcomeId = parts.length > 1 ? (parts[0] === "null" || parts[0] === "unlinked" ? null : parts[0]) : undefined;
     const draggedItem = items.find((i) => i.id === active.id);
     if (!draggedItem) return;
 
@@ -98,7 +98,7 @@ export default function KanbanView({
       active.id as string,
       column,
       0,
-      ...(outcomeChanged ? [dropOutcomeId] : []),
+      outcomeChanged ? dropOutcomeId : undefined,
     );
   };
 
@@ -140,6 +140,7 @@ export default function KanbanView({
 
   const unlinkedItems = items.filter((i) => i.outcomeId === null);
   const unlinkedOutcomes = outcomes.filter((o) => o.goalId === null);
+  const sortedGoals = [...goals].sort((a, b) => a.order - b.order);
 
   const renderItemGrid = (outcomeId: string | null) => (
     <div className="grid grid-cols-6 gap-0 min-h-[36px] bg-gray-50/80 dark:bg-gray-950/50">
@@ -208,9 +209,7 @@ export default function KanbanView({
 
             {/* Goal sections */}
             <div className="divide-y divide-gray-200 dark:divide-gray-800">
-              {(() => {
-                const sortedGoals = [...goals].sort((a, b) => a.order - b.order);
-                return sortedGoals.map((goal, goalIndex) => {
+              {sortedGoals.map((goal, goalIndex) => {
                   const goalOutcomes = outcomes
                     .filter((o) => o.goalId === goal.id)
                     .sort((a, b) => a.order - b.order);
@@ -423,8 +422,7 @@ export default function KanbanView({
                       )}
                     </div>
                   );
-                });
-              })()}
+                })}
 
               {/* Add goal button */}
               <div className="px-4 py-2">
