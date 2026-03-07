@@ -26,7 +26,8 @@ export async function POST(req: NextRequest) {
     "assumption-risk", "goal-framing", "solution-as-problem",
     "missing-who", "vague-goal", "duplicate-intent",
     "timeframe-mismatch", "discovery-quality",
-    "weak-goal-metric", "statement-behavior-mismatch", "misaligned-item", "goal-outcome-alignment",
+    "weak-goal-metric", "statement-behavior-mismatch", "misaligned-item",
+    "impact-disconnected-goal", "goal-missing-baseline", "goal-outcome-alignment",
   ];
   const playbooks = getPlaybooksForSignals([...structuralPatternIds, ...contentPlaybookIds]);
   const playbookText = formatPlaybooksForPrompt(playbooks);

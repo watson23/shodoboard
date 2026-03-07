@@ -18,4 +18,7 @@ export const ADMIN_COACHING_INSTRUCTIONS = `
 - Ehdota aina konkreettista toimenpidettä jonka PM voi tehdä boardilla JUURI NYT
 - Älä ehdota mittareita jotka vaativat monimutkaisia analytiikkatyökaluja — suosi yksinkertaisia käyttäytymismittareita
 - Muista: "shipped" ei tarkoita "valmis" — valmis tarkoittaa mitattua vaikutusta
+- Haasta tavoitteita rohkeasti — älä hyväksy teemoja ("Kasvu", "Käyttökokemus") tavoitteina. Tavoitteen pitää kytkeytyä konkreettiseen liiketoiminta-arvoon.
+- Kysy tavoitteista aina "entä sitten?" — jos tavoite onnistuu, mitä tapahtuu liiketoiminnalle? Jos vastausta ei ole, tavoite on liian abstrakti.
+- Suosi tavoitteita joilla on perustaso (baseline) ja tavoitetaso — ilman molempia ei voi mitata edistymistä
 `.trim();

@@ -408,6 +408,54 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
       "Jos item ei selvästi tue mitään outcomea, harkitse onko se tarpeellinen juuri nyt",
     ],
   },
+  "no-metrics-goal": {
+    id: "no-metrics-goal",
+    name: "Goal Without Metrics",
+    layer: "structural",
+    philosophy: "A goal without any metrics is a wish. Without defining what success looks like, the team has no way to know if they're making progress or just staying busy.",
+    coachingApproach: "Don't just say 'add metrics.' Help the PM think about what would actually change if this goal succeeds. Start from the business impact and work backward to a measurable indicator.",
+    exampleQuestions: [
+      "Mistä tiedätte puolen vuoden päästä onnistuitteko vai ette?",
+      "Mikä on se yksi numero jota seuraisitte jos saisitte valita vain yhden?",
+      "Jos joutuisitte raportoimaan johdolle, mitä numeroa näyttäisitte?",
+    ],
+    suggestedActions: [
+      "Määrittele 1-2 mittaria jotka kertovat oikeasti edistymisestä, ei aktiviteetista",
+      "Aloita nykytilanteen kartoituksesta: mikä on baseline jolle voitte asettaa tavoitetason?",
+    ],
+  },
+  "impact-disconnected-goal": {
+    id: "impact-disconnected-goal",
+    name: "Impact-Disconnected Goal",
+    layer: "content",
+    philosophy: "A goal that doesn't connect to real business value — revenue, retention, cost, or competitive advantage — is a vanity goal. 'Improve onboarding' sounds specific but doesn't tell you what business impact it creates. The question is always: so what?",
+    coachingApproach: "Ask the 'so what' question: if this goal succeeds, what happens to the business? Push for the value chain: goal → user behavior change → business impact. If the PM can't articulate the chain, the goal needs reframing.",
+    exampleQuestions: [
+      "Jos tämä tavoite onnistuu, mikä muuttuu liiketoiminnassa — liikevaihto, retentio, kustannukset?",
+      "Kuka hyötyy tästä konkreettisesti — mikä käyttäjäsegmentti tai sidosryhmä?",
+      "Mikä on se arvoketju: tavoite → käyttäytymismuutos → liiketoimintavaikutus?",
+    ],
+    suggestedActions: [
+      "Lisää tavoitteeseen arvoyhteys: '[Mittari] paranee koska [käyttäjäsegmentti] [muuttaa käyttäytymistään]'",
+      "Kysy: 'Jos tämä onnistuu, mitä kerron johdolle — miksi tämä on tärkeää?'",
+    ],
+  },
+  "goal-missing-baseline": {
+    id: "goal-missing-baseline",
+    name: "Goal Without Baseline",
+    layer: "content",
+    philosophy: "A goal with a metric but no baseline is unmeasurable in practice. 'Increase retention to 80%' means nothing if you don't know current retention. Without a baseline, you can't tell if you're moving the needle or standing still.",
+    coachingApproach: "Ask what the current state is. If they don't know, that's the first thing to measure — and it's a discovery task, not a delivery task.",
+    exampleQuestions: [
+      "Mikä on tämän mittarin nykyinen taso — tiedättekö sen?",
+      "Jos ette tiedä nykytasoa, miten arvioitte onko muutos riittävä?",
+      "Olisiko ensimmäinen askel mitata nykytila ennen kuin asetatte tavoitetason?",
+    ],
+    suggestedActions: [
+      "Lisää tavoitteeseen nykytaso: '[Mittari] nykytaso X → tavoite Y [aikajänne]'",
+      "Jos nykytaso ei ole tiedossa, lisää discovery-item sen mittaamiseen",
+    ],
+  },
   "goal-outcome-alignment": {
     id: "goal-outcome-alignment",
     name: "Goal-Outcome Misalignment",

@@ -13,7 +13,8 @@ export type AntiPatternId =
   | "empty-goal"
   | "measuring-without-measure"
   | "all-early-stage"
-  | "unbalanced-outcomes";
+  | "unbalanced-outcomes"
+  | "no-metrics-goal";
 
 export interface BoardSignal {
   id: string;
@@ -152,6 +153,19 @@ export function analyzeBoardSignals(state: BoardState): BoardSignal[] {
         targetId: goal.id,
         evidence: { statement: goal.statement },
         humanReadable: `Goal "${goal.statement}": no outcomes linked.`,
+      });
+    }
+
+    // no-metrics-goal
+    if (!goal.metrics || goal.metrics.length === 0 || goal.metrics.every((m) => m.trim() === "")) {
+      signals.push({
+        id: `no-metrics-goal:${goal.id}`,
+        antiPattern: "no-metrics-goal",
+        severity: "medium",
+        targetType: "goal",
+        targetId: goal.id,
+        evidence: { statement: goal.statement },
+        humanReadable: `Goal "${goal.statement}": no metrics defined — success is unmeasurable.`,
       });
     }
 
