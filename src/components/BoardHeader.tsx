@@ -160,7 +160,7 @@ export default function BoardHeader({ saveStatus, boardId, productName, ownerId,
           claimUser.email || "",
           claimUser.displayName || undefined,
           {
-            boardId: boardId!,
+            boardId: boardId,
             productName: state.productName || "Untitled",
             role: "owner",
             lastVisitedAt: new Date().toISOString(),

@@ -420,7 +420,7 @@ export async function upsertUserBoardEntry(
     const boards = data.boards || [];
     const idx = boards.findIndex((b) => b.boardId === entry.boardId);
     if (idx >= 0) {
-      boards[idx] = { ...boards[idx], ...entry };
+      boards[idx] = { ...boards[idx], ...entry, addedAt: boards[idx].addedAt };
     } else {
       boards.push(entry);
     }

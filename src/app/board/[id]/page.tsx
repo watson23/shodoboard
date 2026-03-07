@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { getBoard, recordBoardVisitor, upsertUserBoardEntry } from "@/lib/firestore";
 import type { BoardMember, BoardVisitor } from "@/lib/firestore";
@@ -27,6 +27,7 @@ export default function DynamicBoardPage({
   const [accessMode, setAccessMode] = useState<"link" | "invite_only">("link");
   const [members, setMembers] = useState<BoardMember[]>([]);
   const [recentVisitors, setRecentVisitors] = useState<BoardVisitor[]>([]);
+  const hasSyncedRef = useRef(false);
 
   useEffect(() => {
     getBoard(id)
@@ -55,6 +56,8 @@ export default function DynamicBoardPage({
   // Record visitor (fire-and-forget)
   useEffect(() => {
     if (!loading && boardState && user?.email) {
+      if (hasSyncedRef.current) return;
+      hasSyncedRef.current = true;
       recordBoardVisitor(id, user.uid, user.email).catch(() => {});
 
       // Sync user doc for owners and members
