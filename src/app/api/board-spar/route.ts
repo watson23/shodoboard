@@ -13,10 +13,10 @@ export async function POST(req: NextRequest) {
   }
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const { messages, boardState } = await req.json();
+  const { messages, boardState } = (await req.json()) as { messages: { role: string; text: string }[]; boardState: BoardState };
 
   // Build a compact board summary for context
-  const boardSummary = serializeBoardHierarchical(boardState as unknown as BoardState);
+  const boardSummary = serializeBoardHierarchical(boardState);
 
   const contextMessage = `[System context — the PM clicked "Sparraa taulua" to start a coaching conversation about their entire board. They haven't said anything yet. Start by asking what's on their mind, and offer 2-3 observations about their board as conversation starters.]
 

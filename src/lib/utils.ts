@@ -41,39 +41,6 @@ export function escapeHtml(str: string): string {
 }
 
 /**
- * Serialize board state for AI consumption (strips UI-only fields).
- */
-export function serializeBoardForAI(boardState: BoardState): string {
-  return JSON.stringify(
-    {
-      goals: boardState.goals.map((g) => ({
-        id: g.id,
-        statement: g.statement,
-        timeframe: g.timeframe,
-        metrics: g.metrics,
-      })),
-      outcomes: boardState.outcomes.map((o) => ({
-        id: o.id,
-        goalId: o.goalId,
-        statement: o.statement,
-        behaviorChange: o.behaviorChange,
-        measureOfSuccess: o.measureOfSuccess,
-      })),
-      items: boardState.items.map((i) => ({
-        id: i.id,
-        outcomeId: i.outcomeId,
-        title: i.title,
-        description: i.description,
-        type: i.type,
-        column: i.column,
-      })),
-    },
-    null,
-    2
-  );
-}
-
-/**
  * Serialize board state as hierarchical text for AI coaching prompts.
  * Shows Goal → Outcome → Item tree with indentation.
  */
