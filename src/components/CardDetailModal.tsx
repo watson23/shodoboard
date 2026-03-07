@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, X as XIcon, Check } from "@phosphor-icons/react";
+import { Plus, X as XIcon, Check, SpinnerGap } from "@phosphor-icons/react";
 import { generateId } from "@/lib/utils";
 import { useBoard } from "@/hooks/useBoard";
+import { useBoardActions } from "@/hooks/useBoardActions";
 import type { WorkItem, Nudge, DiscoveryPrompt, Column, ChecklistItem } from "@/types/board";
 import NudgeBadge from "./NudgeBadge";
 import DiscoveryPrompts from "./DiscoveryPrompts";
@@ -35,6 +36,7 @@ export default function CardDetailModal({
   onSpar,
 }: CardDetailModalProps) {
   const { dispatch, state: boardState } = useBoard();
+  const { generateDiscoveryPrompts, discoveryLoading } = useBoardActions();
   const [title, setTitle] = useState(item.title);
   const [description, setDescription] = useState(item.description);
   const [assignee, setAssignee] = useState(item.assignee || "");
@@ -308,14 +310,23 @@ export default function CardDetailModal({
       )}
 
       {/* Discovery prompts */}
-      {discoveryPrompts.length > 0 && (
-        <div>
-          <label className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide font-medium block mb-1.5">
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide font-medium">
             Discovery Checklist
           </label>
-          <DiscoveryPrompts prompts={discoveryPrompts} />
+          <button
+            onClick={() => generateDiscoveryPrompts(item.id)}
+            disabled={discoveryLoading === item.id}
+            className="text-xs text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 disabled:opacity-50 flex items-center gap-1"
+          >
+            {discoveryLoading === item.id ? (
+              <><SpinnerGap size={12} className="animate-spin" /> Generating...</>
+            ) : discoveryPrompts.length > 0 ? "Generoi uudelleen" : "Generoi"}
+          </button>
         </div>
-      )}
+        {discoveryPrompts.length > 0 && <DiscoveryPrompts prompts={discoveryPrompts} />}
+      </div>
 
       {/* Delete */}
       <DeleteSection

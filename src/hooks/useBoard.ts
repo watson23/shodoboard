@@ -17,6 +17,7 @@ import type {
   Nudge,
   FocusItem,
   ChecklistItem,
+  DiscoveryPrompt,
 } from "@/types/board";
 
 export type BoardAction =
@@ -46,7 +47,8 @@ export type BoardAction =
   | { type: "DELETE_OUTCOME"; outcomeId: string; deleteChildren?: boolean }
   | { type: "DELETE_GOAL"; goalId: string; deleteChildren?: boolean }
   | { type: "REORDER_GOAL"; goalId: string; direction: "up" | "down" }
-  | { type: "REORDER_OUTCOME"; outcomeId: string; direction: "up" | "down" };
+  | { type: "REORDER_OUTCOME"; outcomeId: string; direction: "up" | "down" }
+  | { type: "SET_DISCOVERY_PROMPTS"; itemId: string; prompts: DiscoveryPrompt[] };
 
 function boardReducer(state: BoardState, action: BoardAction): BoardState {
   switch (action.type) {
@@ -246,6 +248,11 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
         return o;
       });
       return { ...state, outcomes };
+    }
+
+    case "SET_DISCOVERY_PROMPTS": {
+      const filtered = state.discoveryPrompts.filter(dp => dp.itemId !== action.itemId);
+      return { ...state, discoveryPrompts: [...filtered, ...action.prompts] };
     }
 
     default:

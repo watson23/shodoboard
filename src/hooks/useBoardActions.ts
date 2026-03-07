@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useBoard } from "./useBoard";
-import type { FocusItem, FocusItemStatus, Nudge } from "@/types/board";
+import type { DiscoveryPrompt, FocusItem, FocusItemStatus, Nudge } from "@/types/board";
 
 export function useBoardActions() {
   const { state, dispatch } = useBoard();
@@ -11,6 +11,7 @@ export function useBoardActions() {
   const [focusLoading, setFocusLoading] = useState(false);
   const [focusError, setFocusError] = useState(false);
   const [boardStrengths, setBoardStrengths] = useState<string[]>([]);
+  const [discoveryLoading, setDiscoveryLoading] = useState<string | null>(null);
 
   const generateNudges = useCallback(async () => {
     setNudgesLoading(true);
@@ -101,13 +102,43 @@ export function useBoardActions() {
     dispatch({ type: "UPDATE_FOCUS_ITEM", focusItemId, updates: { status } });
   }, [dispatch]);
 
+  const generateDiscoveryPrompts = useCallback(async (itemId: string) => {
+    const item = state.items.find((i) => i.id === itemId);
+    if (!item) return;
+
+    const outcome = item.outcomeId
+      ? state.outcomes.find((o) => o.id === item.outcomeId) ?? null
+      : null;
+    const goal = outcome?.goalId
+      ? state.goals.find((g) => g.id === outcome.goalId) ?? null
+      : null;
+
+    setDiscoveryLoading(itemId);
+    try {
+      const res = await fetch("/api/discovery-prompts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ item, outcome, goal }),
+      });
+      const data = await res.json();
+      if (data.prompts && data.prompts.length > 0) {
+        dispatch({ type: "SET_DISCOVERY_PROMPTS", itemId, prompts: data.prompts as DiscoveryPrompt[] });
+      }
+    } catch (err) {
+      console.error("Failed to generate discovery prompts:", err);
+    }
+    setDiscoveryLoading(null);
+  }, [state, dispatch]);
+
   return {
     nudgesLoading,
     focusLoading,
     focusError,
     boardStrengths,
+    discoveryLoading,
     generateNudges,
     generateFocusItems,
+    generateDiscoveryPrompts,
     handleFocusItemClick,
     handleStartSparringFromFocus,
     handleFocusStatusChange,
