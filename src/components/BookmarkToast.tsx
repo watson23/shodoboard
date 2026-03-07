@@ -33,6 +33,8 @@ export default function BookmarkToast({
       (m) => m.email === (user.email ?? "").toLowerCase()
     )
   );
+  // Suppress for owner, member, or any signed-in user viewing a board
+  // that's already claimed (can't claim someone else's board)
   const shouldSuppress = isOwner || isMember || !!(user && ownerId);
 
   useEffect(() => {
