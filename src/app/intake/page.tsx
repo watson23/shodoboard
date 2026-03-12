@@ -192,7 +192,7 @@ function BacklogInput({
             What are you working on?
           </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm">
-            Paste your backlog, upload a photo of your task board, or both.
+            Paste your backlog, upload a file or photo, or both.
           </p>
         </div>
 
@@ -208,12 +208,12 @@ function BacklogInput({
         <div className="space-y-3">
           <label className="flex items-center gap-2 cursor-pointer text-sm text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors w-fit">
             <Camera size={20} weight="duotone" />
-            <span>Add photo or screenshot (Miro, post-its, whiteboard...)</span>
+            <span>Add photo, screenshot, or file (CSV, Excel, TXT...)</span>
             <input
               type="file"
-              accept="image/*"
+              accept="image/*,.csv,.tsv,.txt,.xlsx,.xls"
               multiple
-              onChange={handleImageUpload}
+              onChange={handleFileUpload}
               className="hidden"
             />
           </label>
