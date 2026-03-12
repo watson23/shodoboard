@@ -7,7 +7,7 @@ import {
   Notebook,
   ArrowRight,
   ShieldCheck,
-  Camera,
+  Paperclip,
   X,
   File as FileIcon,
 } from "@phosphor-icons/react";
@@ -207,8 +207,8 @@ function BacklogInput({
         {/* Image upload */}
         <div className="space-y-3">
           <label className="flex items-center gap-2 cursor-pointer text-sm text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors w-fit">
-            <Camera size={20} weight="duotone" />
-            <span>Add photo, screenshot, or file (CSV, Excel, TXT...)</span>
+            <Paperclip size={20} weight="duotone" />
+            <span>Add photo, screenshot, or file (CSV, TSV, Excel, TXT)</span>
             <input
               type="file"
               accept="image/*,.csv,.tsv,.txt,.xlsx,.xls"
