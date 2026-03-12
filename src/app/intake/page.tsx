@@ -241,6 +241,39 @@ function BacklogInput({
               ))}
             </div>
           )}
+
+          {/* File previews */}
+          {files.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {files.map((f, i) => (
+                <div
+                  key={`file-${i}`}
+                  className="relative group flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2"
+                >
+                  <FileIcon size={16} weight="duotone" className="text-indigo-400 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate max-w-[160px]">
+                      {f.name}
+                    </p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                      {f.preview}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setFiles(files.filter((_, idx) => idx !== i))}
+                    className="ml-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* File error */}
+          {fileError && (
+            <p className="text-xs text-red-500 dark:text-red-400">{fileError}</p>
+          )}
         </div>
 
         <div className="space-y-2">
