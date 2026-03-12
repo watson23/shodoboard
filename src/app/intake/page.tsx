@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import IntakeConversation from "@/components/IntakeConversation";
+import { parseFile, type FileData, FileTooLargeError, UnsupportedFileError } from "@/lib/file-parser";
 import {
   Notebook,
   ArrowRight,
   ShieldCheck,
   Camera,
   X,
+  File as FileIcon,
 } from "@phosphor-icons/react";
 
 type ConsentState = null | boolean;
@@ -117,6 +119,8 @@ function BacklogInput({
   setGoalsInput,
   images,
   setImages,
+  files,
+  setFiles,
   onStart,
 }: {
   backlog: string;
@@ -125,29 +129,47 @@ function BacklogInput({
   setGoalsInput: (v: string) => void;
   images: ImageData[];
   setImages: (v: ImageData[]) => void;
+  files: FileData[];
+  setFiles: (v: FileData[]) => void;
   onStart: () => void;
 }) {
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
+  const [fileError, setFileError] = useState<string | null>(null);
 
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        // Extract base64 data and media type from data URL
-        const match = result.match(/^data:(image\/[^;]+);base64,(.+)$/);
-        if (match) {
-          setImages([...images, {
-            base64: match[2],
-            mediaType: match[1],
-            name: file.name,
-          }]);
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    if (!fileList) return;
+    setFileError(null);
+
+    for (const file of Array.from(fileList)) {
+      if (file.type.startsWith("image/")) {
+        // Existing image handling
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          const match = result.match(/^data:(image\/[^;]+);base64,(.+)$/);
+          if (match) {
+            setImages([...images, {
+              base64: match[2],
+              mediaType: match[1],
+              name: file.name,
+            }]);
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // Data file handling
+        try {
+          const parsed = await parseFile(file);
+          setFiles([...files, parsed]);
+        } catch (err) {
+          if (err instanceof FileTooLargeError || err instanceof UnsupportedFileError) {
+            setFileError(err.message);
+          } else {
+            setFileError(`Failed to parse "${file.name}".`);
+          }
         }
-      };
-      reader.readAsDataURL(file);
-    });
-    // Reset input so same file can be selected again
+      }
+    }
     e.target.value = "";
   };
 
@@ -155,7 +177,7 @@ function BacklogInput({
     setImages(images.filter((_, i) => i !== index));
   };
 
-  const hasContent = backlog.trim() || images.length > 0;
+  const hasContent = backlog.trim() || images.length > 0 || files.length > 0;
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -256,6 +278,7 @@ export default function IntakePage() {
   const [backlog, setBacklog] = useState("");
   const [goalsInput, setGoalsInput] = useState("");
   const [images, setImages] = useState<ImageData[]>([]);
+  const [files, setFiles] = useState<FileData[]>([]);
 
   // Show consent screen first
   if (consent === null) {
@@ -330,6 +353,8 @@ export default function IntakePage() {
       setGoalsInput={setGoalsInput}
       images={images}
       setImages={setImages}
+      files={files}
+      setFiles={setFiles}
       onStart={() => setStarted(true)}
     />
   );
