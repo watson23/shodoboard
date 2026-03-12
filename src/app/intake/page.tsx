@@ -313,6 +313,17 @@ export default function IntakePage() {
   const [images, setImages] = useState<ImageData[]>([]);
   const [files, setFiles] = useState<FileData[]>([]);
 
+  const handleStart = () => {
+    // Merge parsed file content into backlog text
+    if (files.length > 0) {
+      const fileContent = files
+        .map((f) => `\n\n--- Imported from ${f.name} ---\n\n${f.content}`)
+        .join("");
+      setBacklog((prev) => (prev.trim() ? prev + fileContent : fileContent.trimStart()));
+    }
+    setStarted(true);
+  };
+
   // Show consent screen first
   if (consent === null) {
     return (
@@ -388,7 +399,7 @@ export default function IntakePage() {
       setImages={setImages}
       files={files}
       setFiles={setFiles}
-      onStart={() => setStarted(true)}
+      onStart={handleStart}
     />
   );
 }
