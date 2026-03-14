@@ -185,7 +185,7 @@ function BacklogInput({
             What are you working on?
           </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm">
-            Paste your backlog, upload a file or photo, or both.
+            Paste your backlog in any language, upload a file or photo, or both.
           </p>
         </div>
 

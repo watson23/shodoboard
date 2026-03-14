@@ -214,12 +214,12 @@ export default function Home() {
         <Feature
           Icon={Upload}
           title="Bring your backlog"
-          description="Paste your feature list, tasks, or ideas and turn them into a plan."
+          description="Paste your feature list, tasks, or ideas in any language and turn them into a plan."
         />
         <Feature
           Icon={Brain}
           title="AI coaches you"
-          description="Guided conversation transforms features into outcomes. Nudges keep you honest."
+          description="Guided conversation transforms features into outcomes — in your language. Nudges keep you honest."
         />
         <Feature
           Icon={Kanban}
