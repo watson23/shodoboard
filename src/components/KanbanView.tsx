@@ -291,10 +291,10 @@ export default function KanbanView({
                       {!goal.collapsed && (
                         <div className="divide-y divide-gray-100 dark:divide-gray-800/50">
                           {goalOutcomes.map((outcome, outcomeIndex) => (
-                            <div key={outcome.id} id={outcome.id} className="mx-2 mb-2 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-900">
+                            <div key={outcome.id} id={outcome.id} className="mx-2 mb-2 rounded-lg border border-teal-200 dark:border-teal-800/40 overflow-hidden">
                               {/* Outcome header */}
                               <div
-                                className="w-full flex items-center flex-wrap gap-x-2 gap-y-0.5 pl-10 pr-4 py-2 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-850 transition-colors text-left cursor-pointer border-l-[3px] border-l-teal-400 dark:border-l-teal-500"
+                                className="w-full flex items-center flex-wrap gap-x-2 gap-y-0.5 pl-10 pr-4 py-2 bg-teal-50 dark:bg-teal-950/30 hover:bg-teal-100/70 dark:hover:bg-teal-950/50 transition-colors text-left cursor-pointer border-l-[3px] border-l-teal-400 dark:border-l-teal-500"
                                 onClick={() => onOutcomeClick(outcome.id)}
                               >
                                 <button
@@ -323,7 +323,7 @@ export default function KanbanView({
                                   weight="duotone"
                                   className="text-teal-500 dark:text-teal-400 flex-shrink-0"
                                 />
-                                <span className="text-sm text-gray-800 dark:text-gray-200 font-medium">
+                                <span className="text-sm text-gray-800 dark:text-gray-200 font-semibold">
                                   {outcome.statement}
                                 </span>
                                 {outcome.measureOfSuccess && (

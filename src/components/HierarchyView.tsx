@@ -114,12 +114,12 @@ function OutcomeCard({
   return (
     <div
       id={outcome.id}
-      className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 border-l-[3px] ${borderColor} shadow-sm overflow-hidden`}
+      className={`bg-teal-50/50 dark:bg-teal-950/20 rounded-lg border border-teal-200 dark:border-teal-800/40 border-l-[3px] ${borderColor} shadow-sm overflow-hidden`}
     >
       {/* Outcome header */}
       <div
         onClick={onOutcomeClick}
-        className="px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+        className="px-4 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-teal-950/40 transition-colors"
       >
         <div className="flex items-start gap-2">
           <Target size={16} weight="duotone" className="text-indigo-500 dark:text-indigo-400 flex-shrink-0 mt-0.5" />
