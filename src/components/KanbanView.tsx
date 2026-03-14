@@ -291,10 +291,10 @@ export default function KanbanView({
                       {!goal.collapsed && (
                         <div className="divide-y divide-gray-100 dark:divide-gray-800/50">
                           {goalOutcomes.map((outcome, outcomeIndex) => (
-                            <div key={outcome.id} id={outcome.id} className="mx-2 mb-2 rounded-lg border border-teal-200 dark:border-teal-800/40 overflow-hidden">
+                            <div key={outcome.id} id={outcome.id} className="mx-2 mb-2 rounded-lg border border-sky-200 dark:border-sky-800/40 overflow-hidden">
                               {/* Outcome header */}
                               <div
-                                className="w-full flex items-center flex-wrap gap-x-2 gap-y-0.5 pl-10 pr-4 py-2 bg-teal-50 dark:bg-teal-950/30 hover:bg-teal-100/70 dark:hover:bg-teal-950/50 transition-colors text-left cursor-pointer border-l-[3px] border-l-teal-400 dark:border-l-teal-500"
+                                className="w-full flex items-center flex-wrap gap-x-2 gap-y-0.5 pl-10 pr-4 py-2 bg-sky-50 dark:bg-sky-950/30 hover:bg-sky-100/70 dark:hover:bg-sky-950/50 transition-colors text-left cursor-pointer border-l-[3px] border-l-sky-400 dark:border-l-sky-500"
                                 onClick={() => onOutcomeClick(outcome.id)}
                               >
                                 <button
@@ -308,20 +308,20 @@ export default function KanbanView({
                                     <CaretRight
                                       size={12}
                                       weight="bold"
-                                      className="text-teal-400 dark:text-teal-300"
+                                      className="text-sky-400 dark:text-sky-300"
                                     />
                                   ) : (
                                     <CaretDown
                                       size={12}
                                       weight="bold"
-                                      className="text-teal-400 dark:text-teal-300"
+                                      className="text-sky-400 dark:text-sky-300"
                                     />
                                   )}
                                 </button>
                                 <Target
                                   size={14}
                                   weight="duotone"
-                                  className="text-teal-500 dark:text-teal-400 flex-shrink-0"
+                                  className="text-sky-500 dark:text-sky-400 flex-shrink-0"
                                 />
                                 <span className="text-sm text-gray-800 dark:text-gray-200 font-semibold">
                                   {outcome.statement}
