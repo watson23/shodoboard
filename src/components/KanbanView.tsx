@@ -334,7 +334,7 @@ export default function KanbanView({
                                 {!outcome.measureOfSuccess && (
                                   <span className="text-xs text-amber-600 dark:text-amber-400 font-medium ml-2 flex items-center gap-1">
                                     <WarningCircle size={12} weight="fill" />
-                                    Mittari puuttuu!
+                                    Missing measure!
                                   </span>
                                 )}
                                 {getNudgesForOutcome(outcome.id).length > 0 && (

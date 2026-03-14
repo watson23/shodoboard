@@ -33,7 +33,7 @@ function GoalCard({ goal, onClick, nudgeCount }: { goal: BusinessGoal; onClick: 
       )}
       {goal.metrics && goal.metrics.length > 0 && (
         <p className="text-indigo-300 text-xs mt-1.5">
-          Mittarit: {goal.metrics.join(", ")}
+          Metrics: {goal.metrics.join(", ")}
         </p>
       )}
       {(nudgeCount ?? 0) > 0 && (
@@ -139,7 +139,7 @@ function OutcomeCard({
             ) : (
               <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium flex items-center gap-1">
                 <WarningCircle size={12} weight="fill" />
-                Mittari puuttuu!
+                Missing measure!
               </p>
             )}
             {nudgeCount > 0 && (
@@ -335,7 +335,7 @@ export default function HierarchyView({ state, onGoalClick, onOutcomeClick, onIt
           <div className="flex items-center gap-2 mb-3">
             <LinkBreak size={18} weight="duotone" className="text-amber-500" />
             <h3 className="text-sm font-semibold text-amber-700 dark:text-amber-400">
-              ⚠️ Ilman yhteyttä ({unlinkedItems.length} itemiä)
+              ⚠️ Unlinked items ({unlinkedItems.length})
             </h3>
           </div>
           <div className="flex flex-wrap gap-3">
