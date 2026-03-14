@@ -32,11 +32,11 @@ function computeBoardAnalysis(state: BoardState): BoardAnalysis {
 function priorityBadge(priority: FocusItem["priority"]): string {
   switch (priority) {
     case "high":
-      return "🔴 Korkea";
+      return "🔴 High";
     case "medium":
-      return "🟡 Keskitaso";
+      return "🟡 Medium";
     case "low":
-      return "🟢 Matala";
+      return "🟢 Low";
   }
 }
 
@@ -45,22 +45,22 @@ export function generateMarkdownExport(state: BoardState): string {
   const analysis = computeBoardAnalysis(state);
 
   lines.push("# Shodoboard — Pitch Deck");
-  lines.push(`\nLuotu: ${new Date().toLocaleDateString("fi-FI")}\n`);
+  lines.push(`\nCreated: ${new Date().toLocaleDateString("en-US")}\n`);
   lines.push("---\n");
 
-  // ── 1. Yhteenveto (Executive Summary) ──
-  lines.push("## 1. Yhteenveto\n");
+  // ── 1. Summary (Executive Summary) ──
+  lines.push("## 1. Summary\n");
 
   if (analysis.totalItems === 0 && analysis.totalOutcomes === 0) {
-    lines.push("Taulu on tyhjä. Aloita lisäämällä tavoitteita, outcomeja ja työ-itemejiä.\n");
+    lines.push("Board is empty. Start by adding goals, outcomes, and work items.\n");
   } else {
     lines.push(
-      `Backlogissa oli **${analysis.deliveryCount}** toimitusitemiä ja **${analysis.discoveryCount}** discovery-itemiä. ` +
-        `Tunnistimme **${analysis.totalOutcomes}** outcomea joista **${analysis.outcomesWithoutMeasure}**:ltä puuttuu onnistumismittari.`
+      `The backlog contained **${analysis.deliveryCount}** delivery items and **${analysis.discoveryCount}** discovery items. ` +
+        `We identified **${analysis.totalOutcomes}** outcomes, of which **${analysis.outcomesWithoutMeasure}** are missing a measure of success.`
     );
     if (analysis.unlinkedCount > 0) {
       lines.push(
-        ` Lisäksi **${analysis.unlinkedCount}** itemiä ei ole yhdistetty mihinkään outcomeen.`
+        ` Additionally, **${analysis.unlinkedCount}** items are not linked to any outcome.`
       );
     }
     lines.push("");
@@ -68,20 +68,20 @@ export function generateMarkdownExport(state: BoardState): string {
     const discoveryRatio =
       analysis.totalItems > 0 ? analysis.discoveryCount / analysis.totalItems : 0;
     lines.push(
-      `| Mittari | Arvo |`,
+      `| Metric | Value |`,
       `| --- | --- |`,
-      `| Tavoitteita | ${analysis.totalGoals} |`,
-      `| Outcomeja | ${analysis.totalOutcomes} |`,
-      `| Työ-itemejiä yhteensä | ${analysis.totalItems} |`,
-      `| Discovery-osuus | ${Math.round(discoveryRatio * 100)} % |`,
-      `| Mittaamattomat outcomet | ${analysis.outcomesWithoutMeasure} |`,
-      `| Orpoja itemejiä | ${analysis.unlinkedCount} |`,
+      `| Goals | ${analysis.totalGoals} |`,
+      `| Outcomes | ${analysis.totalOutcomes} |`,
+      `| Total work items | ${analysis.totalItems} |`,
+      `| Discovery ratio | ${Math.round(discoveryRatio * 100)} % |`,
+      `| Unmeasured outcomes | ${analysis.outcomesWithoutMeasure} |`,
+      `| Orphan items | ${analysis.unlinkedCount} |`,
       ""
     );
   }
 
-  // ── 2. Keskeiset havainnot (Key Findings) ──
-  lines.push("## 2. Keskeiset havainnot\n");
+  // ── 2. Key Findings ──
+  lines.push("## 2. Key Findings\n");
 
   const findings: { title: string; explanation: string }[] = [];
 
@@ -89,23 +89,23 @@ export function generateMarkdownExport(state: BoardState): string {
     analysis.totalItems > 0 ? analysis.discoveryCount / analysis.totalItems : 1;
   if (discoveryRatio < 0.2 && analysis.totalItems > 0) {
     findings.push({
-      title: "Output-painotteinen backlog",
+      title: "Output-heavy backlog",
       explanation:
-        "Discovery-itemejä on alle 20 % kaikista itemeistä. Tämä viittaa feature factory -malliin, jossa tuotteita rakennetaan ilman riittävää validointia.",
+        "Discovery items make up less than 20% of all items. This suggests a feature factory model where products are built without sufficient validation.",
     });
   }
 
   if (analysis.outcomesWithoutMeasure > 0) {
     findings.push({
-      title: "Mittaamattomia outcomeja",
-      explanation: `${analysis.outcomesWithoutMeasure} outcomelta puuttuu onnistumismittari. Ilman mittaria on mahdotonta todentaa, tuottiko työ halutun tuloksen.`,
+      title: "Unmeasured outcomes",
+      explanation: `${analysis.outcomesWithoutMeasure} outcomes are missing a measure of success. Without a measure, it's impossible to verify whether the work produced the desired result.`,
     });
   }
 
   if (analysis.unlinkedCount > 0) {
     findings.push({
-      title: "Orpoja työ-itemejiä ilman outcome-yhteyttä",
-      explanation: `${analysis.unlinkedCount} itemiä ei ole yhdistetty outcomeen. Nämä itemit eivät kytkeydy mihinkään liiketoimintatavoitteeseen.`,
+      title: "Orphan work items without outcome link",
+      explanation: `${analysis.unlinkedCount} items are not linked to an outcome. These items don't connect to any business goal.`,
     });
   }
 
@@ -123,13 +123,13 @@ export function generateMarkdownExport(state: BoardState): string {
   });
   if (unvalidatedOutcomes.length > 0) {
     findings.push({
-      title: "Validoimatonta työtä",
-      explanation: `${unvalidatedOutcomes.length} outcomessa on itemejiä Building- tai Ready-sarakkeessa ilman yhtään discovery-itemiä. Työtä rakennetaan ilman validointia.`,
+      title: "Unvalidated work",
+      explanation: `${unvalidatedOutcomes.length} outcomes have items in the Building or Ready column without any discovery items. Work is being built without validation.`,
     });
   }
 
   if (findings.length === 0) {
-    lines.push("Merkittäviä havaintoja ei tunnistettu — hyvä työ!\n");
+    lines.push("No significant findings — good work!\n");
   } else {
     for (const finding of findings.slice(0, 3)) {
       lines.push(`- **${finding.title}:** ${finding.explanation}`);
@@ -137,32 +137,32 @@ export function generateMarkdownExport(state: BoardState): string {
     lines.push("");
   }
 
-  // ── 3. Suositellut painopisteet (Recommended Focus Areas) ──
+  // ── 3. Recommended Focus Areas ──
   const sortedFocusItems = [...state.focusItems].sort((a, b) => {
     const priorityOrder = { high: 0, medium: 1, low: 2 };
     return priorityOrder[a.priority] - priorityOrder[b.priority];
   });
 
   if (sortedFocusItems.length > 0) {
-    lines.push("## 3. Suositellut painopisteet\n");
+    lines.push("## 3. Recommended Focus Areas\n");
     for (const fi of sortedFocusItems) {
       lines.push(`- **${priorityBadge(fi.priority)}** — ${fi.title}`);
-      lines.push(`  - Suositeltu toimenpide: ${fi.suggestedAction}`);
+      lines.push(`  - Recommended action: ${fi.suggestedAction}`);
     }
     lines.push("");
   }
 
-  // ── 4. Taulun yleiskatsaus (Board Overview) ──
+  // ── 4. Board Overview ──
   lines.push(
     sortedFocusItems.length > 0
-      ? "## 4. Taulun yleiskatsaus\n"
-      : "## 3. Taulun yleiskatsaus\n"
+      ? "## 4. Board Overview\n"
+      : "## 3. Board Overview\n"
   );
   let sectionOffset = sortedFocusItems.length > 0 ? 0 : -1;
 
   for (const goal of state.goals.sort((a, b) => a.order - b.order)) {
     lines.push(`### ${goal.statement}`);
-    if (goal.timeframe) lines.push(`- **Aikajänne:** ${goal.timeframe}`);
+    if (goal.timeframe) lines.push(`- **Timeframe:** ${goal.timeframe}`);
     lines.push("");
 
     const goalOutcomes = state.outcomes
@@ -173,9 +173,9 @@ export function generateMarkdownExport(state: BoardState): string {
       const measureText =
         outcome.measureOfSuccess && outcome.measureOfSuccess.trim() !== ""
           ? outcome.measureOfSuccess
-          : "⚠️ Mittari puuttuu";
+          : "⚠️ Measure missing";
       lines.push(`#### ${outcome.statement}`);
-      lines.push(`- **Mittari:** ${measureText}`);
+      lines.push(`- **Measure:** ${measureText}`);
 
       const outcomeItems = state.items
         .filter((i) => i.outcomeId === outcome.id)
@@ -195,7 +195,7 @@ export function generateMarkdownExport(state: BoardState): string {
   // Unlinked items
   const unlinkedItems = state.items.filter((i) => i.outcomeId === null);
   if (unlinkedItems.length > 0) {
-    lines.push("### Orpot itemit (ei outcome-yhteyttä)\n");
+    lines.push("### Orphan items (no outcome link)\n");
     for (const item of unlinkedItems) {
       const typeLabel = item.type === "discovery" ? "Discovery" : "Delivery";
       const columnLabel = item.column.charAt(0).toUpperCase() + item.column.slice(1);
@@ -204,7 +204,7 @@ export function generateMarkdownExport(state: BoardState): string {
     lines.push("");
   }
 
-  // ── 5. Avoimet kysymykset (Open Questions) ──
+  // ── 5. Open Questions ──
   const openQuestions: string[] = [];
 
   // Discovery items still in opportunities
@@ -212,7 +212,7 @@ export function generateMarkdownExport(state: BoardState): string {
     (i) => i.type === "discovery" && i.column === "opportunities"
   );
   for (const item of opportunityDiscovery) {
-    openQuestions.push(`Aloita discovery-työ itemille: "${item.title}"`);
+    openQuestions.push(`Start discovery work for item: "${item.title}"`);
   }
 
   // Outcomes without measures
@@ -220,24 +220,24 @@ export function generateMarkdownExport(state: BoardState): string {
     (o) => !o.measureOfSuccess || o.measureOfSuccess.trim() === ""
   );
   for (const outcome of unmeasuredOutcomes) {
-    openQuestions.push(`Määrittele mittari outcomelle: "${outcome.statement}"`);
+    openQuestions.push(`Define a measure for outcome: "${outcome.statement}"`);
   }
 
   // Items without outcome connections
   for (const item of unlinkedItems) {
-    openQuestions.push(`Yhdistä itemi outcomeen tai harkitse poistamista: "${item.title}"`);
+    openQuestions.push(`Link item to an outcome or consider removing: "${item.title}"`);
   }
 
   if (openQuestions.length > 0) {
-    lines.push(`## ${5 + sectionOffset}. Avoimet kysymykset\n`);
+    lines.push(`## ${5 + sectionOffset}. Open Questions\n`);
     for (const q of openQuestions) {
       lines.push(`- [ ] ${q}`);
     }
     lines.push("");
   }
 
-  // ── 6. Seuraavat askeleet (Next Steps) ──
-  lines.push(`## ${6 + sectionOffset}. Seuraavat askeleet\n`);
+  // ── 6. Next Steps ──
+  lines.push(`## ${6 + sectionOffset}. Next Steps\n`);
 
   const highPriorityFocus = sortedFocusItems.filter((fi) => fi.priority === "high");
   if (highPriorityFocus.length > 0) {
@@ -247,21 +247,21 @@ export function generateMarkdownExport(state: BoardState): string {
   } else {
     // Generic advice
     if (analysis.outcomesWithoutMeasure > 0) {
-      lines.push("1. Määrittele mittarit outcomeillle joilta ne puuttuvat");
+      lines.push("1. Define measures for outcomes that are missing them");
     }
     lines.push(
-      "2. Aloita discovery-työ ennen kuin siirrät itemejiä Building-sarakkeeseen"
+      "2. Start discovery work before moving items to the Building column"
     );
     if (analysis.unlinkedCount > 0) {
       lines.push(
-        "3. Yhdistä orpot itemit outcomeihin tai harkitse niiden poistamista"
+        "3. Link orphan items to outcomes or consider removing them"
       );
     }
   }
   lines.push("");
 
   lines.push("---\n");
-  lines.push("*Luotu Shodoboardilla*");
+  lines.push("*Created with Shodoboard*");
 
   return lines.join("\n");
 }
@@ -269,7 +269,7 @@ export function generateMarkdownExport(state: BoardState): string {
 export function openPrintableExport(state: BoardState) {
   const analysis = computeBoardAnalysis(state);
   const productName = state.productName || "Board Export";
-  const date = new Date().toLocaleDateString("fi-FI");
+  const date = new Date().toLocaleDateString("en-US");
   const sortedGoals = [...state.goals].sort((a, b) => a.order - b.order);
   const sortedFocusItems = [...state.focusItems].sort((a, b) => {
     const p = { high: 0, medium: 1, low: 2 };
@@ -283,29 +283,29 @@ export function openPrintableExport(state: BoardState) {
   // Build findings
   const findings: string[] = [];
   if (discoveryRatio < 20 && analysis.totalItems > 0) {
-    findings.push(`<li><strong>Output-painotteinen backlog:</strong> Discovery-itemejä on vain ${discoveryRatio} % — viittaa feature factory -malliin.</li>`);
+    findings.push(`<li><strong>Output-heavy backlog:</strong> Discovery items make up only ${discoveryRatio}% — suggests a feature factory model.</li>`);
   }
   if (analysis.outcomesWithoutMeasure > 0) {
-    findings.push(`<li><strong>Mittaamattomia outcomeja:</strong> ${analysis.outcomesWithoutMeasure} outcomelta puuttuu onnistumismittari.</li>`);
+    findings.push(`<li><strong>Unmeasured outcomes:</strong> ${analysis.outcomesWithoutMeasure} outcomes are missing a measure of success.</li>`);
   }
   if (analysis.unlinkedCount > 0) {
-    findings.push(`<li><strong>Orpoja itemejiä:</strong> ${analysis.unlinkedCount} itemiä ei ole yhdistetty outcomeen.</li>`);
+    findings.push(`<li><strong>Orphan items:</strong> ${analysis.unlinkedCount} items are not linked to an outcome.</li>`);
   }
 
   // Build board overview
   let boardOverview = "";
   for (const goal of sortedGoals) {
     boardOverview += `<h3 style="color:#3730a3;margin:24px 0 8px 0;font-size:16px;">${escapeHtml(goal.statement)}</h3>`;
-    if (goal.timeframe) boardOverview += `<p style="color:#6b7280;font-size:13px;margin:0 0 12px 0;">Aikajänne: ${escapeHtml(goal.timeframe)}</p>`;
+    if (goal.timeframe) boardOverview += `<p style="color:#6b7280;font-size:13px;margin:0 0 12px 0;">Timeframe: ${escapeHtml(goal.timeframe)}</p>`;
 
     const goalOutcomes = state.outcomes.filter((o) => o.goalId === goal.id).sort((a, b) => a.order - b.order);
     for (const outcome of goalOutcomes) {
       const measureText = outcome.measureOfSuccess?.trim()
         ? escapeHtml(outcome.measureOfSuccess)
-        : '<span style="color:#d97706;">⚠️ Mittari puuttuu</span>';
+        : '<span style="color:#d97706;">⚠️ Measure missing</span>';
       boardOverview += `<div style="margin:0 0 16px 16px;padding:12px 16px;border-left:3px solid #6366f1;background:#f8fafc;border-radius:0 8px 8px 0;">`;
       boardOverview += `<p style="font-weight:600;margin:0 0 4px 0;font-size:14px;">${escapeHtml(outcome.statement)}</p>`;
-      boardOverview += `<p style="font-size:12px;color:#6b7280;margin:0 0 8px 0;">Mittari: ${measureText}</p>`;
+      boardOverview += `<p style="font-size:12px;color:#6b7280;margin:0 0 8px 0;">Measure: ${measureText}</p>`;
 
       const outcomeItems = state.items.filter((i) => i.outcomeId === outcome.id).sort((a, b) => a.order - b.order);
       if (outcomeItems.length > 0) {
@@ -325,7 +325,7 @@ export function openPrintableExport(state: BoardState) {
   // Unlinked items
   let unlinkedSection = "";
   if (unlinkedItems.length > 0) {
-    unlinkedSection = `<h3 style="color:#d97706;margin:24px 0 8px 0;font-size:16px;">⚠️ Orpot itemit (ei outcome-yhteyttä)</h3><ul style="font-size:13px;">`;
+    unlinkedSection = `<h3 style="color:#d97706;margin:24px 0 8px 0;font-size:16px;">⚠️ Orphan items (no outcome link)</h3><ul style="font-size:13px;">`;
     for (const item of unlinkedItems) {
       const typeColor = item.type === "discovery" ? "#7c3aed" : "#0d9488";
       const typeLabel = item.type === "discovery" ? "Dis" : "Del";
@@ -337,16 +337,16 @@ export function openPrintableExport(state: BoardState) {
   // Focus items
   let focusSection = "";
   if (sortedFocusItems.length > 0) {
-    focusSection = `<h2 style="color:#1e1b4b;border-bottom:2px solid #e5e7eb;padding-bottom:8px;margin-top:32px;">Suositellut painopisteet</h2><ul style="font-size:14px;">`;
+    focusSection = `<h2 style="color:#1e1b4b;border-bottom:2px solid #e5e7eb;padding-bottom:8px;margin-top:32px;">Recommended Focus Areas</h2><ul style="font-size:14px;">`;
     for (const fi of sortedFocusItems) {
-      const badge = fi.priority === "high" ? "🔴 Korkea" : fi.priority === "medium" ? "🟡 Keskitaso" : "🟢 Matala";
+      const badge = fi.priority === "high" ? "🔴 High" : fi.priority === "medium" ? "🟡 Medium" : "🟢 Low";
       focusSection += `<li style="margin:8px 0;"><strong>${badge}</strong> — ${escapeHtml(fi.title)}<br/><span style="color:#6b7280;font-size:12px;">${escapeHtml(fi.suggestedAction)}</span></li>`;
     }
     focusSection += `</ul>`;
   }
 
   const html = `<!DOCTYPE html>
-<html lang="fi">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <title>Shodoboard — ${escapeHtml(productName)}</title>
@@ -379,27 +379,27 @@ export function openPrintableExport(state: BoardState) {
   </div>
 </div>
 
-<h2>Yhteenveto</h2>
+<h2>Summary</h2>
 <table>
-  <tr><th>Mittari</th><th>Arvo</th></tr>
-  <tr><td>Tavoitteita</td><td>${analysis.totalGoals}</td></tr>
-  <tr><td>Outcomeja</td><td>${analysis.totalOutcomes}</td></tr>
-  <tr><td>Työ-itemejiä</td><td>${analysis.totalItems}</td></tr>
-  <tr><td>Discovery-osuus</td><td>${discoveryRatio} %</td></tr>
-  <tr><td>Mittaamattomat outcomet</td><td>${analysis.outcomesWithoutMeasure}</td></tr>
-  <tr><td>Orpoja itemejiä</td><td>${analysis.unlinkedCount}</td></tr>
+  <tr><th>Metric</th><th>Value</th></tr>
+  <tr><td>Goals</td><td>${analysis.totalGoals}</td></tr>
+  <tr><td>Outcomes</td><td>${analysis.totalOutcomes}</td></tr>
+  <tr><td>Total work items</td><td>${analysis.totalItems}</td></tr>
+  <tr><td>Discovery ratio</td><td>${discoveryRatio} %</td></tr>
+  <tr><td>Unmeasured outcomes</td><td>${analysis.outcomesWithoutMeasure}</td></tr>
+  <tr><td>Orphan items</td><td>${analysis.unlinkedCount}</td></tr>
 </table>
 
-${findings.length > 0 ? `<h2>Keskeiset havainnot</h2><ul>${findings.join("")}</ul>` : ""}
+${findings.length > 0 ? `<h2>Key Findings</h2><ul>${findings.join("")}</ul>` : ""}
 
 ${focusSection}
 
-<h2>Taulun yleiskatsaus</h2>
+<h2>Board Overview</h2>
 ${boardOverview}
 ${unlinkedSection}
 
 <hr style="margin:32px 0;border:none;border-top:2px solid #e5e7eb;" />
-<p style="text-align:center;color:#9ca3af;font-size:12px;">Luotu Shodoboardilla</p>
+<p style="text-align:center;color:#9ca3af;font-size:12px;">Created with Shodoboard</p>
 </body>
 </html>`;
 
