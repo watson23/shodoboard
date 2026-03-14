@@ -31,57 +31,50 @@ function ConsentScreen({
             className="text-indigo-500 dark:text-indigo-400 mx-auto"
           />
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Tietosuoja ja datan käsittely
+            Privacy and data handling
           </h1>
+          <p className="text-gray-400 dark:text-gray-500 text-xs">
+            Tietosuoja ja datan käsittely
+          </p>
         </div>
 
         <div className="space-y-4 text-sm leading-relaxed">
           <div className="space-y-1">
             <p className="text-gray-600 dark:text-gray-300">
-              Shodoboard käyttää Anthropicin Claude-tekoälyä backlogisi
-              analysointiin.
+              Shodoboard uses Anthropic&apos;s Claude AI to analyze your backlog.
             </p>
             <p className="text-gray-400 dark:text-gray-500 text-xs">
-              Shodoboard uses Anthropic&apos;s Claude AI to analyze your backlog.
+              Shodoboard käyttää Anthropicin Claude-tekoälyä backlogisi analysointiin.
             </p>
           </div>
 
           <div>
             <p className="font-medium text-gray-900 dark:text-gray-100 mb-2">
-              Tietojesi käsittely:
-            </p>
-            <ul className="space-y-1.5 list-disc list-inside text-gray-600 dark:text-gray-300">
-              <li>
-                Backlog-tekstisi lähetetään Anthropicin Claude API:lle
-                analysoitavaksi
-              </li>
-              <li>
-                Anthropic ei käytä dataasi malliensa kouluttamiseen
-              </li>
-              <li>Data poistetaan 30 päivän kuluessa</li>
-              <li>
-                Taulusi data tallennetaan Googlen Firebase-tietokantaan
-                (EU-palvelin)
-              </li>
-            </ul>
-            <p className="font-medium text-gray-500 dark:text-gray-400 mt-3 mb-1.5 text-xs">
               How your data is handled:
             </p>
-            <ul className="space-y-1 list-disc list-inside text-gray-400 dark:text-gray-500 text-xs">
+            <ul className="space-y-1.5 list-disc list-inside text-gray-600 dark:text-gray-300">
               <li>Your backlog text is sent to Anthropic&apos;s Claude API for analysis</li>
               <li>Anthropic does not use your data to train its models</li>
               <li>Data is deleted within 30 days</li>
               <li>Your board data is stored in Google Firebase (EU server)</li>
             </ul>
+            <p className="font-medium text-gray-500 dark:text-gray-400 mt-3 mb-1.5 text-xs">
+              Tietojesi käsittely:
+            </p>
+            <ul className="space-y-1 list-disc list-inside text-gray-400 dark:text-gray-500 text-xs">
+              <li>Backlog-tekstisi lähetetään Anthropicin Claude API:lle analysoitavaksi</li>
+              <li>Anthropic ei käytä dataasi malliensa kouluttamiseen</li>
+              <li>Data poistetaan 30 päivän kuluessa</li>
+              <li>Taulusi data tallennetaan Googlen Firebase-tietokantaan (EU-palvelin)</li>
+            </ul>
           </div>
 
           <div className="space-y-1">
             <p className="text-amber-600 dark:text-amber-400 font-medium">
-              Suositus: Älä liitä henkilötietoja, asiakkaiden nimiä tai
-              liikesalaisuuksia.
+              Recommendation: Don&apos;t include personal data, customer names, or trade secrets.
             </p>
             <p className="text-amber-500/70 dark:text-amber-400/60 text-xs">
-              Recommendation: Don&apos;t include personal data, customer names, or trade secrets.
+              Suositus: Älä liitä henkilötietoja, asiakkaiden nimiä tai liikesalaisuuksia.
             </p>
           </div>
         </div>
@@ -91,14 +84,14 @@ function ConsentScreen({
             onClick={onAccept}
             className="w-full flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-xl px-6 py-3 transition-colors"
           >
-            Ymmärrän ja jatkan
+            I understand, continue
             <ArrowRight size={18} weight="bold" />
           </button>
           <button
             onClick={onDecline}
             className="w-full flex items-center justify-center gap-2 border-2 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 font-semibold rounded-xl px-6 py-3 transition-colors"
           >
-            Jatka ilman tekoälyä
+            Continue without AI
           </button>
         </div>
       </div>
