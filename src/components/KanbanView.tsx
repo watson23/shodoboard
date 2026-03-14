@@ -248,7 +248,7 @@ export default function KanbanView({
                           className="text-indigo-500 dark:text-indigo-400 flex-shrink-0"
                         />
                         <span className="font-bold text-sm text-indigo-900 dark:text-indigo-100">
-                          {goal.statement}
+                          <span className="text-indigo-500 dark:text-indigo-400 font-semibold">Goal:</span> {goal.statement}
                         </span>
                         {goal.timeframe && (
                           <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">
@@ -324,7 +324,7 @@ export default function KanbanView({
                                   className="text-sky-500 dark:text-sky-400 flex-shrink-0"
                                 />
                                 <span className="text-sm text-gray-800 dark:text-gray-200 font-semibold">
-                                  {outcome.statement}
+                                  <span className="text-sky-500 dark:text-sky-400 font-semibold">Outcome:</span> {outcome.statement}
                                 </span>
                                 {outcome.measureOfSuccess && (
                                   <span className="text-xs text-gray-400 dark:text-gray-500 ml-2" title={outcome.measureOfSuccess}>

@@ -26,7 +26,7 @@ function GoalCard({ goal, onClick, nudgeCount }: { goal: BusinessGoal; onClick: 
     >
       <div className="flex items-center gap-2">
         <Flag size={20} weight="duotone" className="flex-shrink-0 text-indigo-200" />
-        <h3 className="text-lg font-bold leading-tight">{goal.statement}</h3>
+        <h3 className="text-lg font-bold leading-tight"><span className="text-indigo-200 font-semibold">Goal:</span> {goal.statement}</h3>
       </div>
       {goal.timeframe && (
         <p className="text-indigo-200 text-sm mt-1">{goal.timeframe}</p>
@@ -125,7 +125,7 @@ function OutcomeCard({
           <Target size={16} weight="duotone" className="text-indigo-500 dark:text-indigo-400 flex-shrink-0 mt-0.5" />
           <div className="min-w-0">
             <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-snug">
-              {outcome.statement}
+              <span className="text-sky-500 dark:text-sky-400 font-semibold">Outcome:</span> {outcome.statement}
             </p>
             {outcome.behaviorChange && (
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
