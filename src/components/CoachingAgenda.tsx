@@ -47,17 +47,17 @@ function getNextStatus(current: FocusItemStatus): FocusItemStatus {
 function PriorityBadge({ priority }: { priority: "high" | "medium" | "low" }) {
   const config = {
     high: {
-      label: "Tarke\u00e4",
+      label: "Important",
       classes:
         "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
     },
     medium: {
-      label: "Huomionarvoinen",
+      label: "Noteworthy",
       classes:
         "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
     },
     low: {
-      label: "Hyv\u00e4 tiet\u00e4\u00e4",
+      label: "Good to know",
       classes:
         "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
     },
@@ -88,7 +88,7 @@ function StatusButton({
         className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-colors"
       >
         <CheckCircle size={14} weight="fill" />
-        Valmis
+        Done
       </button>
     );
   }
@@ -100,7 +100,7 @@ function StatusButton({
         className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-colors"
       >
         <Circle size={14} weight="fill" className="text-amber-500 dark:text-amber-400" />
-        Kesken
+        In progress
       </button>
     );
   }
@@ -111,7 +111,7 @@ function StatusButton({
       className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md border border-gray-300 text-gray-600 dark:border-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
     >
       <Circle size={14} weight="regular" />
-      Aloita
+      Start
     </button>
   );
 }
@@ -192,7 +192,7 @@ function FocusItemCard({
           className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors"
         >
           <ChatCircleDots size={14} weight="fill" />
-          Pohdi t&auml;t&auml;
+          Explore this
         </button>
         <StatusButton
           status={item.status}
@@ -292,10 +292,10 @@ export default function CoachingAgenda({
                 />
               </div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                Agendan lataus epäonnistui
+                Failed to load agenda
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 max-w-[240px] mb-4">
-                AI-analyysi ei vastannut ajoissa. Kokeile uudelleen.
+                AI analysis didn't respond in time. Try again.
               </p>
               {onRefresh && (
                 <button
@@ -303,7 +303,7 @@ export default function CoachingAgenda({
                   className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors"
                 >
                   <ArrowsClockwise size={14} weight="bold" />
-                  Yritä uudelleen
+                  Try again
                 </button>
               )}
             </div>
@@ -320,10 +320,10 @@ export default function CoachingAgenda({
                 />
               </div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                Ei fokuskohteita
+                No focus items
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 max-w-[240px]">
-                Lisää tavoitteita ja tuloksia taulullesi, niin valmennus tunnistaa tärkeimmät kehityskohteet.
+                Add goals and outcomes to your board, and coaching will identify the most important areas for improvement.
               </p>
             </div>
           )}
@@ -334,7 +334,7 @@ export default function CoachingAgenda({
               <div className="flex items-center gap-2 mb-2.5">
                 <Star size={14} weight="fill" className="text-amber-500 dark:text-amber-400" />
                 <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                  Vahvuudet
+                  Strengths
                 </span>
               </div>
               <ul className="space-y-1.5">
