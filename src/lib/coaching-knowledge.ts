@@ -16,13 +16,13 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "In Cagan's empowered team model, teams own outcomes, not outputs. But you can't own an outcome if you haven't defined what success looks like. Without a measure, 'done' means 'we shipped it' — which is feature factory thinking.",
     coachingApproach: "Don't just say 'add a metric.' Push the PM to think about what behavior change they expect and how they would observe it in real user data. Challenge vanity metrics.",
     exampleQuestions: [
-      "Jos tämä outcome onnistuu, mitä näet käyttäjädatassa kuukauden päästä?",
-      "Mikä on se konkreettinen käyttäytymismuutos jonka voisit mitata?",
-      "Mistä tiedät erottaa onnistumisen ja epäonnistumisen — mikä on raja-arvo?",
+      "If this outcome succeeds, what would you see in user data a month from now?",
+      "What is the concrete behavior change you could measure?",
+      "How would you distinguish success from failure — what's the threshold?",
     ],
     suggestedActions: [
-      "Määrittele konkreettinen mittari: [käyttäytyminen] [suunta] [tavoitearvo] [aikajänne]",
-      "Kysy tiimiltä: 'Jos tämä onnistuu, mitä näemme datassa?'",
+      "Define a concrete measure: [behavior] [direction] [target value] [timeframe]",
+      "Ask the team: 'If this succeeds, what do we see in the data?'",
     ],
   },
   "output-only-goal": {
@@ -32,13 +32,13 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "Cagan's core distinction: feature teams deliver outputs (features), empowered teams deliver outcomes (results). A goal with only delivery work and zero discovery means the team is executing a roadmap, not solving problems.",
     coachingApproach: "Challenge the assumption that building features equals progress. Ask what they know about the problem vs what they're assuming. Push for at least one discovery item per outcome.",
     exampleQuestions: [
-      "Mitkä oletukset teidän pitää validoida ennen kuin rakennatte tämän?",
-      "Milloin viimeksi puhuitte käyttäjien kanssa tästä ongelmasta?",
-      "Jos tämä feature ei toimi, miten saatte sen selville — ennen vai jälkeen rakentamisen?",
+      "What assumptions do you need to validate before building this?",
+      "When did you last talk to users about this problem?",
+      "If this feature doesn't work, how will you find out — before or after building?",
     ],
     suggestedActions: [
-      "Lisää vähintään yksi discovery-item jokaiselle outcomelle",
-      "Tee 3-5 käyttäjähaastattelua ennen kuin siirrät mitään Ready-sarakkeeseen",
+      "Add at least one discovery item for each outcome",
+      "Conduct 3-5 user interviews before moving anything to the Ready column",
     ],
   },
   "shipped-not-learning": {
@@ -48,13 +48,13 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "Shipping is not success — learning is. Empowered teams measure the impact of what they ship. If you ship and don't check, you're a feature factory with a faster release cycle.",
     coachingApproach: "Don't blame the team — this is the most common anti-pattern. Ask what data they expected to see after launch and whether anyone is looking at it. Suggest moving items to measuring column as a visible signal.",
     exampleQuestions: [
-      "Oletteko katsoneet dataa tämän julkaisun jälkeen?",
-      "Mitä odotitte tapahtuvan käyttäjädatassa — ja tapahtuiko se?",
-      "Kuka tiimistä on vastuussa vaikuttavuuden seurannasta?",
+      "Have you looked at the data since this was released?",
+      "What did you expect to see in user data — and did it happen?",
+      "Who on the team is responsible for tracking impact?",
     ],
     suggestedActions: [
-      "Siirrä shipped-itemit measuring-sarakkeeseen ja määrittele mitä seuraatte",
-      "Varaa 30 min tiimin kanssa: 'Mitä opimme viime julkaisusta?'",
+      "Move shipped items to the measuring column and define what you're tracking",
+      "Schedule 30 min with the team: 'What did we learn from the last release?'",
     ],
   },
   "orphan-work": {
@@ -64,13 +64,13 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "Work without a linked outcome is busy work. In Cagan's model, every initiative should trace back to a business result the team owns. Orphan items signal either a missing outcome or work that shouldn't be prioritized.",
     coachingApproach: "Don't assume orphan work is bad — it might reveal a missing outcome. Ask what problem it solves and whether there's an outcome it naturally belongs to.",
     exampleQuestions: [
-      "Mikä käyttäytyminen muuttuu tämän myötä?",
-      "Liittyykö tämä johonkin outcomeen jota ei vielä ole boardilla?",
-      "Jos et tekisi tätä, mitä tapahtuisi — kuka kärsii?",
+      "What behavior changes as a result of this?",
+      "Does this relate to an outcome that isn't on the board yet?",
+      "If you didn't do this, what would happen — who suffers?",
     ],
     suggestedActions: [
-      "Linkitä olemassa olevaan outcomeen tai luo uusi outcome jolle tämä kuuluu",
-      "Jos tämä on teknistä velkaa, kysy: 'Mikä käyttäjäongelma pahenee jos emme korjaa tätä?'",
+      "Link to an existing outcome or create a new outcome this belongs to",
+      "If this is tech debt, ask: 'What user problem gets worse if we don't fix this?'",
     ],
   },
   "scope-creep": {
@@ -80,13 +80,13 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "Focus is a strategic weapon. Cagan emphasizes that the best teams say no to most things. A goal with 8+ items means the team is trying to do everything.",
     coachingApproach: "Push for ruthless prioritization. Ask which 2-3 items would move the needle most. Suggest splitting the goal or deferring items.",
     exampleQuestions: [
-      "Jos saisitte tehdä vain 3 näistä, mitkä valitsisitte?",
-      "Onko tämä yksi iso tavoite vai oikeasti kaksi erillistä?",
-      "Mikä näistä on must-have vs nice-to-have tämän kvartaalin aikana?",
+      "If you could only do 3 of these, which would you pick?",
+      "Is this one big goal or actually two separate ones?",
+      "Which of these are must-have vs nice-to-have this quarter?",
     ],
     suggestedActions: [
-      "Priorisoi 3 tärkeintä itemiä ja siirrä loput seuraavaan kvartaaliin",
-      "Harkitse tavoitteen jakamista kahdeksi fokusoidummaksi tavoitteeksi",
+      "Prioritize the 3 most important items and defer the rest to next quarter",
+      "Consider splitting the goal into two more focused goals",
     ],
   },
   "stale-discovery": {
@@ -96,13 +96,13 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "Discovery that never starts is discovery theater. Writing 'user interviews' on a card is not the same as talking to users.",
     coachingApproach: "Challenge the team on whether they're doing real discovery or just planning to. Push for small, fast experiments.",
     exampleQuestions: [
-      "Milloin aiotte oikeasti aloittaa tämän — tällä viikolla?",
-      "Mikä on pienin mahdollinen tapa testata tätä oletusta?",
-      "Voitteko puhua 3 käyttäjän kanssa tällä viikolla?",
+      "When are you actually going to start this — this week?",
+      "What's the smallest possible way to test this assumption?",
+      "Can you talk to 3 users this week?",
     ],
     suggestedActions: [
-      "Siirrä discovering-sarakkeeseen ja varaa ensimmäinen haastattelu tällä viikolla",
-      "Muuta laajasta tutkimuksesta pieneksi kokeiluksi: 'Tällä viikolla opin X'",
+      "Move to the discovering column and book the first interview this week",
+      "Convert from broad research to a small experiment: 'This week I'll learn X'",
     ],
   },
   "no-discovery-board-wide": {
@@ -112,13 +112,13 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "A board with zero discovery is the purest feature factory signal. The team is executing a predetermined roadmap with no learning loops.",
     coachingApproach: "Be direct: this board shows a team that ships but doesn't learn. Every outcome should have at least one discovery item.",
     exampleQuestions: [
-      "Mistä tiedätte että rakennatte oikeaa asiaa?",
-      "Mikä on suurin oletus jonka varassa tämä suunnitelma lepää?",
-      "Milloin viimeksi puhuitte käyttäjien kanssa?",
+      "How do you know you're building the right thing?",
+      "What's the biggest assumption this plan rests on?",
+      "When did you last talk to users?",
     ],
     suggestedActions: [
-      "Lisää jokaiselle outcomelle vähintään yksi discovery-item",
-      "Aloita riskein oletus: mikä voisi tehdä koko suunnitelman turhaksi?",
+      "Add at least one discovery item for each outcome",
+      "Start with the riskiest assumption: what could make this entire plan worthless?",
     ],
   },
   "discovery-delivery-ratio": {
@@ -128,11 +128,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "A healthy product team balances building with learning. Below 20% discovery means most effort goes to shipping without validating.",
     coachingApproach: "Show the ratio and challenge the team to add discovery for the riskiest bets.",
     exampleQuestions: [
-      "Mitkä näistä delivery-itemeistä perustuvat validoituun tietoon vs oletuksiin?",
-      "Jos budjetti kiristyisi, mitkä itemit leikkaisitte — ja perustuuko päätös dataan?",
+      "Which of these delivery items are based on validated insights vs assumptions?",
+      "If the budget tightened, which items would you cut — and is that decision based on data?",
     ],
     suggestedActions: [
-      "Tunnista 2-3 riskialtista delivery-itemiä ja lisää niille edeltävä discovery-vaihe",
+      "Identify 2-3 high-risk delivery items and add a preceding discovery phase for each",
     ],
   },
   "bottleneck": {
@@ -142,11 +142,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "Flow matters. A pileup in one column signals a systemic problem.",
     coachingApproach: "Ask what's blocking progress. Is it a capacity issue, a dependency, or a prioritization problem?",
     exampleQuestions: [
-      "Miksi nämä itemit eivät etene — mikä estää?",
-      "Onko tässä riippuvuus toiseen tiimiin tai päätökseen?",
+      "Why aren't these items progressing — what's blocking them?",
+      "Is there a dependency on another team or decision?",
     ],
     suggestedActions: [
-      "Tunnista blokkeri ja nosta se esiin tiimin seuraavassa standup/planningissa",
+      "Identify the blocker and raise it in the team's next standup/planning",
     ],
   },
   "empty-goal": {
@@ -156,11 +156,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "A goal without outcomes is a wish without a plan.",
     coachingApproach: "Ask what specific behavior changes would indicate progress toward this goal.",
     exampleQuestions: [
-      "Mitkä käyttäytymismuutokset kertoisivat että tämä tavoite etenee?",
-      "Miten jaat tämän 1-3 konkreettiseksi outcomeksi?",
+      "What behavior changes would indicate progress toward this goal?",
+      "How would you break this into 1-3 concrete outcomes?",
     ],
     suggestedActions: [
-      "Lisää 1-3 outcomea jotka kuvaavat mitattavia käyttäytymismuutoksia",
+      "Add 1-3 outcomes that describe measurable behavior changes",
     ],
   },
   "measuring-without-measure": {
@@ -170,11 +170,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "Moving cards to 'measuring' without defining what you're measuring is process theater.",
     coachingApproach: "Point out the contradiction: you're in measuring mode but haven't defined the measure.",
     exampleQuestions: [
-      "Mitä konkreettista datapistettä seuraatte juuri nyt?",
-      "Miten erotatte onnistumisen ja epäonnistumisen?",
+      "What specific data point are you tracking right now?",
+      "How do you distinguish success from failure?",
     ],
     suggestedActions: [
-      "Määrittele outcome'n measureOfSuccess ennen kuin jatkat mittaamista",
+      "Define the outcome's measure of success before continuing to measure",
     ],
   },
   "all-early-stage": {
@@ -184,11 +184,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "If all items for an outcome are still in early stages, the outcome isn't progressing.",
     coachingApproach: "Ask if this is intentionally deferred or if something is blocking progress.",
     exampleQuestions: [
-      "Onko tämä tarkoituksella myöhemmäksi vai onko jotain joka estää etenemisen?",
-      "Mikä olisi ensimmäinen askel joka siirtäisi tätä eteenpäin?",
+      "Is this intentionally deferred or is something blocking progress?",
+      "What would be the first step to move this forward?",
     ],
     suggestedActions: [
-      "Valitse yksi item ja siirrä se aktiiviseksi — mikä on pienin ensimmäinen askel?",
+      "Pick one item and make it active — what's the smallest first step?",
     ],
   },
   "unbalanced-outcomes": {
@@ -198,11 +198,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "When one outcome has many items and another has very few, it suggests poor decomposition or unclear priorities.",
     coachingApproach: "Ask whether the large outcome should be split, and whether the small one is truly important.",
     exampleQuestions: [
-      "Onko tämä iso outcome oikeasti yksi vai pitäisikö se jakaa?",
-      "Puuttuuko pieneltä outcomelta itemejä vai onko se jo hyvässä tilassa?",
+      "Is this large outcome actually one thing or should it be split?",
+      "Is the small outcome missing items or is it already in good shape?",
     ],
     suggestedActions: [
-      "Harkitse ison outcome'n jakamista kahdeksi fokusoidummaksi",
+      "Consider splitting the large outcome into two more focused ones",
     ],
   },
   // --- Layer 2 (content quality) playbooks ---
@@ -213,11 +213,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "The single most important distinction in product management. An outcome describes a change in human behavior. An output describes a thing you build.",
     coachingApproach: "Show the PM the difference by reframing their output as a behavior change.",
     exampleQuestions: [
-      "Jos tämä onnistuu täydellisesti, mitä käyttäjät tekevät eri tavalla?",
-      "Tämä kuulostaa featurelta — mikä on sen taustalla oleva käyttäytymismuutos?",
+      "If this succeeds perfectly, what would users do differently?",
+      "This sounds like a feature — what's the behavior change behind it?",
     ],
     suggestedActions: [
-      "Muotoile outcome uudelleen: '[Käyttäjäryhmä] [tekee asian] [mitattavasti eri tavalla]'",
+      "Reframe the outcome: '[User segment] [does something] [measurably differently]'",
     ],
   },
   "weak-measure": {
@@ -227,11 +227,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "Vanity metrics (page views, signups) make you feel good but don't tell you if user behavior changed.",
     coachingApproach: "Challenge the measure: does it actually track the behavior change?",
     exampleQuestions: [
-      "Mittaako tämä oikeasti sitä käyttäytymismuutosta jonka haluatte?",
-      "Voiko tämä mittari nousta ilman että mikään oikeasti paranee?",
+      "Does this actually measure the behavior change you want?",
+      "Could this metric go up without anything actually improving?",
     ],
     suggestedActions: [
-      "Vaihda mittari sellaiseksi joka kertoo suoraan käyttäytymismuutoksesta",
+      "Switch to a metric that directly reflects the behavior change",
     ],
   },
   "measure-mismatch": {
@@ -241,11 +241,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "A measure that doesn't track the stated outcome creates a disconnect between what you're building and what you're measuring.",
     coachingApproach: "Put the outcome statement and measure side by side. Ask if the measure would move even if the outcome isn't achieved.",
     exampleQuestions: [
-      "Jos tämä mittari nousee, tarkoittaako se varmasti että outcome toteutuu?",
-      "Voiko mittari parantua vaikka käyttäjät eivät muuta käytöstään?",
+      "If this metric improves, does it definitely mean the outcome is achieved?",
+      "Could the metric improve even if users don't change their behavior?",
     ],
     suggestedActions: [
-      "Vaihda mittari sellaiseksi joka suoraan heijastaa outcome'n käyttäytymismuutosta",
+      "Switch to a metric that directly reflects the outcome's behavior change",
     ],
   },
   "assumption-risk": {
@@ -255,11 +255,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "Building before validating is the biggest waste in product development.",
     coachingApproach: "Ask what assumptions underlie the work. Push for identifying the riskiest one and testing it.",
     exampleQuestions: [
-      "Mikä on suurin oletus tämän takana — ja onko se testattu?",
-      "Jos tämä oletus on väärä, mitä tapahtuu?",
+      "What's the biggest assumption behind this — and has it been tested?",
+      "If this assumption is wrong, what happens?",
     ],
     suggestedActions: [
-      "Tunnista riskein oletus ja lisää discovery-item sen testaamiseen",
+      "Identify the riskiest assumption and add a discovery item to test it",
     ],
   },
   "goal-framing": {
@@ -269,11 +269,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "A goal framed as an activity ('Launch X') rather than a business result ('Reduce churn to Y%') focuses the team on doing instead of achieving.",
     coachingApproach: "Reframe the goal from 'do X' to 'achieve Y by doing X'.",
     exampleQuestions: [
-      "Mikä on se liiketoimintatulos jonka haluatte — ei se mitä aiotte tehdä?",
-      "Jos 'julkaiseminen' onnistuu mutta tulos ei muutu, onko tavoite saavutettu?",
+      "What's the business result you want — not what you plan to do?",
+      "If the 'launch' succeeds but results don't change, is the goal achieved?",
     ],
     suggestedActions: [
-      "Muotoile tavoite uudelleen: '[Liiketoimintamittari] [suunta] [tavoitearvo] [aikajänne]'",
+      "Reframe the goal: '[Business metric] [direction] [target value] [timeframe]'",
     ],
   },
   "solution-as-problem": {
@@ -283,11 +283,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "Describing a solution without articulating the problem is classic output thinking.",
     coachingApproach: "Ask what problem this solves. If the PM can't articulate it, the item needs discovery.",
     exampleQuestions: [
-      "Mikä ongelma tämä ratkaisee — ja kenelle?",
-      "Mistä tiedätte että tämä on oikea ratkaisu?",
+      "What problem does this solve — and for whom?",
+      "How do you know this is the right solution?",
     ],
     suggestedActions: [
-      "Lisää kuvaukseen ongelma jonka tämä ratkaisee, tai lisää discovery-item validoimaan tarpeen",
+      "Add the problem this solves to the description, or add a discovery item to validate the need",
     ],
   },
   "missing-who": {
@@ -297,11 +297,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "An outcome that says 'users' without specifying which users is too vague to measure or design for.",
     coachingApproach: "Push for specificity. Which users? New vs returning? Power users vs casual?",
     exampleQuestions: [
-      "Ketkä käyttäjät tarkalleen — uudet, palaavat, tietty segmentti?",
-      "Jos sanot 'käyttäjät', tarkoitatko kaikkia vai jotain tiettyä ryhmää?",
+      "Which users exactly — new, returning, a specific segment?",
+      "When you say 'users', do you mean everyone or a specific group?",
     ],
     suggestedActions: [
-      "Tarkenna outcome: '[Tietty käyttäjäryhmä] tekee [konkreettisen asian]'",
+      "Specify the outcome: '[Specific user segment] does [concrete thing]'",
     ],
   },
   "vague-goal": {
@@ -311,11 +311,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "A goal like 'Improve user experience' gives the team no direction.",
     coachingApproach: "Push for specificity: which metric, by how much, by when?",
     exampleQuestions: [
-      "Mikä on se yksi numero josta tiedätte onnistuitteko?",
-      "Jos sanot 'parantaa', kuinka paljon on tarpeeksi?",
+      "What's the one number that tells you whether you succeeded?",
+      "When you say 'improve', how much is enough?",
     ],
     suggestedActions: [
-      "Tarkenna: '[Mittari] [suunta] [tavoitearvo] [aikajänne]'",
+      "Make it specific: '[Metric] [direction] [target value] [timeframe]'",
     ],
   },
   "duplicate-intent": {
@@ -325,11 +325,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "Multiple items or outcomes addressing the same thing create confusion about ownership and priority.",
     coachingApproach: "Point out the overlap and ask if they should be merged or differentiated.",
     exampleQuestions: [
-      "Nämä kaksi tuntuvat käsittelevän samaa asiaa — pitäisikö yhdistää?",
-      "Miten nämä eroavat toisistaan konkreettisesti?",
+      "These two seem to address the same thing — should they be merged?",
+      "How do these differ concretely?",
     ],
     suggestedActions: [
-      "Yhdistä päällekkäiset itemit tai selkeytä miten ne eroavat",
+      "Merge the overlapping items or clarify how they differ",
     ],
   },
   "timeframe-mismatch": {
@@ -339,11 +339,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "When a goal has a short deadline but outcomes require long-term behavior change, expectations don't match reality.",
     coachingApproach: "Flag the mismatch and ask which should be adjusted.",
     exampleQuestions: [
-      "Onko tämä aikajänne realistinen tämän laajuiselle muutokselle?",
-      "Pitäisikö skaalata tavoite tai pidentää aikajännettä?",
+      "Is this timeframe realistic for a change of this scope?",
+      "Should you scale the goal or extend the timeframe?",
     ],
     suggestedActions: [
-      "Tarkista onko aikajänne linjassa outcomes'ien laajuuden kanssa",
+      "Check whether the timeframe aligns with the scope of the outcomes",
     ],
   },
   "discovery-quality": {
@@ -353,11 +353,11 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "A discovery item without a clear hypothesis or learning goal is just a vague 'research' task.",
     coachingApproach: "Push for a hypothesis: what do you expect to learn, and how will it change your decisions?",
     exampleQuestions: [
-      "Mikä on se yksi kysymys johon haluatte vastauksen?",
-      "Miten tämän tulos muuttaa sitä mitä rakennatte?",
+      "What's the one question you want answered?",
+      "How will the result of this change what you build?",
     ],
     suggestedActions: [
-      "Lisää kuvaukseen hypoteesi: 'Uskomme että [X], ja testaamme sen [tavalla]'",
+      "Add a hypothesis to the description: 'We believe [X], and we'll test it by [method]'",
     ],
   },
   "weak-goal-metric": {
@@ -367,13 +367,13 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "A goal metric that doesn't connect to measurable business outcomes is a vanity metric. 'Number of features shipped' or 'user satisfaction' without specifics gives the team no real target to aim for.",
     coachingApproach: "Challenge goal-level metrics: do they measure actual business impact or just activity? Push for leading indicators of real behavior change.",
     exampleQuestions: [
-      "Jos tämä mittari paranee, parantuuko liiketoiminta oikeasti — vai tuntuuko vain siltä?",
-      "Voiko tämä mittari nousta ilman että kenenkään käyttäytyminen muuttuu?",
-      "Mikä on se yksi numero jonka liikkuminen kertoo että olette onnistuneet?",
+      "If this metric improves, does the business actually get better — or does it just feel that way?",
+      "Could this metric rise without anyone's behavior changing?",
+      "What's the one number whose movement tells you that you've succeeded?",
     ],
     suggestedActions: [
-      "Korvaa vanity-mittari käyttäytymispohjaisella mittarilla joka kertoo oikeasta muutoksesta",
-      "Kysy: 'Jos tämä numero nousee, mitä se tarkoittaa asiakkaillemme?'",
+      "Replace the vanity metric with a behavior-based metric that reflects real change",
+      "Ask: 'If this number goes up, what does it mean for our customers?'",
     ],
   },
   "statement-behavior-mismatch": {
@@ -383,13 +383,13 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "An outcome has two key fields: the statement (what we want to achieve) and the behavior change (how user behavior changes). When these tell different stories, the team has unclear intent — they don't know if they're building for a metric or a behavior.",
     coachingApproach: "Put the statement and behaviorChange side by side. If they describe different things, ask which one the team actually cares about.",
     exampleQuestions: [
-      "Outcome'n statement ja käyttäytymismuutos kertovat eri tarinaa — kumpi on oikea?",
-      "Jos käyttäytymismuutos toteutuu, toteutuuko myös outcome'n statement — vai ovatko ne irrallisia?",
-      "Kumpi kuvaa paremmin sitä mitä oikeasti tavoittelette?",
+      "The outcome statement and behavior change tell different stories — which one is right?",
+      "If the behavior change happens, does the outcome statement also come true — or are they disconnected?",
+      "Which one better describes what you're actually going for?",
     ],
     suggestedActions: [
-      "Yhdenmukaista statement ja behaviorChange — niiden pitäisi kertoa sama tarina eri näkökulmista",
-      "Jos ne ovat ristiriidassa, valitse toinen ja muokkaa toista vastaamaan",
+      "Align the statement and behavior change — they should tell the same story from different angles",
+      "If they conflict, pick one and adjust the other to match",
     ],
   },
   "misaligned-item": {
@@ -399,13 +399,13 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "A work item should clearly contribute to its outcome's behavior change. If you can't draw a line from the item to the outcome, it's either under the wrong outcome or solving the wrong problem.",
     coachingApproach: "Ask how this specific item moves the outcome's behavior change forward. If the connection is weak, suggest relinking or reconsidering.",
     exampleQuestions: [
-      "Miten tämä työ muuttaa käyttäjien käyttäytymistä outcome'n kuvaamalla tavalla?",
-      "Jos tämä item valmistuu, liikkuuko outcome'n mittari — miksi?",
-      "Onko tämä oikean outcome'n alla vai pitäisikö se linkittää toiseen?",
+      "How does this work change user behavior in the way the outcome describes?",
+      "If this item is completed, does the outcome's metric move — why?",
+      "Is this under the right outcome or should it be linked to a different one?",
     ],
     suggestedActions: [
-      "Tarkista yhteys: item → outcome'n behaviorChange. Jos ketju on heikko, harkitse uudelleenlinkitystä",
-      "Jos item ei selvästi tue mitään outcomea, harkitse onko se tarpeellinen juuri nyt",
+      "Check the chain: item -> outcome's behavior change. If the link is weak, consider relinking",
+      "If the item doesn't clearly support any outcome, consider whether it's needed right now",
     ],
   },
   "no-metrics-goal": {
@@ -415,13 +415,13 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "A goal without any metrics is a wish. Without defining what success looks like, the team has no way to know if they're making progress or just staying busy.",
     coachingApproach: "Don't just say 'add metrics.' Help the PM think about what would actually change if this goal succeeds. Start from the business impact and work backward to a measurable indicator.",
     exampleQuestions: [
-      "Mistä tiedätte puolen vuoden päästä onnistuitteko vai ette?",
-      "Mikä on se yksi numero jota seuraisitte jos saisitte valita vain yhden?",
-      "Jos joutuisitte raportoimaan johdolle, mitä numeroa näyttäisitte?",
+      "Six months from now, how will you know if you succeeded or not?",
+      "If you could track only one number, what would it be?",
+      "If you had to report to leadership, what number would you show?",
     ],
     suggestedActions: [
-      "Määrittele 1-2 mittaria jotka kertovat oikeasti edistymisestä, ei aktiviteetista",
-      "Aloita nykytilanteen kartoituksesta: mikä on baseline jolle voitte asettaa tavoitetason?",
+      "Define 1-2 metrics that reflect real progress, not activity",
+      "Start by measuring the current state: what's the baseline you can set a target against?",
     ],
   },
   "impact-disconnected-goal": {
@@ -431,13 +431,13 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "A goal that doesn't connect to real business value — revenue, retention, cost, or competitive advantage — is a vanity goal. 'Improve onboarding' sounds specific but doesn't tell you what business impact it creates. The question is always: so what?",
     coachingApproach: "Ask the 'so what' question: if this goal succeeds, what happens to the business? Push for the value chain: goal → user behavior change → business impact. If the PM can't articulate the chain, the goal needs reframing.",
     exampleQuestions: [
-      "Jos tämä tavoite onnistuu, mikä muuttuu liiketoiminnassa — liikevaihto, retentio, kustannukset?",
-      "Kuka hyötyy tästä konkreettisesti — mikä käyttäjäsegmentti tai sidosryhmä?",
-      "Mikä on se arvoketju: tavoite → käyttäytymismuutos → liiketoimintavaikutus?",
+      "If this goal succeeds, what changes in the business — revenue, retention, costs?",
+      "Who benefits from this concretely — which user segment or stakeholder?",
+      "What's the value chain: goal -> behavior change -> business impact?",
     ],
     suggestedActions: [
-      "Lisää tavoitteeseen arvoyhteys: '[Mittari] paranee koska [käyttäjäsegmentti] [muuttaa käyttäytymistään]'",
-      "Kysy: 'Jos tämä onnistuu, mitä kerron johdolle — miksi tämä on tärkeää?'",
+      "Add a value connection to the goal: '[Metric] improves because [user segment] [changes behavior]'",
+      "Ask: 'If this succeeds, what do I tell leadership — why does this matter?'",
     ],
   },
   "goal-missing-baseline": {
@@ -447,13 +447,13 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "A goal with a metric but no baseline is unmeasurable in practice. 'Increase retention to 80%' means nothing if you don't know current retention. Without a baseline, you can't tell if you're moving the needle or standing still.",
     coachingApproach: "Ask what the current state is. If they don't know, that's the first thing to measure — and it's a discovery task, not a delivery task.",
     exampleQuestions: [
-      "Mikä on tämän mittarin nykyinen taso — tiedättekö sen?",
-      "Jos ette tiedä nykytasoa, miten arvioitte onko muutos riittävä?",
-      "Olisiko ensimmäinen askel mitata nykytila ennen kuin asetatte tavoitetason?",
+      "What's the current level of this metric — do you know?",
+      "If you don't know the current level, how will you judge if the change is enough?",
+      "Should the first step be measuring the current state before setting a target?",
     ],
     suggestedActions: [
-      "Lisää tavoitteeseen nykytaso: '[Mittari] nykytaso X → tavoite Y [aikajänne]'",
-      "Jos nykytaso ei ole tiedossa, lisää discovery-item sen mittaamiseen",
+      "Add the current level to the goal: '[Metric] current X -> target Y [timeframe]'",
+      "If the current level is unknown, add a discovery item to measure it",
     ],
   },
   "goal-outcome-alignment": {
@@ -463,13 +463,13 @@ export const PLAYBOOKS: Record<string, AntiPatternPlaybook> = {
     philosophy: "An outcome must ladder up to its parent goal — if the outcome doesn't move the goal's metrics, the team is solving the wrong problem.",
     coachingApproach: "Compare the outcome statement to the parent goal's intent and metrics. Ask whether achieving this outcome would actually move the goal forward.",
     exampleQuestions: [
-      "Jos tämä outcome toteutuu, liikkuvatko tavoitteen mittarit?",
-      "Miten tämä outcome kytkeytyy tavoitteeseen — mikä on ketju?",
-      "Voiko tavoite onnistua ilman tätä outcomea — tai epäonnistua huolimatta siitä?",
+      "If this outcome is achieved, do the goal's metrics move?",
+      "How does this outcome connect to the goal — what's the chain?",
+      "Can the goal succeed without this outcome — or fail despite it?",
     ],
     suggestedActions: [
-      "Tarkista outcome'n ja tavoitteen mittareiden yhteys — kerro miten outcome vaikuttaa tavoitteeseen",
-      "Jos yhteys on heikko, harkitse outcome'n siirtämistä oikeamman tavoitteen alle",
+      "Check the connection between outcome and goal metrics — explain how the outcome affects the goal",
+      "If the connection is weak, consider moving the outcome under a more fitting goal",
     ],
   },
 };
