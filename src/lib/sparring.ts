@@ -30,7 +30,7 @@ export function handleSparringApply(
     }
     const changes = suggestion.changes;
     const newItem = createItem(outcomeId, {
-      title: (changes.title as string) || "Uusi työ",
+      title: (changes.title as string) || "New work",
       description: (changes.description as string) || "",
       type: (changes.type as "discovery" | "delivery") || "discovery",
       order: items.filter(i => i.outcomeId === outcomeId).length,

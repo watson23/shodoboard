@@ -4,7 +4,7 @@ import type { BusinessGoal, Outcome, WorkItem } from "@/types/board";
 export function createGoal(overrides?: Partial<BusinessGoal>): BusinessGoal {
   return {
     id: generateId("goal"),
-    statement: "Uusi tavoite",
+    statement: "New goal",
     timeframe: "",
     metrics: [],
     order: 0,
@@ -17,7 +17,7 @@ export function createOutcome(goalId: string, overrides?: Partial<Outcome>): Out
   return {
     id: generateId("outcome"),
     goalId,
-    statement: "Uusi tulos",
+    statement: "New outcome",
     behaviorChange: "",
     measureOfSuccess: "",
     order: 0,
@@ -30,7 +30,7 @@ export function createItem(outcomeId: string | null, overrides?: Partial<WorkIte
   return {
     id: generateId("item"),
     outcomeId,
-    title: "Uusi työ",
+    title: "New work",
     description: "",
     type: "delivery",
     column: "opportunities",
