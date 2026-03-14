@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link as LinkIcon, ChatCircleDots, Megaphone, PencilSimple, DotsThree, UserCircle, SignIn, GearSix, Crown, CaretDown, Users } from "@phosphor-icons/react";
+import { Sun, Moon, Monitor, Check, Lightning, Export, ListChecks, TreeStructure, Kanban, Link as LinkIcon, ChatCircleDots, Megaphone, PencilSimple, DotsThree, UserCircle, SignIn, GearSix, Crown, CaretDown, Users, Question } from "@phosphor-icons/react";
 import Link from "next/link";
 import FeedbackModal from "./FeedbackModal";
 import ManageBoardModal from "./ManageBoardModal";
@@ -56,9 +56,11 @@ interface BoardHeaderProps {
   viewMode?: "hierarchy" | "kanban";
   onViewModeChange?: (mode: "hierarchy" | "kanban") => void;
   onBoardSpar?: () => void;
+  onToggleHelp?: () => void;
+  helpOpen?: boolean;
 }
 
-export default function BoardHeader({ saveStatus, boardId, productName, ownerId, ownerEmail, accessMode, members, recentVisitors, onOwnershipChange, onAccessChange, onRefreshNudges, nudgesLoading, onToggleAgenda, agendaOpen, viewMode, onViewModeChange, onBoardSpar }: BoardHeaderProps) {
+export default function BoardHeader({ saveStatus, boardId, productName, ownerId, ownerEmail, accessMode, members, recentVisitors, onOwnershipChange, onAccessChange, onRefreshNudges, nudgesLoading, onToggleAgenda, agendaOpen, viewMode, onViewModeChange, onBoardSpar, onToggleHelp, helpOpen }: BoardHeaderProps) {
   const { theme, setTheme } = useTheme();
   const { user, signIn } = useAuth();
   const { state, dispatch } = useBoard();
@@ -432,6 +434,19 @@ export default function BoardHeader({ saveStatus, boardId, productName, ownerId,
         >
           <Megaphone size={16} weight="duotone" />
         </button>
+        {onToggleHelp && (
+          <button
+            onClick={onToggleHelp}
+            className={`p-2 rounded-lg transition-colors ${
+              helpOpen
+                ? "bg-indigo-600 text-white"
+                : "text-indigo-200 hover:text-white hover:bg-indigo-500"
+            }`}
+            title="Guide"
+          >
+            <Question size={16} weight="duotone" />
+          </button>
+        )}
 
         {/* Overflow menu */}
         <div className="relative" ref={menuRef}>

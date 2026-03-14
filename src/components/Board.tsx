@@ -15,6 +15,7 @@ import GoalDetailModal from "./GoalDetailModal";
 import SparringPanel from "./SparringPanel";
 import BoardSparringModal from "./BoardSparringModal";
 import CoachingAgenda from "./CoachingAgenda";
+import HelpPanel from "./HelpPanel";
 import BookmarkToast from "./BookmarkToast";
 import HierarchyView from "./HierarchyView";
 import type { WorkItem, BusinessGoal, Outcome } from "@/types/board";
@@ -76,6 +77,7 @@ export default function Board({ boardId, ownerId, ownerEmail, accessMode, member
     [logEvent]
   );
   const [showAgenda, setShowAgenda] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [showBoardSpar, setShowBoardSpar] = useState(false);
   const [viewMode, setViewMode] = useState<"hierarchy" | "kanban">("hierarchy");
 
@@ -203,6 +205,10 @@ export default function Board({ boardId, ownerId, ownerEmail, accessMode, member
           logEvent("open_board_spar");
           setShowBoardSpar(true);
         }}
+        onToggleHelp={() => {
+          setShowHelp(!showHelp);
+        }}
+        helpOpen={showHelp}
       />
 
       {viewMode === "kanban" ? (
@@ -300,6 +306,11 @@ export default function Board({ boardId, ownerId, ownerEmail, accessMode, member
             />
           );
         })()}
+
+      {/* Help panel */}
+      {showHelp && (
+        <HelpPanel onClose={() => setShowHelp(false)} />
+      )}
 
       {/* Coaching agenda */}
       {showAgenda && (
