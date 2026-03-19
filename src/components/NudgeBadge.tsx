@@ -65,7 +65,7 @@ export default function NudgeBadge({ nudge, onSpar, initialExpanded = false }: N
       onClick={(e) => e.stopPropagation()}
       className="bg-orange-50/60 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800/30 rounded-lg p-2.5 space-y-1.5 animate-slide-in"
     >
-      <div className="flex items-start gap-1.5 text-[11px] text-orange-700 dark:text-orange-300 leading-relaxed">
+      <div className="flex items-start gap-1.5 text-sm text-orange-700 dark:text-orange-300 leading-relaxed">
         <Lightbulb size={12} weight="fill" className="flex-shrink-0 mt-0.5 text-orange-400 dark:text-orange-500" />
         <p className="flex-1">{nudge.message} <span className="font-medium">{nudge.question}</span></p>
         <button
@@ -77,7 +77,7 @@ export default function NudgeBadge({ nudge, onSpar, initialExpanded = false }: N
         </button>
       </div>
       {nudge.suggestedAction && (
-        <p className="text-xs text-orange-600 dark:text-orange-400 mt-1.5 flex items-start gap-1.5">
+        <p className="text-sm text-orange-600 dark:text-orange-400 mt-1.5 flex items-start gap-1.5">
           <ArrowRight size={12} weight="bold" className="flex-shrink-0 mt-0.5" />
           {nudge.suggestedAction}
         </p>
@@ -86,7 +86,7 @@ export default function NudgeBadge({ nudge, onSpar, initialExpanded = false }: N
         {onSpar && (
           <button
             onClick={onSpar}
-            className="flex items-center gap-1 text-[11px] font-medium text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 bg-orange-100 dark:bg-orange-900/40 px-2 py-1 rounded-md transition-colors"
+            className="flex items-center gap-1 text-xs font-medium text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 bg-orange-100 dark:bg-orange-900/40 px-2 py-1 rounded-md transition-colors"
           >
             <ChatCircleDots size={13} weight="duotone" />
             Think about this

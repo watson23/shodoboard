@@ -429,10 +429,11 @@ export default function BoardHeader({ saveStatus, boardId, productName, ownerId,
         )}
         <button
           onClick={() => setFeedbackOpen(true)}
-          className="p-2 rounded-lg text-indigo-200 hover:text-white hover:bg-indigo-500 transition-colors"
+          className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-indigo-200 hover:text-white hover:bg-indigo-500 transition-colors text-xs"
           title="Send feedback"
         >
           <Megaphone size={16} weight="duotone" />
+          <span>Feedback</span>
         </button>
         {onToggleHelp && (
           <button

@@ -70,7 +70,7 @@ export default function BoardSparringModal({ onClose }: BoardSparringModalProps)
         setMessages((prev) => [...prev, aiMessage]);
       } catch (err) {
         console.error("Board spar error:", err);
-        setError("Yhteys epäonnistui. Yritä uudelleen.");
+        setError("Connection failed. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -177,7 +177,7 @@ export default function BoardSparringModal({ onClose }: BoardSparringModalProps)
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-950/50 transition-colors"
               >
                 <ArrowsClockwise size={12} weight="bold" />
-                Yritä uudelleen
+                Try again
               </button>
             </div>
           )}
@@ -195,7 +195,7 @@ export default function BoardSparringModal({ onClose }: BoardSparringModalProps)
               onChange={(e) => setUserInput(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={isLoading}
-              placeholder="Kysy tai kommentoi..."
+              placeholder="Ask or comment..."
               className="flex-1 bg-transparent text-sm text-gray-700 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none disabled:cursor-not-allowed disabled:opacity-50"
             />
             <button

@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   const signals = analyzeBoardSignals(boardState);
   const structuralFacts = formatSignalsForPrompt(signals);
 
-  let contextMessage = `[System context — the PM clicked "Sparraa taulua" to start a coaching conversation about their entire board. They haven't said anything yet. Start by asking what's on their mind, and offer 2-3 observations about their board as conversation starters.]
+  let contextMessage = `[System context — the PM clicked "Spar about your board" to start a coaching conversation about their entire board. They haven't said anything yet. Start by asking what's on their mind, and offer 2-3 observations about their board as conversation starters.]
 
 Current board state:
 ${boardSummary}`;
