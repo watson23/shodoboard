@@ -7,6 +7,7 @@ import { createBoard } from "@/lib/firestore";
 import type { BoardState, Column } from "@/types/board";
 import type { ConversationMessage } from "@/types/intake";
 import { PaperPlaneRight } from "@phosphor-icons/react";
+import { streamChat } from "@/lib/sse-client";
 
 function ShodoLogo({ className = "w-5 h-5" }: { className?: string }) {
   return (
@@ -36,15 +37,28 @@ interface ImageData {
   name: string;
 }
 
+interface PdfData {
+  base64: string;
+  name: string;
+}
+
+interface UploadedFileRef {
+  id: string;
+  kind: "image" | "document";
+}
+
 interface IntakeConversationProps {
   backlog: string;
   goals: string;
   images?: ImageData[];
+  pdfs?: PdfData[];
 }
 
 interface ChatMsg {
   role: "ai" | "user";
   text: string;
+  /** True while the reply is still streaming in. */
+  streaming?: boolean;
 }
 
 interface BoardReadyData {
@@ -143,6 +157,7 @@ export default function IntakeConversation({
   backlog,
   goals,
   images,
+  pdfs,
 }: IntakeConversationProps) {
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -156,6 +171,8 @@ export default function IntakeConversation({
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const hasMounted = useRef(false);
+  // Attachments are uploaded once on the first turn; later turns send the IDs
+  const uploadedFiles = useRef<UploadedFileRef[] | null>(null);
 
   // Auto-scroll to bottom when messages change
   const scrollToBottom = useCallback(() => {
@@ -178,40 +195,69 @@ export default function IntakeConversation({
     }
   }, [isLoading]);
 
-  // Call the intake API
+  // Call the intake API; the reply streams into a placeholder message
   const callIntakeApi = useCallback(
     async (conversationMessages: ChatMsg[]) => {
       setIsLoading(true);
       setError(null);
 
-      try {
-        const res = await fetch("/api/intake", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: conversationMessages,
-            backlog,
-            goals,
-            images: conversationMessages.length === 0 ? images : undefined,
-          }),
+      const isFirstTurn = conversationMessages.length === 0;
+      const history = conversationMessages.map((m) => ({ role: m.role, text: m.text }));
+
+      let placeholderAdded = false;
+      const updateLast = (patch: Partial<ChatMsg>) =>
+        setMessages((prev) => {
+          const next = [...prev];
+          next[next.length - 1] = { ...next[next.length - 1], ...patch };
+          return next;
         });
 
-        if (!res.ok) {
-          throw new Error(`API error: ${res.status}`);
+      try {
+        const done = await streamChat<{
+          type: "done";
+          text: string;
+          boardData?: BoardReadyData | null;
+          files?: UploadedFileRef[];
+        }>(
+          "/api/intake",
+          {
+            messages: history,
+            backlog,
+            goals,
+            // Inline attachments only until they have been uploaded
+            images: isFirstTurn || !uploadedFiles.current ? images : undefined,
+            pdfs: isFirstTurn || !uploadedFiles.current ? pdfs : undefined,
+            files: uploadedFiles.current ?? undefined,
+          },
+          (accumulated) => {
+            if (!placeholderAdded) {
+              placeholderAdded = true;
+              setMessages((prev) => [...prev, { role: "ai", text: accumulated, streaming: true }]);
+            } else {
+              updateLast({ text: accumulated });
+            }
+          }
+        );
+
+        if (done.files && done.files.length > 0) {
+          uploadedFiles.current = done.files;
         }
 
-        const data = await res.json();
+        const finalText = done.text || "I'll create the board for you.";
+        if (placeholderAdded) {
+          updateLast({ text: finalText, streaming: false });
+        } else {
+          setMessages((prev) => [...prev, { role: "ai", text: finalText }]);
+        }
 
-        // Add AI response to messages
-        const aiMessage: ChatMsg = { role: "ai", text: data.text };
-        setMessages((prev) => [...prev, aiMessage]);
-
-        // Check if board data was returned
-        if (data.boardData) {
-          setBoardData(data.boardData);
+        if (done.boardData) {
+          setBoardData(done.boardData);
         }
       } catch (err) {
         console.error("Intake API call failed:", err);
+        if (placeholderAdded) {
+          setMessages((prev) => prev.slice(0, -1));
+        }
         setError(
           "Something went wrong talking to the AI. Please try again."
         );
@@ -219,7 +265,7 @@ export default function IntakeConversation({
         setIsLoading(false);
       }
     },
-    [backlog, goals, images]
+    [backlog, goals, images, pdfs]
   );
 
   // On mount: send initial request with empty messages
@@ -286,11 +332,11 @@ export default function IntakeConversation({
         className="flex-1 overflow-y-auto space-y-4 px-4 py-6"
       >
         {messages.map((msg, i) => (
-          <ChatMessage key={i} role={msg.role} text={msg.text} />
+          <ChatMessage key={i} role={msg.role} text={msg.text} streaming={msg.streaming} />
         ))}
 
-        {/* Typing indicator while waiting for AI */}
-        {isLoading && <TypingIndicator />}
+        {/* Typing indicator until the first streamed token arrives */}
+        {isLoading && !messages[messages.length - 1]?.streaming && <TypingIndicator />}
 
         {/* Error message */}
         {error && (

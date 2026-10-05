@@ -1,12 +1,27 @@
 export const maxDuration = 60;
 
-import Anthropic from "@anthropic-ai/sdk";
-import { getSparSystemPrompt } from "@/lib/prompts";
-import { extractTextFromResponse, extractJsonBlock } from "@/lib/utils";
-import { PLAYBOOKS, formatPlaybooksForPrompt } from "@/lib/coaching-knowledge";
-import { ADMIN_COACHING_INSTRUCTIONS } from "@/lib/coaching-instructions";
-import type { BoardState } from "@/types/board";
 import { NextRequest, NextResponse } from "next/server";
+import {
+  hasApiKey,
+  cachedSystem,
+  todayLine,
+  historyToMessages,
+  sseResponse,
+  COACH_MODEL,
+  EFFORT,
+  FALLBACKS,
+  FALLBACK_BETAS,
+  type ChatTurn,
+  type BoardChangeSuggestion,
+} from "@/lib/ai";
+import { streamChatTurn } from "@/lib/chat-stream";
+import { BOARD_CHANGE_TOOLS, toolUseToSuggestion } from "@/lib/board-tools";
+import { getSparSystemPrompt } from "@/lib/prompts";
+import { PLAYBOOKS, ALL_PLAYBOOKS_TEXT } from "@/lib/coaching-knowledge";
+import { ADMIN_COACHING_INSTRUCTIONS } from "@/lib/coaching-instructions";
+import type { BoardState, Nudge } from "@/types/board";
+
+const SYSTEM = getSparSystemPrompt(ALL_PLAYBOOKS_TEXT, ADMIN_COACHING_INSTRUCTIONS);
 
 function buildSubtreeContext(
   boardState: BoardState | undefined,
@@ -26,15 +41,15 @@ function buildSubtreeContext(
 
     const goalOutcomes = outcomes.filter((o) => o.goalId === goal.id);
     const lines: string[] = [
-      `Goal: "${goal.statement}"${goal.timeframe ? ` (timeframe: ${goal.timeframe})` : ""}`,
+      `Goal [${goal.id}]: "${goal.statement}"${goal.timeframe ? ` (timeframe: ${goal.timeframe})` : ""}`,
       `  Metrics: ${goal.metrics.length > 0 ? goal.metrics.join(", ") : "(none)"}`,
     ];
 
     for (const oc of goalOutcomes) {
-      lines.push(`  Outcome: "${oc.statement}" (measure: ${oc.measureOfSuccess || "(none)"})`);
+      lines.push(`  Outcome [${oc.id}]: "${oc.statement}" (measure: ${oc.measureOfSuccess || "(none)"})`);
       const ocItems = items.filter((i) => i.outcomeId === oc.id);
       for (const item of ocItems) {
-        lines.push(`    Item: "${item.title}" [${item.type}, ${item.column}]`);
+        lines.push(`    Item [${item.id}]: "${item.title}" [${item.type}, ${item.column}]`);
       }
     }
 
@@ -53,7 +68,7 @@ function buildSubtreeContext(
 
     if (parentGoal) {
       lines.push(
-        `Parent goal: "${parentGoal.statement}"${parentGoal.timeframe ? ` (timeframe: ${parentGoal.timeframe})` : ""}`,
+        `Parent goal [${parentGoal.id}]: "${parentGoal.statement}"${parentGoal.timeframe ? ` (timeframe: ${parentGoal.timeframe})` : ""}`,
         `  Metrics: ${parentGoal.metrics.length > 0 ? parentGoal.metrics.join(", ") : "(none)"}`
       );
 
@@ -63,7 +78,7 @@ function buildSubtreeContext(
       if (siblingOutcomes.length > 0) {
         lines.push(`Sibling outcomes under this goal:`);
         for (const sib of siblingOutcomes) {
-          lines.push(`  - "${sib.statement}" (measure: ${sib.measureOfSuccess || "(none)"})`);
+          lines.push(`  - [${sib.id}] "${sib.statement}" (measure: ${sib.measureOfSuccess || "(none)"})`);
         }
       }
     }
@@ -72,7 +87,7 @@ function buildSubtreeContext(
     if (childItems.length > 0) {
       lines.push(`Child items under this outcome:`);
       for (const item of childItems) {
-        lines.push(`  - "${item.title}" [${item.type}, ${item.column}]`);
+        lines.push(`  - [${item.id}] "${item.title}" [${item.type}, ${item.column}]`);
       }
     }
 
@@ -91,7 +106,7 @@ function buildSubtreeContext(
 
     if (parentOutcome) {
       lines.push(
-        `Parent outcome: "${parentOutcome.statement}" (behaviorChange: ${parentOutcome.behaviorChange || "(none)"}, measure: ${parentOutcome.measureOfSuccess || "(none)"})`
+        `Parent outcome [${parentOutcome.id}]: "${parentOutcome.statement}" (behaviorChange: ${parentOutcome.behaviorChange || "(none)"}, measure: ${parentOutcome.measureOfSuccess || "(none)"})`
       );
 
       const parentGoal = parentOutcome.goalId
@@ -99,7 +114,7 @@ function buildSubtreeContext(
         : undefined;
 
       if (parentGoal) {
-        lines.push(`Parent goal: "${parentGoal.statement}"`);
+        lines.push(`Parent goal [${parentGoal.id}]: "${parentGoal.statement}"`);
       }
 
       const siblingItems = items.filter(
@@ -108,7 +123,7 @@ function buildSubtreeContext(
       if (siblingItems.length > 0) {
         lines.push(`Sibling items under this outcome:`);
         for (const sib of siblingItems) {
-          lines.push(`  - "${sib.title}" [${sib.type}, ${sib.column}]`);
+          lines.push(`  - [${sib.id}] "${sib.title}" [${sib.type}, ${sib.column}]`);
         }
       }
     }
@@ -119,32 +134,37 @@ function buildSubtreeContext(
   return "";
 }
 
+interface SparBody {
+  messages: ChatTurn[];
+  nudgeContext: { nudge: Nudge; target: unknown };
+  boardState?: BoardState;
+}
+
 export async function POST(req: NextRequest) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!hasApiKey()) {
     return NextResponse.json({ error: "API not configured" }, { status: 503 });
   }
 
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const { messages, nudgeContext, boardState } = await req.json();
-
-  // Look up the playbook for this nudge's anti-pattern (if available)
-  const antiPattern = nudgeContext.nudge.antiPattern || "";
-  const playbook = PLAYBOOKS[antiPattern];
-  const playbookText = playbook
-    ? formatPlaybooksForPrompt([playbook])
+  const { messages, nudgeContext, boardState } = (await req.json()) as SparBody;
+  if (!nudgeContext?.nudge) {
+    return NextResponse.json({ error: "Missing nudgeContext" }, { status: 400 });
+  }
+  const nudge = nudgeContext.nudge;
+  const playbook = nudge.antiPattern ? PLAYBOOKS[nudge.antiPattern] : undefined;
+  const playbookLine = playbook
+    ? `Relevant playbook: "${playbook.name}" (${playbook.id}).`
     : "No specific playbook for this nudge. Use your general coaching expertise.";
 
-  const subtreeContext = buildSubtreeContext(
-    boardState,
-    nudgeContext.nudge.targetType,
-    nudgeContext.nudge.targetId
-  );
+  const subtreeContext = buildSubtreeContext(boardState, nudge.targetType, nudge.targetId);
 
-  const contextMessage = `[System context — the PM clicked "Think about this" on one of YOUR coaching nudges. They haven't said anything yet. Start by digging into the issue — don't praise them for noticing it, since you generated the nudge.]
+  const contextMessage = `${todayLine()}
 
-Your nudge: "${nudgeContext.nudge.message} ${nudgeContext.nudge.question}"
+[System context — the PM clicked "Think about this" on one of YOUR coaching nudges. They haven't said anything yet. Start by digging into the issue — don't praise them for noticing it, since you generated the nudge.]
 
-The ${nudgeContext.nudge.targetType} it's about:
+Your nudge: "${nudge.message} ${nudge.question}"
+${playbookLine}
+
+The ${nudge.targetType} [${nudge.targetId}] it's about:
 ${JSON.stringify(nudgeContext.target, null, 2)}${
     subtreeContext
       ? `
@@ -154,45 +174,25 @@ ${subtreeContext}`
       : ""
   }`;
 
-  const claudeMessages: { role: "user" | "assistant"; content: string }[] = [];
-  claudeMessages.push({ role: "user", content: contextMessage });
-
-  if (messages && messages.length > 0) {
-    for (const msg of messages) {
-      claudeMessages.push({
-        role: msg.role === "ai" ? "assistant" : "user",
-        content: msg.text,
-      });
-    }
-  }
-
-  try {
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1024,
-      system: getSparSystemPrompt(playbookText, ADMIN_COACHING_INSTRUCTIONS),
-      messages: claudeMessages,
-    });
-
-    const text = extractTextFromResponse(response);
-    const result = extractJsonBlock(text);
-    let suggestion = null;
-    let displayText = text;
-
-    if (result) {
-      const parsed = result.parsed as { type?: string };
-      if (parsed.type === "suggestion") {
-        suggestion = parsed;
-        displayText = result.displayText;
-      }
-    }
-
-    return NextResponse.json({ text: displayText, suggestion });
-  } catch (error) {
-    console.error("Spar API error:", error);
-    return NextResponse.json(
-      { error: "Failed to get coaching response" },
-      { status: 500 }
+  return sseResponse(async (emit) => {
+    const result = await streamChatTurn(
+      {
+        model: COACH_MODEL,
+        max_tokens: 8000,
+        output_config: { effort: EFFORT.spar },
+        betas: [...FALLBACK_BETAS],
+        fallbacks: FALLBACKS,
+        system: cachedSystem(SYSTEM),
+        tools: BOARD_CHANGE_TOOLS,
+        messages: [{ role: "user", content: contextMessage }, ...historyToMessages(messages ?? [])],
+      },
+      emit
     );
-  }
+
+    const suggestions = result.toolUses
+      .map((t) => toolUseToSuggestion(t.name, t.input as Record<string, unknown>))
+      .filter((s): s is BoardChangeSuggestion => s !== null);
+
+    emit({ type: "done", text: result.text, suggestions });
+  });
 }

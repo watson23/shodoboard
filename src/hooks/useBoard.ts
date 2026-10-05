@@ -36,6 +36,7 @@ export type BoardAction =
   | { type: "SET_NUDGES"; nudges: Nudge[] }
   | { type: "ADD_NUDGE"; nudge: Nudge }
   | { type: "SET_FOCUS_ITEMS"; focusItems: FocusItem[] }
+  | { type: "SET_COACHING"; nudges: Nudge[]; focusItems: FocusItem[]; coachedHash: string }
   | { type: "UPDATE_FOCUS_ITEM"; focusItemId: string; updates: Partial<FocusItem> }
   | { type: "ADD_GOAL"; goal: BusinessGoal }
   | { type: "ADD_OUTCOME"; outcome: Outcome }
@@ -138,6 +139,14 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
 
     case "SET_FOCUS_ITEMS":
       return { ...state, focusItems: action.focusItems };
+
+    case "SET_COACHING":
+      return {
+        ...state,
+        nudges: action.nudges,
+        focusItems: action.focusItems,
+        coachedHash: action.coachedHash,
+      };
 
     case "UPDATE_FOCUS_ITEM": {
       const focusItems = state.focusItems.map((fi) =>

@@ -86,4 +86,6 @@ export interface BoardState {
   nudges: Nudge[];
   discoveryPrompts: DiscoveryPrompt[];
   focusItems: FocusItem[];
+  /** Fingerprint of the board content the current nudges/agenda were generated from. */
+  coachedHash?: string;
 }

@@ -158,7 +158,7 @@ export function generateMarkdownExport(state: BoardState): string {
       ? "## 4. Board Overview\n"
       : "## 3. Board Overview\n"
   );
-  let sectionOffset = sortedFocusItems.length > 0 ? 0 : -1;
+  const sectionOffset = sortedFocusItems.length > 0 ? 0 : -1;
 
   for (const goal of state.goals.sort((a, b) => a.order - b.order)) {
     lines.push(`### ${goal.statement}`);

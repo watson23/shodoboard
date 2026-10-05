@@ -86,6 +86,7 @@ export default function Board({ boardId, ownerId, ownerEmail, accessMode, member
     focusLoading,
     focusError,
     boardStrengths,
+    generateCoaching,
     generateNudges,
     generateFocusItems,
     handleFocusItemClick,
@@ -93,20 +94,14 @@ export default function Board({ boardId, ownerId, ownerEmail, accessMode, member
     handleFocusStatusChange,
   } = useBoardActions();
 
-  // Generate nudges and focus items on first load
+  // Coach the board on first load — only if its content changed since the
+  // last coaching pass (see coachingHash), so reopening a board is instant.
   useEffect(() => {
-    if (state.nudges.length === 0) {
-      generateNudges();
-    }
-    if (state.focusItems.length === 0) {
-      console.log("[Board] Auto-generating focus items...");
-      generateFocusItems().then((loaded) => {
-        console.log("[Board] Focus items loaded:", loaded);
-        if (loaded) setShowAgenda(true);
-      }).catch((err) => {
-        console.error("[Board] Focus generation failed:", err);
-      });
-    }
+    generateCoaching().then((loaded) => {
+      if (loaded) setShowAgenda(true);
+    }).catch((err) => {
+      console.error("[Board] Coaching failed:", err);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -354,8 +349,8 @@ export default function Board({ boardId, ownerId, ownerEmail, accessMode, member
             boardState={state}
             onClose={() => setSparringNudgeId(null)}
             onApply={(suggestion) => {
+              // Keep the panel open: a reply may carry several proposals
               handleSparringApply(suggestion, nudge, items, dispatch);
-              setSparringNudgeId(null);
             }}
           />
         );
@@ -363,7 +358,10 @@ export default function Board({ boardId, ownerId, ownerEmail, accessMode, member
 
       {/* Board-level sparring modal */}
       {showBoardSpar && (
-        <BoardSparringModal onClose={() => setShowBoardSpar(false)} />
+        <BoardSparringModal
+          onClose={() => setShowBoardSpar(false)}
+          onApply={(suggestion) => handleSparringApply(suggestion, null, items, dispatch)}
+        />
       )}
 
       {boardId && (

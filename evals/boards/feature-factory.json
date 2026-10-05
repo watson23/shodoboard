@@ -1,0 +1,32 @@
+{
+  "name": "feature-factory",
+  "description": "Classic feature factory: a theme instead of a goal, outcomes that are outputs, zero discovery, no measures.",
+  "language": "en",
+  "expectations": [
+    "Flags goal-1 ('Growth') as a theme or vague goal rather than a measurable target (vague-goal, goal-framing or impact-disconnected-goal)",
+    "Flags outcome-1 ('Launch the new analytics dashboard') as an output, not a behavior change (output-not-outcome)",
+    "Flags that there is no discovery work anywhere on the board (no-discovery-board-wide or output-only-goal)",
+    "Flags that outcomes have no measure of success (unmeasured-outcome)",
+    "Does not claim the team has too many items or that the timeline is unrealistic"
+  ],
+  "boardState": {
+    "productName": "Insights SaaS",
+    "goals": [
+      { "id": "goal-1", "statement": "Growth", "timeframe": "2027", "metrics": [], "order": 0, "collapsed": false }
+    ],
+    "outcomes": [
+      { "id": "outcome-1", "goalId": "goal-1", "statement": "Launch the new analytics dashboard", "behaviorChange": "", "measureOfSuccess": "", "order": 0, "collapsed": false },
+      { "id": "outcome-2", "goalId": "goal-1", "statement": "Ship the Slack integration", "behaviorChange": "", "measureOfSuccess": "", "order": 1, "collapsed": false }
+    ],
+    "items": [
+      { "id": "item-1", "outcomeId": "outcome-1", "title": "Build dashboard widgets", "description": "", "type": "delivery", "column": "building", "order": 0 },
+      { "id": "item-2", "outcomeId": "outcome-1", "title": "Add CSV export to dashboard", "description": "", "type": "delivery", "column": "ready", "order": 1 },
+      { "id": "item-3", "outcomeId": "outcome-2", "title": "Slack OAuth flow", "description": "", "type": "delivery", "column": "building", "order": 0 },
+      { "id": "item-4", "outcomeId": "outcome-2", "title": "Slack message templates", "description": "", "type": "delivery", "column": "opportunities", "order": 1 },
+      { "id": "item-5", "outcomeId": null, "title": "Migrate to Postgres 16", "description": "", "type": "delivery", "column": "opportunities", "order": 0 }
+    ],
+    "nudges": [],
+    "discoveryPrompts": [],
+    "focusItems": []
+  }
+}

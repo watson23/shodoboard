@@ -1,7 +1,7 @@
 "use client";
 
 import { Flag, Target, LinkBreak, WarningCircle, Plus, Lightbulb, CaretUp, CaretDown, CaretLeft, CaretRight } from "@phosphor-icons/react";
-import type { BoardState, BusinessGoal, Outcome, WorkItem, Nudge, FocusItem } from "@/types/board";
+import type { BoardState, BusinessGoal, Outcome, WorkItem, FocusItem } from "@/types/board";
 import TypeBadge from "./TypeBadge";
 import TreeConnectors from "./TreeConnectors";
 

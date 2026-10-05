@@ -1,0 +1,32 @@
+{
+  "name": "healthy",
+  "description": "A well-formed board. The coach should recognise strengths and avoid inventing problems.",
+  "language": "en",
+  "expectations": [
+    "Includes at least two genuine strengths (boardStrengths or nudges with antiPattern 'strength')",
+    "Does not flag outcome-1 or outcome-2 as unmeasured or as outputs",
+    "Does not claim goal-1 lacks a baseline or target (it has both)",
+    "Any issue raised is grounded in the board text (for example that item-4 'Build referral landing page' is in 'ready' with no discovery item under outcome-2 is acceptable to raise)",
+    "Produces at most 3 focus items"
+  ],
+  "boardState": {
+    "productName": "Meal planning app",
+    "goals": [
+      { "id": "goal-1", "statement": "Increase 30-day retention of new subscribers from 42% to 55% by end of Q2 2027", "timeframe": "Q2 2027", "metrics": ["30-day retention of new subscribers (baseline 42%)"], "order": 0, "collapsed": false }
+    ],
+    "outcomes": [
+      { "id": "outcome-1", "goalId": "goal-1", "statement": "New subscribers plan a full week of meals in their first session", "behaviorChange": "Instead of adding one or two recipes and leaving, new users complete a 7-day plan", "measureOfSuccess": "Share of new subscribers with a 7-day plan after session 1 rises from 18% to 40%", "order": 0, "collapsed": false },
+      { "id": "outcome-2", "goalId": "goal-1", "statement": "Subscribers invite a household member within the first month", "behaviorChange": "Households plan together instead of one person doing it alone", "measureOfSuccess": "Share of subscribers with a second household member after 30 days rises from 9% to 25%", "order": 1, "collapsed": false }
+    ],
+    "items": [
+      { "id": "item-1", "outcomeId": "outcome-1", "title": "Interview 8 users who abandoned onboarding", "description": "Understand why users stop after adding 1-2 recipes", "type": "discovery", "column": "discovering", "order": 0 },
+      { "id": "item-2", "outcomeId": "outcome-1", "title": "Prototype 'plan my week' one-tap flow", "description": "", "type": "discovery", "column": "discovering", "order": 1 },
+      { "id": "item-3", "outcomeId": "outcome-1", "title": "Ship guided first-week planner", "description": "", "type": "delivery", "column": "ready", "order": 2 },
+      { "id": "item-4", "outcomeId": "outcome-2", "title": "Build referral landing page", "description": "", "type": "delivery", "column": "ready", "order": 0 },
+      { "id": "item-5", "outcomeId": "outcome-2", "title": "Survey: who else cooks in your household?", "description": "", "type": "discovery", "column": "measuring", "order": 1 }
+    ],
+    "nudges": [],
+    "discoveryPrompts": [],
+    "focusItems": []
+  }
+}

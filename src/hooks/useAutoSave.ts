@@ -12,8 +12,11 @@ export function useAutoSave(boardId: string | null, state: BoardState) {
   const isFirstRender = useRef(true);
   const latestState = useRef(state);
 
-  // Always keep ref in sync with latest state
-  latestState.current = state;
+  // Always keep ref in sync with latest state (effects run in declaration order,
+  // so this is updated before the save effect below reads it)
+  useEffect(() => {
+    latestState.current = state;
+  }, [state]);
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -24,6 +27,7 @@ export function useAutoSave(boardId: string | null, state: BoardState) {
 
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- status mirrors a pending external save
     setSaveStatus("saving");
     timeoutRef.current = setTimeout(async () => {
       try {

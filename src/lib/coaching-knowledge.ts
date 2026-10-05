@@ -489,3 +489,10 @@ export function formatPlaybooksForPrompt(playbooks: AntiPatternPlaybook[]): stri
     )
     .join("\n\n");
 }
+
+/**
+ * Every playbook, formatted once. The coaching prompts embed this full text so
+ * the system prompt is byte-identical across requests and prompt caching hits
+ * regardless of which signals a particular board triggers.
+ */
+export const ALL_PLAYBOOKS_TEXT = formatPlaybooksForPrompt(Object.values(PLAYBOOKS));

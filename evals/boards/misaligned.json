@@ -1,0 +1,30 @@
+{
+  "name": "misaligned",
+  "description": "Outcomes that do not move their goal, an outcome whose statement and behavior change disagree, and duplicate intent.",
+  "language": "en",
+  "expectations": [
+    "Flags that outcome-2 ('Engineers deploy twice as often') does not clearly move goal-1 (a revenue goal) (goal-outcome-alignment or misaligned-item)",
+    "Flags that outcome-1's statement ('Customers renew') and behaviorChange ('Customers open the app more') tell different stories (statement-behavior-mismatch)",
+    "Flags that item-2 and item-4 duplicate the same intent (duplicate-intent)",
+    "Nudges name entities by their statement or title, never by raw IDs like 'outcome-2'"
+  ],
+  "boardState": {
+    "productName": "B2B invoicing",
+    "goals": [
+      { "id": "goal-1", "statement": "Grow annual recurring revenue from 2.0M to 2.6M EUR by Dec 2027", "timeframe": "Dec 2027", "metrics": ["ARR (baseline 2.0M EUR)"], "order": 0, "collapsed": false }
+    ],
+    "outcomes": [
+      { "id": "outcome-1", "goalId": "goal-1", "statement": "Customers renew their annual plan", "behaviorChange": "Customers open the app more often", "measureOfSuccess": "Annual renewal rate rises from 71% to 80%", "order": 0, "collapsed": false },
+      { "id": "outcome-2", "goalId": "goal-1", "statement": "Engineers deploy twice as often", "behaviorChange": "Smaller, more frequent releases", "measureOfSuccess": "Deploys per week from 3 to 6", "order": 1, "collapsed": false }
+    ],
+    "items": [
+      { "id": "item-1", "outcomeId": "outcome-1", "title": "Interview 6 churned accounts", "description": "", "type": "discovery", "column": "discovering", "order": 0 },
+      { "id": "item-2", "outcomeId": "outcome-1", "title": "Renewal reminder emails 30 days before expiry", "description": "", "type": "delivery", "column": "ready", "order": 1 },
+      { "id": "item-3", "outcomeId": "outcome-2", "title": "Set up CI pipeline caching", "description": "", "type": "delivery", "column": "building", "order": 0 },
+      { "id": "item-4", "outcomeId": null, "title": "Email customers a month before their plan ends", "description": "", "type": "delivery", "column": "opportunities", "order": 0 }
+    ],
+    "nudges": [],
+    "discoveryPrompts": [],
+    "focusItems": []
+  }
+}
