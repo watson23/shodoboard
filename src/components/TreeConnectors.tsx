@@ -72,6 +72,7 @@ export default function TreeConnectors({ goalId, outcomeIds }: TreeConnectorsPro
   }, [goalId, outcomeIds]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- paths depend on DOM layout
     computePaths();
 
     // Recompute on resize

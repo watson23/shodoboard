@@ -295,7 +295,7 @@ export default function CoachingAgenda({
                 Failed to load agenda
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 max-w-[240px] mb-4">
-                AI analysis didn't respond in time. Try again.
+                AI analysis didn&apos;t respond in time. Try again.
               </p>
               {onRefresh && (
                 <button

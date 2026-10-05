@@ -97,6 +97,7 @@ export default function Home() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reset derived state on sign-out
       setBoards([]);
       setLoadingBoards(false);
       return;

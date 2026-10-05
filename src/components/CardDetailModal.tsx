@@ -5,7 +5,7 @@ import { Plus, X as XIcon, Check, SpinnerGap } from "@phosphor-icons/react";
 import { generateId } from "@/lib/utils";
 import { useBoard } from "@/hooks/useBoard";
 import { useBoardActions } from "@/hooks/useBoardActions";
-import type { WorkItem, Nudge, DiscoveryPrompt, Column, ChecklistItem } from "@/types/board";
+import type { WorkItem, Nudge, DiscoveryPrompt, Column } from "@/types/board";
 import NudgeBadge from "./NudgeBadge";
 import DiscoveryPrompts from "./DiscoveryPrompts";
 import SlidePanel from "./SlidePanel";

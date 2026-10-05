@@ -52,6 +52,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       stored && ["light", "dark", "system"].includes(stored)
         ? stored
         : "system";
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from localStorage
     setThemeState(initial);
 
     const resolved = initial === "system" ? getSystemTheme() : initial;

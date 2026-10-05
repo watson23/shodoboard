@@ -219,6 +219,7 @@ function BacklogInput({
                   key={i}
                   className="relative group rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- local data URL preview */}
                   <img
                     src={`data:${img.mediaType};base64,${img.base64}`}
                     alt={img.name}
