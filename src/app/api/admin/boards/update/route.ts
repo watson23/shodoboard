@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdmin } from "@/lib/auth-server";
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { updateBoardCohort } from "@/lib/firestore-admin";
 
 export async function PATCH(request: Request) {
   try {
@@ -21,8 +20,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "cohort required" }, { status: 400 });
     }
 
-    const boardRef = doc(db, "boards", boardId);
-    await updateDoc(boardRef, { cohort: cohort.trim() });
+    await updateBoardCohort(boardId, cohort.trim());
 
     return NextResponse.json({ ok: true });
   } catch (err) {

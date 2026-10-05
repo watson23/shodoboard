@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { addFeedback } from "@/lib/firestore-admin";
 
 export async function POST(request: Request) {
   try {
@@ -10,13 +9,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Message required" }, { status: 400 });
     }
 
-    const feedbackRef = collection(db, "feedback");
-    await addDoc(feedbackRef, {
+    await addFeedback({
       boardId: boardId || "unknown",
       productName: productName || "Unknown",
       category: category || "idea",
       message: message.trim(),
-      createdAt: serverTimestamp(),
       userAgent: request.headers.get("user-agent") || "unknown",
     });
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdmin } from "@/lib/auth-server";
-import { getAllBoardsActivity } from "@/lib/firestore";
+import { getAllBoardsActivity } from "@/lib/firestore-admin";
 
 export const maxDuration = 60;
 

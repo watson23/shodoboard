@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdmin } from "@/lib/auth-server";
-import { getAppConfig, updateAppConfig } from "@/lib/firestore";
+import { getAppConfig, updateAppConfig } from "@/lib/firestore-admin";
 
 export async function GET(request: Request) {
   try {
