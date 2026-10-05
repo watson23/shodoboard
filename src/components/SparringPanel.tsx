@@ -7,29 +7,26 @@ import {
   PaperPlaneRight,
   Lightbulb,
   ArrowsClockwise,
-  CheckCircle,
   SpinnerGap,
 } from "@phosphor-icons/react";
 import type { Nudge, BusinessGoal, Outcome, WorkItem, BoardState } from "@/types/board";
-
-interface Suggestion {
-  type: "suggestion";
-  action: string;
-  targetId: string;
-  changes: Record<string, unknown>;
-}
+import type { BoardChangeSuggestion, ChatTurn } from "@/lib/ai";
+import { streamChat } from "@/lib/sse-client";
+import SuggestionCard from "./SuggestionCard";
 
 interface SparringPanelProps {
   nudge: Nudge;
   target: BusinessGoal | Outcome | WorkItem;
   boardState: BoardState;
   onClose: () => void;
-  onApply?: (suggestion: Suggestion) => void;
+  onApply?: (suggestion: BoardChangeSuggestion) => void;
 }
 
-interface Message {
-  role: "ai" | "user";
-  text: string;
+interface Message extends ChatTurn {
+  /** Indices of suggestions the PM applied from this message. */
+  applied?: number[];
+  /** True while the reply is still streaming in. */
+  streaming?: boolean;
 }
 
 const MAX_TURNS = 4;
@@ -45,7 +42,6 @@ export default function SparringPanel({
   const [isLoading, setIsLoading] = useState(false);
   const [userInput, setUserInput] = useState("");
   const [turnCount, setTurnCount] = useState(0);
-  const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -59,41 +55,65 @@ export default function SparringPanel({
     scrollToBottom();
   }, [messages, isLoading, scrollToBottom]);
 
-  // Send message to the API
+  // Send the conversation so far; the reply streams into a placeholder message
   const sendToApi = useCallback(
-    async (conversationMessages: Message[]) => {
+    async (conversation: Message[]) => {
       setIsLoading(true);
       setError(null);
 
+      const history: ChatTurn[] = conversation.map((m) => ({
+        role: m.role,
+        text: m.text,
+        suggestions: m.suggestions,
+        appliedSuggestions: m.appliedSuggestions,
+      }));
+
+      let placeholderAdded = false;
+      const updateLast = (patch: Partial<Message>) =>
+        setMessages((prev) => {
+          const next = [...prev];
+          next[next.length - 1] = { ...next[next.length - 1], ...patch };
+          return next;
+        });
+
       try {
-        const res = await fetch("/api/spar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: conversationMessages,
+        const done = await streamChat<{ type: "done"; text: string; suggestions?: BoardChangeSuggestion[] }>(
+          "/api/spar",
+          {
+            messages: history,
             nudgeContext: { nudge, target },
             boardState: {
               goals: boardState.goals,
               outcomes: boardState.outcomes,
               items: boardState.items,
             },
-          }),
-        });
+          },
+          (accumulated) => {
+            if (!placeholderAdded) {
+              placeholderAdded = true;
+              setMessages((prev) => [...prev, { role: "ai", text: accumulated, streaming: true }]);
+            } else {
+              updateLast({ text: accumulated });
+            }
+          }
+        );
 
-        if (!res.ok) {
-          throw new Error(`API error: ${res.status}`);
-        }
-
-        const data = await res.json();
-
-        const aiMessage: Message = { role: "ai", text: data.text };
-        setMessages((prev) => [...prev, aiMessage]);
-
-        if (data.suggestion) {
-          setSuggestion(data.suggestion);
+        const finalMessage: Message = {
+          role: "ai",
+          text: done.text,
+          suggestions: done.suggestions && done.suggestions.length > 0 ? done.suggestions : undefined,
+          applied: [],
+        };
+        if (placeholderAdded) {
+          updateLast({ ...finalMessage, streaming: false });
+        } else {
+          setMessages((prev) => [...prev, finalMessage]);
         }
       } catch (err) {
         console.error("Spar error:", err);
+        if (placeholderAdded) {
+          setMessages((prev) => prev.slice(0, -1));
+        }
         setError("Failed to get coaching response. Try again.");
       } finally {
         setIsLoading(false);
@@ -113,7 +133,13 @@ export default function SparringPanel({
     const text = userInput.trim();
     if (!text || isLoading || turnCount >= MAX_TURNS) return;
 
-    const userMessage: Message = { role: "user", text };
+    // Tell the coach whether its last proposal was applied
+    const lastAi = [...messages].reverse().find((m) => m.role === "ai");
+    const appliedSuggestions = lastAi?.suggestions
+      ? (lastAi.applied?.length ?? 0) > 0
+      : undefined;
+
+    const userMessage: Message = { role: "user", text, appliedSuggestions };
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setUserInput("");
@@ -134,10 +160,15 @@ export default function SparringPanel({
     sendToApi(messages);
   };
 
-  const handleApply = () => {
-    if (suggestion && onApply) {
-      onApply(suggestion);
-    }
+  const handleApply = (messageIndex: number, suggestionIndex: number) => {
+    const suggestion = messages[messageIndex]?.suggestions?.[suggestionIndex];
+    if (!suggestion || !onApply) return;
+    onApply(suggestion);
+    setMessages((prev) =>
+      prev.map((m, i) =>
+        i === messageIndex ? { ...m, applied: [...(m.applied ?? []), suggestionIndex] } : m
+      )
+    );
   };
 
   const inputDisabled = isLoading || turnCount >= MAX_TURNS;
@@ -185,11 +216,15 @@ export default function SparringPanel({
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
           {messages.map((msg, i) => (
-            <MessageBubble key={i} message={msg} />
+            <MessageBubble
+              key={i}
+              message={msg}
+              onApply={onApply ? (si) => handleApply(i, si) : undefined}
+            />
           ))}
 
-          {/* Loading indicator */}
-          {isLoading && (
+          {/* Thinking indicator (before the first streamed token) */}
+          {isLoading && !messages[messages.length - 1]?.streaming && (
             <div className="flex gap-2.5 animate-slide-in">
               <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Brain
@@ -217,19 +252,6 @@ export default function SparringPanel({
               >
                 <ArrowsClockwise size={12} weight="bold" />
                 Retry
-              </button>
-            </div>
-          )}
-
-          {/* Apply suggestion button */}
-          {suggestion && onApply && (
-            <div className="flex justify-center pt-2">
-              <button
-                onClick={handleApply}
-                className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition-colors border border-emerald-200 dark:border-emerald-800"
-              >
-                <CheckCircle size={14} weight="duotone" />
-                Apply to board
               </button>
             </div>
           )}
@@ -276,7 +298,13 @@ export default function SparringPanel({
   );
 }
 
-function MessageBubble({ message }: { message: Message }) {
+function MessageBubble({
+  message,
+  onApply,
+}: {
+  message: Message;
+  onApply?: (suggestionIndex: number) => void;
+}) {
   if (message.role === "ai") {
     return (
       <div className="flex gap-2.5 animate-slide-in">
@@ -290,7 +318,18 @@ function MessageBubble({ message }: { message: Message }) {
         <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-tl-md px-4 py-2.5 max-w-[85%]">
           <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
             {message.text}
+            {message.streaming && (
+              <span className="inline-block w-1.5 h-3.5 ml-0.5 align-middle bg-indigo-400 animate-pulse rounded-sm" />
+            )}
           </p>
+          {message.suggestions?.map((s, i) => (
+            <SuggestionCard
+              key={i}
+              suggestion={s}
+              applied={message.applied?.includes(i) ?? false}
+              onApply={onApply ? () => onApply(i) : undefined}
+            />
+          ))}
         </div>
       </div>
     );

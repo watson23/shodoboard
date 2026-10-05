@@ -1,27 +1,32 @@
 export const maxDuration = 60;
 
-import Anthropic from "@anthropic-ai/sdk";
-import { getDiscoveryPromptSystemPrompt } from "@/lib/prompts";
-import { extractTextFromResponse, extractJsonBlock, generateId } from "@/lib/utils";
-import { ADMIN_COACHING_INSTRUCTIONS } from "@/lib/coaching-instructions";
+import { z } from "zod";
+import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { NextRequest, NextResponse } from "next/server";
+import { getClient, hasApiKey, cachedSystem, FAST_MODEL, EFFORT, FALLBACKS, FALLBACK_BETAS } from "@/lib/ai";
+import { getDiscoveryPromptSystemPrompt } from "@/lib/prompts";
+import { generateId } from "@/lib/utils";
+import { ADMIN_COACHING_INSTRUCTIONS } from "@/lib/coaching-instructions";
 import type { WorkItem, Outcome, BusinessGoal, DiscoveryPrompt } from "@/types/board";
 
+const SYSTEM = getDiscoveryPromptSystemPrompt(ADMIN_COACHING_INSTRUCTIONS);
+
+const Schema = z.object({
+  questions: z.array(z.string()).describe("3-5 open-ended discovery questions"),
+});
+
 export async function POST(req: NextRequest) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!hasApiKey()) {
     return NextResponse.json({ error: "API not configured" }, { status: 503 });
   }
 
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const { item, outcome, goal } = (await req.json()) as {
     item: WorkItem;
     outcome: Outcome | null;
     goal: BusinessGoal | null;
   };
 
-  // Build text context showing goal > outcome > item with all fields
   const contextLines: string[] = [];
-
   if (goal) {
     contextLines.push(`GOAL: ${goal.statement}`);
     if (goal.timeframe) contextLines.push(`  Timeframe: ${goal.timeframe}`);
@@ -29,42 +34,37 @@ export async function POST(req: NextRequest) {
       contextLines.push(`  Metrics: ${goal.metrics.join(", ")}`);
     }
   }
-
   if (outcome) {
     contextLines.push(`OUTCOME: ${outcome.statement}`);
     if (outcome.behaviorChange) contextLines.push(`  Behavior change: ${outcome.behaviorChange}`);
     if (outcome.measureOfSuccess) contextLines.push(`  Measure of success: ${outcome.measureOfSuccess}`);
   }
-
   contextLines.push(`WORK ITEM: ${item.title}`);
   contextLines.push(`  Type: ${item.type}`);
   contextLines.push(`  Column: ${item.column}`);
   if (item.description) contextLines.push(`  Description: ${item.description}`);
 
-  const contextText = contextLines.join("\n");
-
   try {
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1024,
-      system: getDiscoveryPromptSystemPrompt(ADMIN_COACHING_INSTRUCTIONS),
+    const response = await getClient().beta.messages.parse({
+      model: FAST_MODEL,
+      max_tokens: 4000,
+      output_config: { effort: EFFORT.discovery, format: betaZodOutputFormat(Schema) },
+      betas: [...FALLBACK_BETAS],
+      fallbacks: FALLBACKS,
+      system: cachedSystem(SYSTEM),
       messages: [
         {
           role: "user",
-          content: `Generate discovery questions for this work item in its context:\n\n${contextText}`,
+          content: `Generate discovery questions for this work item in its context:\n\n${contextLines.join("\n")}`,
         },
       ],
     });
 
-    const text = extractTextFromResponse(response);
-    const result = extractJsonBlock(text);
-
-    if (!result) {
-      console.error("Discovery prompts API: failed to parse AI response", text.slice(0, 200));
+    const questions = response.parsed_output?.questions ?? [];
+    if (questions.length === 0) {
+      console.error("Discovery prompts API: empty response", response.stop_reason);
       return NextResponse.json({ prompts: [], parseError: true });
     }
-
-    const questions = result.parsed as string[];
 
     const prompts: DiscoveryPrompt[] = questions.map((question) => ({
       id: generateId("dp"),

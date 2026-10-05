@@ -105,6 +105,13 @@ interface ImageData {
   name: string;
 }
 
+interface PdfData {
+  base64: string;
+  name: string;
+}
+
+const MAX_PDF_BYTES = 10 * 1024 * 1024;
+
 function BacklogInput({
   backlog,
   setBacklog,
@@ -112,6 +119,8 @@ function BacklogInput({
   setGoalsInput,
   images,
   setImages,
+  pdfs,
+  setPdfs,
   files,
   setFiles,
   onStart,
@@ -122,6 +131,8 @@ function BacklogInput({
   setGoalsInput: (v: string) => void;
   images: ImageData[];
   setImages: (v: ImageData[]) => void;
+  pdfs: PdfData[];
+  setPdfs: (v: PdfData[]) => void;
   files: FileData[];
   setFiles: (v: FileData[]) => void;
   onStart: () => void;
@@ -149,6 +160,21 @@ function BacklogInput({
           }
         };
         reader.readAsDataURL(file);
+      } else if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+        // PDFs are read natively by the model (roadmap decks, exported docs)
+        if (file.size > MAX_PDF_BYTES) {
+          setFileError(`"${file.name}" is larger than 10 MB.`);
+          continue;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          const base64 = result.split(",")[1];
+          if (base64) {
+            setPdfs([...pdfs, { base64, name: file.name }]);
+          }
+        };
+        reader.readAsDataURL(file);
       } else {
         // Data file handling
         try {
@@ -170,7 +196,7 @@ function BacklogInput({
     setImages(images.filter((_, i) => i !== index));
   };
 
-  const hasContent = backlog.trim() || images.length > 0 || files.length > 0;
+  const hasContent = backlog.trim() || images.length > 0 || pdfs.length > 0 || files.length > 0;
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -201,10 +227,10 @@ function BacklogInput({
         <div className="space-y-3">
           <label className="flex items-center gap-2 cursor-pointer text-sm text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors w-fit">
             <Paperclip size={20} weight="duotone" />
-            <span>Add photo, screenshot, or file (CSV, TSV, Excel, TXT)</span>
+            <span>Add photo, screenshot, or file (PDF, CSV, TSV, Excel, TXT)</span>
             <input
               type="file"
-              accept="image/*,.csv,.tsv,.txt,.xlsx,.xls"
+              accept="image/*,.pdf,.csv,.tsv,.txt,.xlsx,.xls"
               multiple
               onChange={handleFileUpload}
               className="hidden"
@@ -228,6 +254,32 @@ function BacklogInput({
                   <button
                     onClick={() => removeImage(i)}
                     className="absolute top-0.5 right-0.5 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* PDF previews */}
+          {pdfs.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {pdfs.map((p, i) => (
+                <div
+                  key={`pdf-${i}`}
+                  className="relative group flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2"
+                >
+                  <FileIcon size={16} weight="duotone" className="text-rose-400 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate max-w-[160px]">
+                      {p.name}
+                    </p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">PDF</p>
+                  </div>
+                  <button
+                    onClick={() => setPdfs(pdfs.filter((_, idx) => idx !== i))}
+                    className="ml-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                   >
                     <X size={14} />
                   </button>
@@ -305,6 +357,7 @@ export default function IntakePage() {
   const [backlog, setBacklog] = useState("");
   const [goalsInput, setGoalsInput] = useState("");
   const [images, setImages] = useState<ImageData[]>([]);
+  const [pdfs, setPdfs] = useState<PdfData[]>([]);
   const [files, setFiles] = useState<FileData[]>([]);
 
   const handleStart = () => {
@@ -330,7 +383,7 @@ export default function IntakePage() {
 
   // After consent, show conversation or backlog input
   if (started) {
-    return <IntakeConversation backlog={backlog} goals={goalsInput} images={images} />;
+    return <IntakeConversation backlog={backlog} goals={goalsInput} images={images} pdfs={pdfs} />;
   }
 
   // Consent declined — show info and allow proceeding without AI
@@ -391,6 +444,8 @@ export default function IntakePage() {
       setGoalsInput={setGoalsInput}
       images={images}
       setImages={setImages}
+      pdfs={pdfs}
+      setPdfs={setPdfs}
       files={files}
       setFiles={setFiles}
       onStart={handleStart}

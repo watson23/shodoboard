@@ -5,6 +5,8 @@ import { Brain } from "@phosphor-icons/react";
 interface ChatMessageProps {
   role: "ai" | "user";
   text: string;
+  /** True while the reply is still streaming in. */
+  streaming?: boolean;
 }
 
 function renderFormattedText(text: string) {
@@ -18,7 +20,7 @@ function renderFormattedText(text: string) {
   });
 }
 
-export default function ChatMessage({ role, text }: ChatMessageProps) {
+export default function ChatMessage({ role, text, streaming }: ChatMessageProps) {
   if (role === "ai") {
     return (
       <div className="flex gap-3 animate-slide-in">
@@ -32,6 +34,9 @@ export default function ChatMessage({ role, text }: ChatMessageProps) {
         <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-tl-md px-4 py-3 max-w-[85%]">
           <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-line leading-relaxed">
             {renderFormattedText(text)}
+            {streaming && (
+              <span className="inline-block w-1.5 h-3.5 ml-0.5 align-middle bg-indigo-400 animate-pulse rounded-sm" />
+            )}
           </p>
         </div>
       </div>

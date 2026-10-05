@@ -2,15 +2,16 @@ import { createItem } from "./entities";
 import type { WorkItem, Nudge, Outcome, BusinessGoal } from "@/types/board";
 import type { BoardAction } from "@/hooks/useBoard";
 
-interface SparringSuggestion {
+export interface SparringSuggestion {
   action: string;
   targetId?: string;
   changes: Record<string, unknown>;
+  summary?: string;
 }
 
 export function handleSparringApply(
   suggestion: SparringSuggestion,
-  nudge: Nudge,
+  nudge: Nudge | null,
   items: WorkItem[],
   dispatch: React.Dispatch<BoardAction>,
 ): void {
@@ -22,9 +23,9 @@ export function handleSparringApply(
     dispatch({ type: "UPDATE_GOAL", goalId: suggestion.targetId, updates: suggestion.changes as Partial<BusinessGoal> });
   } else if (suggestion.action === "add_item") {
     let outcomeId = suggestion.targetId || null;
-    if (!outcomeId && nudge.targetType === "outcome") {
+    if (!outcomeId && nudge?.targetType === "outcome") {
       outcomeId = nudge.targetId;
-    } else if (!outcomeId && nudge.targetType === "item") {
+    } else if (!outcomeId && nudge?.targetType === "item") {
       const sourceItem = items.find(i => i.id === nudge.targetId);
       outcomeId = sourceItem?.outcomeId || null;
     }

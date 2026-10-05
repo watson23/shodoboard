@@ -11,17 +11,23 @@ import {
 } from "@phosphor-icons/react";
 import { useBoard } from "@/hooks/useBoard";
 import type { BoardState } from "@/types/board";
+import type { BoardChangeSuggestion, ChatTurn } from "@/lib/ai";
+import { streamChat } from "@/lib/sse-client";
+import SuggestionCard from "./SuggestionCard";
 
 interface BoardSparringModalProps {
   onClose: () => void;
+  onApply?: (suggestion: BoardChangeSuggestion) => void;
 }
 
-interface Message {
-  role: "ai" | "user";
-  text: string;
+interface Message extends ChatTurn {
+  /** Indices of suggestions the PM applied from this message. */
+  applied?: number[];
+  /** True while the reply is still streaming in. */
+  streaming?: boolean;
 }
 
-export default function BoardSparringModal({ onClose }: BoardSparringModalProps) {
+export default function BoardSparringModal({ onClose, onApply }: BoardSparringModalProps) {
   const { state } = useBoard();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -47,29 +53,55 @@ export default function BoardSparringModal({ onClose }: BoardSparringModalProps)
   }, [isLoading]);
 
   const sendToApi = useCallback(
-    async (conversationMessages: Message[]) => {
+    async (conversation: Message[]) => {
       setIsLoading(true);
       setError(null);
 
-      try {
-        const res = await fetch("/api/board-spar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: conversationMessages,
-            boardState: buildBoardPayload(state),
-          }),
+      const history: ChatTurn[] = conversation.map((m) => ({
+        role: m.role,
+        text: m.text,
+        suggestions: m.suggestions,
+        appliedSuggestions: m.appliedSuggestions,
+      }));
+
+      let placeholderAdded = false;
+      const updateLast = (patch: Partial<Message>) =>
+        setMessages((prev) => {
+          const next = [...prev];
+          next[next.length - 1] = { ...next[next.length - 1], ...patch };
+          return next;
         });
 
-        if (!res.ok) {
-          throw new Error(`API error: ${res.status}`);
-        }
+      try {
+        const done = await streamChat<{ type: "done"; text: string; suggestions?: BoardChangeSuggestion[] }>(
+          "/api/board-spar",
+          { messages: history, boardState: buildBoardPayload(state) },
+          (accumulated) => {
+            if (!placeholderAdded) {
+              placeholderAdded = true;
+              setMessages((prev) => [...prev, { role: "ai", text: accumulated, streaming: true }]);
+            } else {
+              updateLast({ text: accumulated });
+            }
+          }
+        );
 
-        const data = await res.json();
-        const aiMessage: Message = { role: "ai", text: data.text };
-        setMessages((prev) => [...prev, aiMessage]);
+        const finalMessage: Message = {
+          role: "ai",
+          text: done.text,
+          suggestions: done.suggestions && done.suggestions.length > 0 ? done.suggestions : undefined,
+          applied: [],
+        };
+        if (placeholderAdded) {
+          updateLast({ ...finalMessage, streaming: false });
+        } else {
+          setMessages((prev) => [...prev, finalMessage]);
+        }
       } catch (err) {
         console.error("Board spar error:", err);
+        if (placeholderAdded) {
+          setMessages((prev) => prev.slice(0, -1));
+        }
         setError("Connection failed. Please try again.");
       } finally {
         setIsLoading(false);
@@ -89,11 +121,28 @@ export default function BoardSparringModal({ onClose }: BoardSparringModalProps)
     const text = userInput.trim();
     if (!text || isLoading) return;
 
-    const userMessage: Message = { role: "user", text };
+    // Tell the coach whether its last proposal was applied
+    const lastAi = [...messages].reverse().find((m) => m.role === "ai");
+    const appliedSuggestions = lastAi?.suggestions
+      ? (lastAi.applied?.length ?? 0) > 0
+      : undefined;
+
+    const userMessage: Message = { role: "user", text, appliedSuggestions };
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setUserInput("");
     sendToApi(updatedMessages);
+  };
+
+  const handleApply = (messageIndex: number, suggestionIndex: number) => {
+    const suggestion = messages[messageIndex]?.suggestions?.[suggestionIndex];
+    if (!suggestion || !onApply) return;
+    onApply(suggestion);
+    setMessages((prev) =>
+      prev.map((m, i) =>
+        i === messageIndex ? { ...m, applied: [...(m.applied ?? []), suggestionIndex] } : m
+      )
+    );
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -146,11 +195,15 @@ export default function BoardSparringModal({ onClose }: BoardSparringModalProps)
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 min-h-0">
           {messages.map((msg, i) => (
-            <MessageBubble key={i} message={msg} />
+            <MessageBubble
+              key={i}
+              message={msg}
+              onApply={onApply ? (si) => handleApply(i, si) : undefined}
+            />
           ))}
 
-          {/* Loading indicator */}
-          {isLoading && (
+          {/* Thinking indicator (before the first streamed token) */}
+          {isLoading && !messages[messages.length - 1]?.streaming && (
             <div className="flex gap-2.5 animate-slide-in">
               <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Brain
@@ -212,7 +265,13 @@ export default function BoardSparringModal({ onClose }: BoardSparringModalProps)
   );
 }
 
-function MessageBubble({ message }: { message: Message }) {
+function MessageBubble({
+  message,
+  onApply,
+}: {
+  message: Message;
+  onApply?: (suggestionIndex: number) => void;
+}) {
   if (message.role === "ai") {
     return (
       <div className="flex gap-2.5 animate-slide-in">
@@ -226,7 +285,18 @@ function MessageBubble({ message }: { message: Message }) {
         <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-tl-md px-4 py-2.5 max-w-[85%]">
           <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
             {message.text}
+            {message.streaming && (
+              <span className="inline-block w-1.5 h-3.5 ml-0.5 align-middle bg-indigo-400 animate-pulse rounded-sm" />
+            )}
           </p>
+          {message.suggestions?.map((s, i) => (
+            <SuggestionCard
+              key={i}
+              suggestion={s}
+              applied={message.applied?.includes(i) ?? false}
+              onApply={onApply ? () => onApply(i) : undefined}
+            />
+          ))}
         </div>
       </div>
     );

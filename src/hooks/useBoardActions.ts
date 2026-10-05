@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useBoard } from "./useBoard";
+import { coachingHash } from "@/lib/board-hash";
 import type { DiscoveryPrompt, FocusItem, FocusItemStatus, Nudge } from "@/types/board";
 
 export function useBoardActions() {
@@ -13,60 +14,70 @@ export function useBoardActions() {
   const [boardStrengths, setBoardStrengths] = useState<string[]>([]);
   const [discoveryLoading, setDiscoveryLoading] = useState<string | null>(null);
 
-  const generateNudges = useCallback(async () => {
-    setNudgesLoading(true);
-    try {
-      const res = await fetch("/api/nudge", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ boardState: state }),
-      });
-      const data = await res.json();
-      if (data.nudges && data.nudges.length > 0) {
-        dispatch({ type: "SET_NUDGES", nudges: data.nudges });
-      }
-    } catch (err) {
-      console.error("Failed to generate nudges:", err);
+  /**
+   * One coaching pass: nudges + agenda from a single API call.
+   *
+   * Skipped when the board content has not changed since the last pass
+   * (fingerprint match) unless `force` is set by a refresh button. Dismissed
+   * and snoozed nudges keep their status when the same observation comes back.
+   */
+  const generateCoaching = useCallback(async (opts?: { force?: boolean }): Promise<boolean> => {
+    const hash = coachingHash(state);
+    const hasResults = state.nudges.length > 0 || state.focusItems.length > 0;
+    if (!opts?.force && hasResults && state.coachedHash === hash) {
+      return false;
     }
-    setNudgesLoading(false);
-  }, [state, dispatch]);
 
-  const generateFocusItems = useCallback(async () => {
-    console.log("[Focus] Starting generation. Board has:", state.goals?.length, "goals,", state.outcomes?.length, "outcomes,", state.items?.length, "items");
+    setNudgesLoading(true);
     setFocusLoading(true);
     setFocusError(false);
     try {
-      const res = await fetch("/api/focus", {
+      const res = await fetch("/api/coach", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ boardState: state }),
       });
-      console.log("[Focus] API responded:", res.status, res.statusText);
       if (!res.ok) {
-        console.error("[Focus] API error:", res.status, res.statusText);
+        console.error("[coach] API error:", res.status, res.statusText);
         setFocusError(true);
-        setFocusLoading(false);
         return false;
       }
-      const data = await res.json();
-      console.log("[Focus] Parsed response — focusItems:", data.focusItems?.length, "strengths:", data.boardStrengths?.length);
-      if (data.boardStrengths) {
-        setBoardStrengths(data.boardStrengths);
-      }
-      if (data.focusItems && data.focusItems.length > 0) {
-        console.log("[Focus] Dispatching SET_FOCUS_ITEMS with", data.focusItems.length, "items");
-        dispatch({ type: "SET_FOCUS_ITEMS", focusItems: data.focusItems });
-        setFocusLoading(false);
-        return true;
-      }
-      console.warn("[Focus] API returned no focus items", JSON.stringify(data).slice(0, 300));
+      const data = (await res.json()) as {
+        nudges?: Nudge[];
+        focusItems?: FocusItem[];
+        boardStrengths?: string[];
+        coachedHash?: string;
+      };
+
+      const previous = state.nudges;
+      const nudgesWithStatus: Nudge[] = (data.nudges ?? []).map((n) => {
+        const match = previous.find(
+          (p) => p.targetId === n.targetId && p.antiPattern === n.antiPattern && p.status !== "active"
+        );
+        return match ? { ...n, status: match.status } : n;
+      });
+
+      setBoardStrengths(data.boardStrengths ?? []);
+      dispatch({
+        type: "SET_COACHING",
+        nudges: nudgesWithStatus,
+        focusItems: data.focusItems ?? [],
+        coachedHash: data.coachedHash ?? hash,
+      });
+      return (data.focusItems?.length ?? 0) > 0;
     } catch (err) {
-      console.error("[Focus] Failed to generate focus items:", err);
+      console.error("[coach] Failed:", err);
       setFocusError(true);
+      return false;
+    } finally {
+      setNudgesLoading(false);
+      setFocusLoading(false);
     }
-    setFocusLoading(false);
-    return false;
   }, [state, dispatch]);
+
+  /** Both refresh buttons re-run the same coaching pass. */
+  const generateNudges = useCallback(() => generateCoaching({ force: true }), [generateCoaching]);
+  const generateFocusItems = useCallback(() => generateCoaching({ force: true }), [generateCoaching]);
 
   const handleFocusItemClick = useCallback((focusItem: FocusItem) => {
     const el = document.getElementById(focusItem.targetId);
@@ -136,6 +147,7 @@ export function useBoardActions() {
     focusError,
     boardStrengths,
     discoveryLoading,
+    generateCoaching,
     generateNudges,
     generateFocusItems,
     generateDiscoveryPrompts,
