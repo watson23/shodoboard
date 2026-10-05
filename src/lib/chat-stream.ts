@@ -44,5 +44,10 @@ export async function streamChatTurn(
     console.warn("[chat] reply hit max_tokens; tool input may be truncated");
   }
 
+  const u = message.usage;
+  console.log(
+    `[chat] ${message.model} in=${u.input_tokens} cacheRead=${u.cache_read_input_tokens ?? 0} cacheWrite=${u.cache_creation_input_tokens ?? 0} out=${u.output_tokens} tools=${toolUses.length}`
+  );
+
   return { text, toolUses, stopReason: message.stop_reason };
 }

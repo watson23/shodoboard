@@ -6,6 +6,7 @@ import { SignOut, Crown, Users } from "@phosphor-icons/react";
 import { getBoard, cleanStaleUserBoardEntries } from "@/lib/firestore";
 import type { UserBoardEntry } from "@/lib/firestore";
 import { useAuth } from "@/hooks/useAuth";
+import PortfolioPanel from "./PortfolioPanel";
 
 function timeAgo(iso: string): string {
   const seconds = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -185,6 +186,7 @@ export default function Dashboard({
           >
             Start with empty board
           </button>
+          <PortfolioPanel boards={displayBoards} />
         </div>
       </main>
     </div>

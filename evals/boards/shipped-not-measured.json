@@ -1,0 +1,28 @@
+{
+  "name": "shipped-not-measured",
+  "description": "Everything shipped, nothing measured. A vanity metric on the goal.",
+  "language": "en",
+  "expectations": [
+    "Flags that outcome-1 has shipped items but nothing in measuring and no learning loop (shipped-not-learning)",
+    "Flags 'Total registered users' on goal-1 as a vanity metric or as disconnected from business value (weak-goal-metric or impact-disconnected-goal)",
+    "Suggests moving shipped work to measuring or defining what to track, as a possibility rather than an order",
+    "Does not say the team is slow or that they shipped too little"
+  ],
+  "boardState": {
+    "productName": "Fitness tracker",
+    "goals": [
+      { "id": "goal-1", "statement": "Reach 1 million registered users", "timeframe": "2027", "metrics": ["Total registered users"], "order": 0, "collapsed": false }
+    ],
+    "outcomes": [
+      { "id": "outcome-1", "goalId": "goal-1", "statement": "Users log a workout at least 3 times a week", "behaviorChange": "From sporadic logging to a weekly habit", "measureOfSuccess": "Share of weekly-active users logging 3+ workouts rises from 22% to 35%", "order": 0, "collapsed": false }
+    ],
+    "items": [
+      { "id": "item-1", "outcomeId": "outcome-1", "title": "Streak reminders", "description": "", "type": "delivery", "column": "shipped", "order": 0 },
+      { "id": "item-2", "outcomeId": "outcome-1", "title": "Apple Watch sync", "description": "", "type": "delivery", "column": "shipped", "order": 1 },
+      { "id": "item-3", "outcomeId": "outcome-1", "title": "Weekly summary email", "description": "", "type": "delivery", "column": "shipped", "order": 2 }
+    ],
+    "nudges": [],
+    "discoveryPrompts": [],
+    "focusItems": []
+  }
+}

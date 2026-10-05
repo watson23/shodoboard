@@ -159,7 +159,9 @@ Nudge rules:
    - antiPattern: the playbook ID, "strength", or "other"
    - targetType/targetId: the main entity this concerns (use a real ID)
 
-Nudges and focus items should be consistent with each other: a high-priority focus item usually has a matching nudge on its target.`;
+Nudges and focus items should be consistent with each other: a high-priority focus item usually has a matching nudge on its target.
+
+FINAL CHECK before answering: no message, question, suggestedAction, title, whyItMatters or boardStrengths text may contain an entity ID such as "item-3" or "outcome-2". The PM never sees IDs. Name entities by their title or statement ("the churn interviews", "the onboarding outcome"). IDs belong only in targetId fields.`;
 }
 
 export function getSparSystemPrompt(

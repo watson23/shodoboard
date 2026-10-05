@@ -1,0 +1,30 @@
+{
+  "name": "finnish",
+  "description": "Finnish-language board with a measure that does not match its outcome and a goal without a baseline.",
+  "language": "fi",
+  "expectations": [
+    "All nudge messages, questions, suggested actions, focus item titles and board strengths are written in Finnish",
+    "Flags that outcome-1's measure ('Julkaistujen ominaisuuksien määrä') does not measure the stated behavior change (measure-mismatch or weak-measure)",
+    "Flags that goal-1 has a metric but no baseline (goal-missing-baseline)",
+    "Flags item-3 ('Rakenna chat-tuki') as a solution without a validated problem, or asks what problem it solves (solution-as-problem or assumption-risk)"
+  ],
+  "boardState": {
+    "productName": "Taloyhtiösovellus",
+    "goals": [
+      { "id": "goal-1", "statement": "Kasvata maksavien taloyhtiöiden määrää 30 % vuoden 2027 loppuun mennessä", "timeframe": "2027", "metrics": ["Maksavien taloyhtiöiden määrä"], "order": 0, "collapsed": false }
+    ],
+    "outcomes": [
+      { "id": "outcome-1", "goalId": "goal-1", "statement": "Hallituksen jäsenet hoitavat vikailmoitukset sovelluksessa sähköpostin sijaan", "behaviorChange": "Vikailmoitukset tulevat sovelluksen kautta eivätkä isännöitsijän sähköpostiin", "measureOfSuccess": "Julkaistujen ominaisuuksien määrä", "order": 0, "collapsed": false },
+      { "id": "outcome-2", "goalId": "goal-1", "statement": "Isännöitsijät suosittelevat sovellusta uusille taloyhtiöille", "behaviorChange": "", "measureOfSuccess": "Suosittelujen määrä kuukaudessa nousee 2:sta 10:een", "order": 1, "collapsed": false }
+    ],
+    "items": [
+      { "id": "item-1", "outcomeId": "outcome-1", "title": "Haastattele 5 hallituksen puheenjohtajaa vikailmoituksista", "description": "", "type": "discovery", "column": "discovering", "order": 0 },
+      { "id": "item-2", "outcomeId": "outcome-1", "title": "Vikailmoituslomake sovellukseen", "description": "", "type": "delivery", "column": "building", "order": 1 },
+      { "id": "item-3", "outcomeId": "outcome-2", "title": "Rakenna chat-tuki", "description": "", "type": "delivery", "column": "ready", "order": 0 },
+      { "id": "item-4", "outcomeId": null, "title": "Päivitä kirjautuminen", "description": "", "type": "delivery", "column": "opportunities", "order": 0 }
+    ],
+    "nudges": [],
+    "discoveryPrompts": [],
+    "focusItems": []
+  }
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useBoard } from "./useBoard";
 import { coachingHash } from "@/lib/board-hash";
 import type { DiscoveryPrompt, FocusItem, FocusItemStatus, Nudge } from "@/types/board";
@@ -13,6 +13,7 @@ export function useBoardActions() {
   const [focusError, setFocusError] = useState(false);
   const [boardStrengths, setBoardStrengths] = useState<string[]>([]);
   const [discoveryLoading, setDiscoveryLoading] = useState<string | null>(null);
+  const coachingInFlight = useRef(false);
 
   /**
    * One coaching pass: nudges + agenda from a single API call.
@@ -27,6 +28,8 @@ export function useBoardActions() {
     if (!opts?.force && hasResults && state.coachedHash === hash) {
       return false;
     }
+    if (coachingInFlight.current) return false;
+    coachingInFlight.current = true;
 
     setNudgesLoading(true);
     setFocusLoading(true);
@@ -70,6 +73,7 @@ export function useBoardActions() {
       setFocusError(true);
       return false;
     } finally {
+      coachingInFlight.current = false;
       setNudgesLoading(false);
       setFocusLoading(false);
     }

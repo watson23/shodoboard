@@ -27,9 +27,9 @@ export const CoachingSchema = z.object({
         tier: z.enum(["quiet", "visible"]),
         priority: Priority,
         antiPattern: z.string().describe('Playbook ID, "strength", or "other"'),
-        message: z.string().describe("Headline observation, max 60 characters"),
-        question: z.string().describe("One short coaching question, max 100 characters"),
-        suggestedAction: z.string().describe("Gentle possibility, max 80 characters"),
+        message: z.string().describe("Headline observation, max 60 characters, no entity IDs"),
+        question: z.string().describe("One short coaching question, max 100 characters, no entity IDs"),
+        suggestedAction: z.string().describe("Gentle possibility, max 80 characters, name entities by title, never by ID"),
       })
     )
     .describe("1-5 nudges attached to specific entities"),
@@ -38,11 +38,11 @@ export const CoachingSchema = z.object({
       z.object({
         priority: Priority,
         title: z.string(),
-        whyItMatters: z.string(),
+        whyItMatters: z.string().describe("1-2 sentences, name entities by title, never by ID"),
         antiPattern: z.string(),
         targetType: TargetType,
         targetId: z.string(),
-        suggestedAction: z.string(),
+        suggestedAction: z.string().describe("One concrete board action, name entities by title, never by ID"),
       })
     )
     .describe("1-5 agenda items, most important first"),

@@ -1,0 +1,31 @@
+{
+  "name": "empty-goal",
+  "description": "A goal with no outcomes, a pile of unlinked items, and a goal that is a task.",
+  "language": "en",
+  "expectations": [
+    "Flags that goal-1 has no outcomes under it (empty-goal)",
+    "Flags goal-2 ('Finish the mobile app rewrite') as a task or output framed as a goal (goal-framing or output-not-outcome)",
+    "Groups the four unlinked items into one focus item rather than four separate ones (orphan-work)",
+    "Asks who benefits from goal-2 or what business value it produces, as a question"
+  ],
+  "boardState": {
+    "productName": "Field service app",
+    "goals": [
+      { "id": "goal-1", "statement": "Reduce missed appointments from 12% to 6% by Q3 2027", "timeframe": "Q3 2027", "metrics": ["Missed appointment rate (baseline 12%)"], "order": 0, "collapsed": false },
+      { "id": "goal-2", "statement": "Finish the mobile app rewrite", "timeframe": "Q4 2027", "metrics": [], "order": 1, "collapsed": false }
+    ],
+    "outcomes": [
+      { "id": "outcome-1", "goalId": "goal-2", "statement": "Technicians use the new app for every job", "behaviorChange": "Switch from the legacy app to the rewritten one", "measureOfSuccess": "100% of jobs logged in the new app", "order": 0, "collapsed": false }
+    ],
+    "items": [
+      { "id": "item-1", "outcomeId": "outcome-1", "title": "Rewrite job list screen", "description": "", "type": "delivery", "column": "building", "order": 0 },
+      { "id": "item-2", "outcomeId": null, "title": "SMS reminder the evening before", "description": "", "type": "delivery", "column": "opportunities", "order": 0 },
+      { "id": "item-3", "outcomeId": null, "title": "Let customers reschedule from the SMS", "description": "", "type": "delivery", "column": "opportunities", "order": 1 },
+      { "id": "item-4", "outcomeId": null, "title": "Call 10 customers who missed appointments", "description": "", "type": "discovery", "column": "opportunities", "order": 2 },
+      { "id": "item-5", "outcomeId": null, "title": "Show technician ETA to customer", "description": "", "type": "delivery", "column": "opportunities", "order": 3 }
+    ],
+    "nudges": [],
+    "discoveryPrompts": [],
+    "focusItems": []
+  }
+}
