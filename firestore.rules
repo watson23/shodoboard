@@ -1,0 +1,77 @@
+rules_version = '2';
+
+// Shodoboard access model
+//
+// boards/{id}   Created from the intake flow, often without signing in. A board
+//               in "link" mode (the default) is readable and editable by anyone
+//               who has the URL. An "invite_only" board is readable and editable
+//               only by its owner and by signed-in users whose email is listed
+//               in memberEmails. Ownership can be claimed once and changed only
+//               by the current owner. Listing all boards is never allowed from
+//               the client; the admin dashboard uses the Admin SDK.
+// users/{uid}   Each signed-in user reads and writes only their own document.
+// config/*      Readable by everyone (default cohort), written only via Admin SDK.
+// feedback/*    Written and read only via Admin SDK (API routes).
+// Activity logs are appended by the /api/activity/flush route with the Admin SDK.
+//
+// Deploy: firebase deploy --only firestore:rules
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function email() {
+      return signedIn() && request.auth.token.email != null
+        ? request.auth.token.email.lower()
+        : '';
+    }
+
+    function isOwner(board) {
+      return signedIn() && board.get('ownerId', '') == request.auth.uid;
+    }
+
+    function isMember(board) {
+      return email() != '' && email() in board.get('memberEmails', []);
+    }
+
+    function canAccess(board) {
+      return board.get('accessMode', 'link') != 'invite_only'
+        || isOwner(board)
+        || isMember(board);
+    }
+
+    // ownerId may be set once on an unowned board (claim), and afterwards
+    // changed only by the current owner (unclaim / transfer).
+    function ownerChangeAllowed() {
+      let before = resource.data.get('ownerId', '');
+      let after = request.resource.data.get('ownerId', '');
+      return before == after
+        || (before == '' && signedIn() && after == request.auth.uid)
+        || (signedIn() && before == request.auth.uid);
+    }
+
+    match /boards/{boardId} {
+      allow create: if true;
+      allow get: if canAccess(resource.data);
+      allow list: if false;
+      allow update: if canAccess(resource.data) && ownerChangeAllowed();
+      allow delete: if isOwner(resource.data);
+    }
+
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /feedback/{docId} {
+      allow read, write: if false;
+    }
+  }
+}

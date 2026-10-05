@@ -49,6 +49,8 @@ export interface BoardDocument {
   ownerEmail?: string;
   accessMode?: "link" | "invite_only";
   members?: BoardMember[];
+  /** Lowercase emails of members, kept in sync with `members` for security rules. */
+  memberEmails?: string[];
   recentVisitors?: BoardVisitor[];
   createdAt: unknown;
   updatedAt: unknown;
@@ -192,7 +194,11 @@ export async function addBoardMember(
       addedAt: new Date().toISOString(),
     };
     const updated = [...existing, newMember];
-    await updateDoc(boardRef, { members: updated, updatedAt: serverTimestamp() });
+    await updateDoc(boardRef, {
+      members: updated,
+      memberEmails: updated.map((m) => m.email),
+      updatedAt: serverTimestamp(),
+    });
     return updated;
   } catch (err) {
     console.error(`Failed to add member to board ${boardId}:`, err);
@@ -212,7 +218,11 @@ export async function removeBoardMember(
 
     const data = snap.data() as BoardDocument;
     const updated = (data.members || []).filter((m) => m.email !== normalized);
-    await updateDoc(boardRef, { members: updated, updatedAt: serverTimestamp() });
+    await updateDoc(boardRef, {
+      members: updated,
+      memberEmails: updated.map((m) => m.email),
+      updatedAt: serverTimestamp(),
+    });
     return updated;
   } catch (err) {
     console.error(`Failed to remove member from board ${boardId}:`, err);
